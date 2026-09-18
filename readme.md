@@ -17,23 +17,21 @@ This library provides a universal API to a number of I2C RTCs, which are describ
 * DS1307,
 * DS1337,
 * DS3231,
-* MCP79410, 
+* MCP79410,
 * PCF8523,
 * PCF8563,
 * RS5C372,
-* RV-3028, 
-* RV-3032, 
+* RV-3028,
+* RV-3032,
 * RV-8523,
 * RV-8803, and
-* SD2405. 
+* SD2405.
 
-The interface is minimal, but is just enough to get the basic functionality. And it is provided by a base class. This means you can even use many RTCs in parallel without caring about what particular model you use. I tried to identify the least common denominator of the functionality. However, I wanted to have some kind of alarm, and being able to make use of an offset register and read the temperature, if possible. Unfortunately, one RTC does not have alarms at all,  one RTC does not allow recurring alarms, a few RTCs do not have an offset register, and many do not posses the ability to read out the temperature. 
+The interface is minimal, but is just enough to get the basic functionality. And it is provided by a base class. This means you can even use many RTCs in parallel without caring about what particular model you use. I tried to identify the least common denominator of the functionality. However, I wanted to have some kind of alarm, and being able to make use of an offset register and read the temperature, if possible. Unfortunately, one RTC does not have alarms at all,  one RTC does not allow recurring alarms, a few RTCs do not have an offset register, and many do not posses the ability to read out the temperature.
 
-In order to check at runtime what capabilities an RTC has, the method `getCapabilities()` will be useful (see table entry below). The list of capabilities and at which pins you can sense the different signals appears in a table in [a section further down](#capa). 
+In order to check at runtime what capabilities an RTC has, the method `getCapabilities()` will be useful (see table entry below). The list of capabilities and at which pins you can sense the different signals appears in a table in [a section further down](#capa).
 
 In addition, one can, of course, extend each particular RTC class with methods catering for the particular RTC model, if one wishes to do so.
-
-This library uses Paul Stoffregen's [*Time*](https://github.com/PaulStoffregen/Time) library.
 
 ## Methods of the RTC class
 
@@ -70,7 +68,7 @@ While this library is a great tool when you want to use different RTCs in parall
 
 If you want to run just one RTC, the above is, of course, irrelevant. And if the functionality of the API is enough for you, you just found the right tool. As mentioned above, you can, of course, add all the features of your favorite RTC by adding more methods.
 
-Finally, it should be pointed out that this library seems to be more memory hungry than [RTClib](https://github.com/adafruit/RTClib). This is probably caused by the dynamic binding of methods. 
+Finally, it should be pointed out that this library seems to be more memory hungry than [RTClib](https://github.com/adafruit/RTClib). This is probably caused by the dynamic binding of methods.
 
 ## Example sketches
 
@@ -80,7 +78,7 @@ There are the following example sketches:
 
 `testall.ino`: Interactive sketch that can be used to test all functions of an RTC that are supported by their library. Simply change include file and class name. If you want to monitor the outputs (SQW, INT), you also need to define the constants `PIN1HZ`, `PIN32KHZ` and `PINALARM`. Which outputs to use can be seen in the next section.
 
-`iterate.ino`: It defines an array of RTCs that can all be treated in the same way. This is demonstrated by iterating over them and printing out the time from each RTC. The current version is not executable because of I2C address clashes. In order to make that executable, you need also two I2C multiplexer that would need to be integrated into the code. 
+`iterate.ino`: It defines an array of RTCs that can all be treated in the same way. This is demonstrated by iterating over them and printing out the time from each RTC. The current version is not executable because of I2C address clashes. In order to make that executable, you need also two I2C multiplexer that would need to be integrated into the code.
 
 ## <a name="capa"></a>RTC capabilities
 
@@ -106,11 +104,12 @@ The following table lists all the capabilities for each RTC. For the frequency o
 
 <a name="f2"></a><sup>2)</sup> The offset register influences the frequency. However, the adjustments are made every 10, 20, or 60 seconds. This means one would need a large set of measurements when one wants to determine the true average frequency.
 
-<a name="f3"></a><sup>3)</sup> The output cannot be disabled using software, but one has to pull-down the `CLKOE` pin. On the Sparkfun breakout board, this input is pulled to GND by a 100 kΩ resistor, i.e., one has to tie it to Vcc in order to enable CLKOUT. 
+<a name="f3"></a><sup>3)</sup> The output cannot be disabled using software, but one has to pull-down the `CLKOE` pin. On the Sparkfun breakout board, this input is pulled to GND by a 100 kΩ resistor, i.e., one has to tie it to Vcc in order to enable CLKOUT.
 
 <a name="f4"></a><sup>4)</sup> In case one uses the class variant RV3028U, which uses the Unix time counter for time keeping, alarms are not supported.
 
 <a name="f5"></a><sup>5)</sup> Since the MCP79410 requires that one has too specify a full date, we will in this case set the next alarm date (either today or tomorrow). In other words, this is not a recurring alarm as in all other cases.
 
+<a name="f6"></a><sup>6)</sup> The RS5C372 does not support hourly alarms.
 
 <!-- cSpell:ignore capa -->
