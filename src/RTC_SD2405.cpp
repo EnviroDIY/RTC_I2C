@@ -80,4 +80,12 @@ unsigned int SD2405::getOffset(void) {
   return (getRegister(SD2405_OFFSET) & 0x7F);
 }
 
+String SD2405::getManufacturer(void) {
+  return F("Radium");
+}
+
+String SD2405::getModel(void) {
+  return F("SD2405");
+}
+
 // cSpell:ignore INTAE

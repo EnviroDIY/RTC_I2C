@@ -73,4 +73,12 @@ unsigned int RS5C372::getOffset(void) {
   return getRegister(RS5C372_OFFSET);
 }
 
+String RS5C372::getManufacturer(void) {
+  return F("Ricoh");
+}
+
+String RS5C372::getModel(void) {
+  return F("RS5C372");
+}
+
 // cSpell:ignore XSTP AALE

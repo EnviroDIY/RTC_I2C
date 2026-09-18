@@ -53,6 +53,9 @@ class RTC {
   virtual void setOffset(__attribute__((unused)) int offset, __attribute__((unused)) byte mode = 1) {};
   virtual unsigned int getOffset(void) { return 0; };
   virtual int getTemp(void) { return -128; };
+  virtual String getManufacturer(void);
+  virtual String getModel(void);
+  virtual String getMakeModel(void);
   virtual void setRegister(byte reg, byte val);
   virtual byte getRegister(byte reg);
   virtual byte getCapabilities(void) { return _capabilities; };

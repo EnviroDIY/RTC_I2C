@@ -30,5 +30,7 @@ class RV3028U : public RV3028 {
   void setTime(tmElements_t tm);
   time_t getTime(bool blocking = false);
   void getTime(tmElements_t &tm, bool blocking = false);
+  String getManufacturer(void);
+  String getModel(void);
 };
 #endif

@@ -25,3 +25,11 @@ void DS1307::enable1Hz(void) {
 void DS1307::disable1Hz(void) {
   setRegister(DS1307_CONTROL, 0b00000000);
 }
+
+String DS1307::getManufacturer(void) {
+  return F("Maxim");
+}
+
+String DS1307::getModel(void) {
+  return F("DS1307");
+}

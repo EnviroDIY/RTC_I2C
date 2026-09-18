@@ -31,5 +31,7 @@ class DS1307 : public RTC {
   void disable32kHz(void);
   void enable1Hz(void);
   void disable1Hz(void);
+  String getManufacturer(void);
+  String getModel(void);
 };
 #endif

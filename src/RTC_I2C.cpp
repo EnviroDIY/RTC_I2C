@@ -168,3 +168,17 @@ void PCFAlarm::clearAlarm(void) {
   byte ctr = getRegister(PCFALARM_STATUS);
   setRegister(PCFALARM_STATUS, (ctr & 0b11110111) | 0b00000000);
 }
+
+// Manufacturer and model information functions
+
+String RTC::getManufacturer(void) {
+  return F("unknown");
+}
+
+String RTC::getModel(void) {
+  return F("unknown");
+}
+
+String RTC::getMakeModel(void) {
+  return String(getManufacturer()) + " " + String(getModel());
+}

@@ -38,3 +38,11 @@ void PCF8563::enable1Hz(void) {
 void PCF8563::disable1Hz(void) {
   disable32kHz();
 }
+
+String PCF8563::getManufacturer(void) {
+  return F("NXP");
+}
+
+String PCF8563::getModel(void) {
+  return F("PCF8563");
+}

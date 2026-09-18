@@ -38,6 +38,8 @@ class DS3231 : public DSAlarm {
   int getTemp(void);
   void setOffset(int offset, byte mode = 1);
   unsigned int getOffset(void);
+  String getManufacturer(void);
+  String getModel(void);
 };
 #endif
 

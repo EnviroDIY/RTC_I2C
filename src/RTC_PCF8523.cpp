@@ -70,3 +70,11 @@ void PCF8523::setOffset(int offset, byte mode) {
 unsigned int PCF8523::getOffset(void) {
   return getRegister(PCF8523_OFFSET);
 }
+
+String PCF8523::getManufacturer(void) {
+  return F("NXP");
+}
+
+String PCF8523::getModel(void) {
+  return F("PCF8523");
+}

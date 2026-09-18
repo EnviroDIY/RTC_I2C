@@ -41,3 +41,11 @@ void RV3028U::setTime(time_t t) {
 void RV3028U::setTime(tmElements_t tm) {
   setTime(mk_gmtime(&tm));
 }
+
+String RV3028U::getManufacturer(void) {
+  return F("Microchip");
+}
+
+String RV3028U::getModel(void) {
+  return F("RV3028U");
+}

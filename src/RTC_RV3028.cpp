@@ -122,4 +122,12 @@ void RV3028::updateEEPROMByte(byte reg) {
   setRegister(RV3028_CONTROL, getRegister(RV3028_CONTROL) & ~0b00001000); // set EERD = 0
 }
 
+String RV3028::getManufacturer(void) {
+  return F("Microchip");
+}
+
+String RV3028::getModel(void) {
+  return F("RV3028");
+}
+
 //cSpell:ignore EEADDR EEDATA EECMD

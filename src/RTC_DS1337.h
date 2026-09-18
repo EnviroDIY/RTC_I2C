@@ -34,5 +34,7 @@ class DS1337 : public DSAlarm {
   void disable32kHz(void);
   void enable1Hz(void);
   void disable1Hz(void);
+  String getManufacturer(void);
+  String getModel(void);
 };
 #endif

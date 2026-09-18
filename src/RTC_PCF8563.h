@@ -35,5 +35,7 @@ class PCF8563 : public PCFAlarm {
   void disable32kHz(void);
   void enable1Hz(void);
   void disable1Hz(void);
+  String getManufacturer(void);
+  String getModel(void);
 };
 #endif

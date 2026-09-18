@@ -91,6 +91,14 @@ void MCP79410::disable1Hz(void) {
   disable32kHz();
 }
 
+String MCP79410::getManufacturer(void) {
+  return F("Microchip");
+}
+
+String MCP79410::getModel(void) {
+  return F("MCP79410");
+}
+
 
 // negative values make the clock faster by roughly 1 ppm/LSB in mode 0.
 // The range of the internal parameter goes from -128 to +127, but they use

@@ -111,3 +111,11 @@ void RV8803::setOffset(int offset, byte mode) {
 unsigned int RV8803::getOffset(void) {
   return (getRegister(RV8803_OFFSET) & 0x3F);
 }
+
+String RV8803::getManufacturer(void) {
+  return F("Microchip");
+}
+
+String RV8803::getModel(void) {
+  return F("RV8803");
+}

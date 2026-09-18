@@ -51,5 +51,7 @@ class RV8803 : public RTC {
   void enable1Hz(void);
   void setOffset(int offset, byte mode = 1);
   unsigned int getOffset(void);
+  String getManufacturer(void);
+  String getModel(void);
 };
 #endif

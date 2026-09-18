@@ -61,4 +61,12 @@ unsigned int DS3231::getOffset(void) {
   return getRegister(DS3231_OFFSET);
 }
 
+String DS3231::getManufacturer(void) {
+  return F("Maxim");
+}
+
+String DS3231::getModel(void) {
+  return F("DS3231");
+}
+
 //cSpell:ignore TEMPMSB

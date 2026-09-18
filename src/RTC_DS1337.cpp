@@ -27,3 +27,11 @@ void DS1337::enable1Hz(void) {
 void DS1337::disable1Hz(void) {
   disable32kHz();
 }
+
+String DS1337::getManufacturer(void) {
+  return F("Maxim");
+}
+
+String DS1337::getModel(void) {
+  return F("DS1337");
+}
