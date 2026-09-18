@@ -35,15 +35,27 @@ RTC *rtc[MAXRTC] = {&rtc0, &rtc1, &rtc2, &rtc3, &rtc4, &rtc5, &rtc6, &rtc7, &rtc
 
 
 void setup(void) {
-  for (byte i = 0; i < MAXRTC; i++) rtc[i]->begin();
+  Serial.begin(115200);
+  Serial.println(F("Starting RTC iteration test...\n"));
+  for (byte i = 0; i < MAXRTC; i++) {
+    Serial.print(F("Initializing RTC"));
+    Serial.print(i);
+    Serial.print(F(": "));
+    Serial.print(rtc[i]->getMakeModel());
+    Serial.println();
+    bool success = rtc[i]->begin();
+    Serial.print(F("    ..."));
+    Serial.println(success ? "success" : "failure");
+  }
 }
 
 void loop(void) {
   tmElements_t tm;
   for (byte i = 0; i < MAXRTC; i++) {
-    Serial.print(F("RTC"));
+    Serial.print(rtc[i]->getMakeModel());
+    Serial.print(F(" ("));
     Serial.print(i);
-    Serial.print(F(": "));
+    Serial.print(F("): "));
     rtc[i]->getTime(tm);
     showTime(tm);
     Serial.print(F("   "));
