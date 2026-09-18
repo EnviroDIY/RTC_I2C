@@ -8,24 +8,24 @@
 
 #define RV3028_UCLOCK 0x1B
 
-#define RV3028U_CAP  (RTC_CAP_32KHZ|RTC_CAP_1HZ|RTC_CAP_OFFSET)
+#define RV3028U_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_OFFSET)
 
 
-class RV3028U: public RV3028 {
+class RV3028U : public RV3028 {
  public:
-  RV3028U(void)  {
-  _i2caddr = RV3028_ADDRESS;
-  _clockreg = RV3028_UCLOCK;
-  _wdaybase = 0;
-  _wdayfirst = 0;
-  _capabilities = RV3028U_CAP;
-  _bit7set = RV3028_BIT7;
-};
-  void setAlarm(__attribute__ ((unused)) byte minute, __attribute__ ((unused)) byte hour) { };
+  RV3028U(void) {
+    _i2caddr = RV3028_ADDRESS;
+    _clockreg = RV3028_UCLOCK;
+    _wdaybase = 0;
+    _wdayfirst = 0;
+    _capabilities = RV3028U_CAP;
+    _bit7set = RV3028_BIT7;
+  };
+  void setAlarm(__attribute__((unused)) byte minute, __attribute__((unused)) byte hour) {};
   bool senseAlarm(void) { return false; };
-  void clearAlarm(void) { };
-  void enableAlarm(void) { };
-  void disableAlarm(void) { };
+  void clearAlarm(void) {};
+  void enableAlarm(void) {};
+  void disableAlarm(void) {};
   void setTime(time_t t);
   void setTime(tmElements_t tm);
   time_t getTime(bool blocking = false);

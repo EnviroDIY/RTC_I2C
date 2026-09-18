@@ -7,7 +7,7 @@ DS3231 rtc;
 void setup(void) {
   tmElements_t tm, tm1;
   Serial.begin(115200);
-  while  (!Serial);
+  while (!Serial);
   Serial.println(F("\n\rRTC Test"));
 
   if (!rtc.begin()) {
@@ -15,7 +15,7 @@ void setup(void) {
     while (1);
   }
   rtc.init();
-  tm = tmElements_t{1,1,1,1,2,3,55};
+  tm = tmElements_t{1, 1, 1, 1, 2, 3, 55};
   rtc.setTime(tm);
   rtc.getTime(tm1);
   if (makeTime(tm) != makeTime(tm1)) {
@@ -24,12 +24,11 @@ void setup(void) {
   }
   delay(5100);
   rtc.getTime(tm1);
-  if (makeTime(tm)+5 != makeTime(tm1)) {
+  if (makeTime(tm) + 5 != makeTime(tm1)) {
     Serial.println(F("RTC does not advance"));
     while (1);
   }
   Serial.println(F("Everything in order"));
 }
 
-void loop() {
-}
+void loop() {}

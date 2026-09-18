@@ -10,10 +10,7 @@
 
 PCF8563 rtc;
 
-const char *monthName[12] = {
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-};
+const char *monthName[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
 
 void setup(void) {
@@ -21,11 +18,11 @@ void setup(void) {
   pinMode(PIN1HZ, INPUT_PULLUP);
   pinMode(PIN32KHZ, INPUT_PULLUP);
   pinMode(PINALARM, INPUT_PULLUP);
-  
+
   Serial.begin(115200);
-  while (!Serial) ; // wait for Arduino Serial Monitor
+  while (!Serial); // wait for Arduino Serial Monitor
   Serial.println();
-  Serial.println(F("I2CRTC interactive test")); 
+  Serial.println(F("I2CRTC interactive test"));
   if (!rtc.begin()) {
     Serial.println(F("RTC not present!"));
     while (1);
@@ -42,7 +39,7 @@ void loop() {
   int reg;
   int val;
   unsigned long pw;
-  
+
   while (c <= ' ') {
     while (!Serial.available());
     c = Serial.read();
@@ -51,18 +48,23 @@ void loop() {
   case '?':
     help();
     break;
-  case 's': initRTC();
+  case 's':
+    initRTC();
     break;
-  case 'c': rtc.getTime(tm);
+  case 'c':
+    rtc.getTime(tm);
     showTime(tm);
     if (!rtc.isValid()) Serial.println(F("(Time may be invalid)"));
     break;
-  case 'd': rtc.getTime(tm);
+  case 'd':
+    rtc.getTime(tm);
     showDate(tm);
     if (!rtc.isValid()) Serial.println(F("(Date may be invalid)"));
     break;
-  case 'f': rtc.getTime(tm);
-    if (tm.Minute < 1) tm.Minute += 59;
+  case 'f':
+    rtc.getTime(tm);
+    if (tm.Minute < 1)
+      tm.Minute += 59;
     else {
       if (tm.Hour++ == 23) tm.Hour = 0;
       tm.Minute -= 1;
@@ -72,14 +74,14 @@ void loop() {
     showTime(tm);
     break;
   case 'y':
-    rtc.setTime(makeTime({45,59,23,1,28,2,2100-1970}));
+    rtc.setTime(makeTime({45, 59, 23, 1, 28, 2, 2100 - 1970}));
     Serial.println(F("Time has advance to 28.2.2100, 23:59:45"));
     break;
   case '1':
     if ((rtc.getCapabilities() & RTC_CAP_1HZ) == 0) {
       unsupported();
       break;
-     }
+    }
     rtc.enable1Hz();
     Serial.println(F("1 Hz signal enabled"));
     break;
@@ -98,16 +100,20 @@ void loop() {
     break;
   case 'i':
     Serial.print(F("32kHz output: "));
-    pw = pulseIn(PIN32KHZ,LOW,10000);
-    pw += pulseIn(PIN32KHZ,HIGH,10000);
-    if (pw == 0) Serial.print(0);
-    else Serial.print(1000000UL/pw);
+    pw = pulseIn(PIN32KHZ, LOW, 10000);
+    pw += pulseIn(PIN32KHZ, HIGH, 10000);
+    if (pw == 0)
+      Serial.print(0);
+    else
+      Serial.print(1000000UL / pw);
     Serial.print(F(" Hz\n\r1Hz Output: "));
-    pw = pulseIn(PIN1HZ,LOW,2000000);
-    if (pw != 0) pw += pulseIn(PIN1HZ,HIGH,2000000);
+    pw = pulseIn(PIN1HZ, LOW, 2000000);
+    if (pw != 0) pw += pulseIn(PIN1HZ, HIGH, 2000000);
     // Serial.print(pw);Serial.print(' ');
-    if (pw < 1100000 && pw > 900000) Serial.println(F("1 Hz"));
-    else if (pw == 0) Serial.println(F("0 Hz"));
+    if (pw < 1100000 && pw > 900000)
+      Serial.println(F("1 Hz"));
+    else if (pw == 0)
+      Serial.println(F("0 Hz"));
     else {
       Serial.print(pw);
       Serial.println(F(" us pulsewidth"));
@@ -122,10 +128,10 @@ void loop() {
     }
     rtc.disableAlarm();
     rtc.getTime(tm);
-    rtc.setAlarm(tm.Minute,(tm.Hour+1)%24);
+    rtc.setAlarm(tm.Minute, (tm.Hour + 1) % 24);
     rtc.enableAlarm();
     Serial.print(F("Alarm set to hour/minute "));
-    Serial.print((tm.Hour+1)%24);
+    Serial.print((tm.Hour + 1) % 24);
     Serial.print(':');
     Serial.println(tm.Minute);
     break;
@@ -191,15 +197,15 @@ void loop() {
       break;
     }
     Serial.print(F("Register 0x"));
-    Serial.print(reg,HEX);
+    Serial.print(reg, HEX);
     Serial.print(F("="));
-    Serial.print(rtc.getRegister(reg),BIN);
+    Serial.print(rtc.getRegister(reg), BIN);
     Serial.print(F(" (0x"));
-    Serial.print(rtc.getRegister(reg),HEX);
+    Serial.print(rtc.getRegister(reg), HEX);
     Serial.println(F(")"));
     break;
   case 'R':
-    reg=parse2Hex();
+    reg = parse2Hex();
     if (reg < 0) {
       Serial.println(F("2 digit hex number expected"));
       while (Serial.available()) Serial.read();
@@ -211,13 +217,13 @@ void loop() {
       while (Serial.available()) Serial.read();
       break;
     }
-    val=parse2Hex();
+    val = parse2Hex();
     if (val < 0) {
       Serial.println(F("2 digit hex number expected"));
       while (Serial.available()) Serial.read();
       break;
     }
-    rtc.setRegister(reg,val);
+    rtc.setRegister(reg, val);
     Serial.println(F("Register set"));
     break;
   default:
@@ -235,35 +241,35 @@ void unsupported(void) {
 
 void help() {
   Serial.println(F("\n\rPossible commands:\n\r"
-		   "  ?      - help\n\r"
-		   "  s      - init clock & set clock to compile time\n\r"
-		   "  c      - show time\n\r"
-		   "  d      - show date\n\r"
-		   "  1      - activate 1 Hz signal\n\r"
-		   "  3      - activate 32 kHz signal\n\r"
-		   "  0      - disable all square wave signals\r\n"
-		   "  i      - input on all possible pins and measure pule width\n\r"
-		   "  h      - set minute/hour alarm to 1h in the future\n\r"
-		   "  m      - set hourly alarm matching the current minute\n\r"
-		   "  a      - sense alarm and clear flag\n\r"
-		   "  A      - disable alarms\n\r"
-		   "  n      - disable alarm\n\r"
-		   "  f      - skip 59 minutes forward\n\r"
-		   "  y      - skip to 23:59:00 of February 28, 2100\n\r"
-		   "  o<num> - set offset register\n\r"
-		   "  t      - read out temperature\n\r"
-		   "  rXX    - show register with hex address XX\n\r"
+                   "  ?      - help\n\r"
+                   "  s      - init clock & set clock to compile time\n\r"
+                   "  c      - show time\n\r"
+                   "  d      - show date\n\r"
+                   "  1      - activate 1 Hz signal\n\r"
+                   "  3      - activate 32 kHz signal\n\r"
+                   "  0      - disable all square wave signals\r\n"
+                   "  i      - input on all possible pins and measure pule width\n\r"
+                   "  h      - set minute/hour alarm to 1h in the future\n\r"
+                   "  m      - set hourly alarm matching the current minute\n\r"
+                   "  a      - sense alarm and clear flag\n\r"
+                   "  A      - disable alarms\n\r"
+                   "  n      - disable alarm\n\r"
+                   "  f      - skip 59 minutes forward\n\r"
+                   "  y      - skip to 23:59:00 of February 28, 2100\n\r"
+                   "  o<num> - set offset register\n\r"
+                   "  t      - read out temperature\n\r"
+                   "  rXX    - show register with hex address XX\n\r"
                    "  RXX=YY - set register XX with hex YY"));
 }
 
-void initRTC(void)  {
+void initRTC(void) {
   tmElements_t tm, newtm;
-  bool parse=false;
-  bool config=false;
-  bool valid=false;
-  
+  bool parse = false;
+  bool config = false;
+  bool valid = false;
+
   rtc.init(1); // select level switch-over mode
-  if (getDate(__DATE__,tm) && getTime(__TIME__,tm)) {
+  if (getDate(__DATE__, tm) && getTime(__TIME__, tm)) {
     parse = true;
     rtc.setTime(tm);
     rtc.getTime(newtm);
@@ -310,11 +316,14 @@ int parse2Hex(void) {
 }
 
 int checkHex(char c) {
-  if (c >= '0' && c <= '9') return c - '0';
-  else if (toupper(c) >= 'A' && toupper(c) <= 'F') return toupper(c) - 'A' + 10;
-  else return -1;
+  if (c >= '0' && c <= '9')
+    return c - '0';
+  else if (toupper(c) >= 'A' && toupper(c) <= 'F')
+    return toupper(c) - 'A' + 10;
+  else
+    return -1;
 }
-  
+
 
 void print2digits(int number) {
   if (number >= 0 && number < 10) {
@@ -323,8 +332,7 @@ void print2digits(int number) {
   Serial.print(number);
 }
 
-bool getTime(const char *str,tmElements_t &tm)
-{
+bool getTime(const char *str, tmElements_t &tm) {
   int Hour, Min, Sec;
 
   if (sscanf(str, "%d:%d:%d", &Hour, &Min, &Sec) != 3) return false;
@@ -334,8 +342,7 @@ bool getTime(const char *str,tmElements_t &tm)
   return true;
 }
 
-bool getDate(const char *str, tmElements_t &tm)
-{
+bool getDate(const char *str, tmElements_t &tm) {
   char Month[12];
   int Day, Year;
   uint8_t monthIndex;
@@ -367,6 +374,6 @@ void showDate(tmElements_t tm) {
   Serial.write('.');
   Serial.print(tm.Month);
   Serial.write('.');
-  Serial.print(1970+tm.Year);
+  Serial.print(1970 + tm.Year);
   Serial.println();
 }

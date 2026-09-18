@@ -1,6 +1,6 @@
 #include <RTC_DS1337.h>
 
-void DS1337::init(__attribute__ ((unused)) byte mode) {
+void DS1337::init(__attribute__((unused)) byte mode) {
   setRegister(DS1337_CONTROL, 0b00000100); // typical value after power-on, except for bit 2 (disables SQW)
   setRegister(DS1337_STATUS, 0b00000000);  // clear OSF flag and clear alarm flags
 }

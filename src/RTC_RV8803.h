@@ -12,35 +12,35 @@
 #include <RTC_I2C.h>
 
 
-#define RV8803_ADDRESS 0x32 // I2C address for RV8803
-#define RV8803_CLOCKREG 0x00 // Clock register 
-#define RV8803_ALARM   0x08 // Alarm minutes register
-#define RV8803_CLKOUT 0x0D // Clockout register
-#define RV8803_STATUS 0x0E// Status register
-#define RV8803_CONTROL 0x0F// Control register
-#define RV8803_OFFSET  0x2C // Offset register
-#define RV8803_WDAYBASE 2    // wday range from 0 to 6, but it is now the 1-bit at this bit position!
-#define RV8803_WDAYFIRST true    // wday comes after day of month in clock reg
+#define RV8803_ADDRESS 0x32   // I2C address for RV8803
+#define RV8803_CLOCKREG 0x00  // Clock register
+#define RV8803_ALARM 0x08     // Alarm minutes register
+#define RV8803_CLKOUT 0x0D    // Clockout register
+#define RV8803_STATUS 0x0E    // Status register
+#define RV8803_CONTROL 0x0F   // Control register
+#define RV8803_OFFSET 0x2C    // Offset register
+#define RV8803_WDAYBASE 2     // wday range from 0 to 6, but it is now the 1-bit at this bit position!
+#define RV8803_WDAYFIRST true // wday comes after day of month in clock reg
 #define RV8803_BIT7 0
-#define RV8803_CAP  (RTC_CAP_32KHZ|RTC_CAP_1HZ|RTC_CAP_ALARM|RTC_CAP_HOURLY_ALARM|RTC_CAP_OFFSET)
+#define RV8803_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET)
 
 
-class RV8803: public RTC {
+class RV8803 : public RTC {
  public:
   RV8803(void) {
-  _i2caddr = RV8803_ADDRESS;
-  _clockreg = RV8803_CLOCKREG;
-  _wdaybase = RV8803_WDAYBASE;
-  _wdayfirst = RV8803_WDAYFIRST;
-  _capabilities = RV8803_CAP;
-  _bit7set = RV8803_BIT7;
-};
-  void init(byte mode=1);
+    _i2caddr = RV8803_ADDRESS;
+    _clockreg = RV8803_CLOCKREG;
+    _wdaybase = RV8803_WDAYBASE;
+    _wdayfirst = RV8803_WDAYFIRST;
+    _capabilities = RV8803_CAP;
+    _bit7set = RV8803_BIT7;
+  };
+  void init(byte mode = 1);
   bool isValid(void);
   void setTime(time_t t);
   void setTime(tmElements_t tm);
-  time_t getTime(bool blocking=false);
-  void getTime(tmElements_t &tm, bool blocking=false);
+  time_t getTime(bool blocking = false);
+  void getTime(tmElements_t &tm, bool blocking = false);
   void setAlarm(byte minute, byte hour);
   void setAlarm(byte minute);
   bool senseAlarm(void);
@@ -49,7 +49,7 @@ class RV8803: public RTC {
   void disableAlarm(void);
   void enable32kHz(void);
   void enable1Hz(void);
-  void setOffset(int offset, byte mode=1);
+  void setOffset(int offset, byte mode = 1);
   unsigned int getOffset(void);
 };
 #endif

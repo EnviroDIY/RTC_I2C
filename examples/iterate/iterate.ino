@@ -31,16 +31,16 @@ RV8523 rtc10;
 RV8803 rtc11;
 SD2405 rtc12;
 
-RTC *rtc[MAXRTC] = { &rtc0, &rtc1, &rtc2, &rtc3, &rtc4, &rtc5, &rtc6, &rtc7, &rtc8, &rtc9, &rtc10, &rtc11, &rtc12};
+RTC *rtc[MAXRTC] = {&rtc0, &rtc1, &rtc2, &rtc3, &rtc4, &rtc5, &rtc6, &rtc7, &rtc8, &rtc9, &rtc10, &rtc11, &rtc12};
 
 
 void setup(void) {
-  for (byte i=0; i < MAXRTC; i++) rtc[i]->begin();
+  for (byte i = 0; i < MAXRTC; i++) rtc[i]->begin();
 }
 
 void loop(void) {
   tmElements_t tm;
-  for (byte i=0; i < MAXRTC; i++) {
+  for (byte i = 0; i < MAXRTC; i++) {
     Serial.print(F("RTC"));
     Serial.print(i);
     Serial.print(F(": "));
@@ -75,5 +75,5 @@ void showDate(tmElements_t tm) {
   Serial.write('.');
   Serial.print(tm.Month);
   Serial.write('.');
-  Serial.print(1970+tm.Year);
+  Serial.print(1970 + tm.Year);
 }
