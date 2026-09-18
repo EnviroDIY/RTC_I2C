@@ -26,7 +26,7 @@ void RV8803::setTime(tmElements_t tm) {
 time_t RV8803::getTime(bool blocking) {
   tmElements_t tm;
   getTime(tm, blocking);
-  return makeTime(tm);
+  return mk_gmtime(&tm);
 }
 
 // implementing the time reading as described in the
@@ -35,9 +35,9 @@ void RV8803::getTime(tmElements_t &tm, bool blocking) {
   tmElements_t tm1;
   RTC::getTime(tm, blocking);
   if (blocking) return;  // if we used a blocking call to getTime, then we always wait til the next second starts
-  if (tm.Second == 59) { // be careful when we read 59 seconds because there could have been an increment
+  if (tm.tm_sec == 59) { // be careful when we read 59 seconds because there could have been an increment
     RTC::getTime(tm1, blocking);  // query again
-    if (tm1.Second == 59) return; // if again 59, the first reading was OK
+    if (tm1.tm_sec == 59) return; // if again 59, the first reading was OK
     tm = tm1;                     // otherwise the second reading must be OK
   }
 }

@@ -18,13 +18,13 @@ void setup(void) {
   tm = tmElements_t{1, 1, 1, 1, 2, 3, 55};
   rtc.setTime(tm);
   rtc.getTime(tm1);
-  if (makeTime(tm) != makeTime(tm1)) {
+  if (mk_gmtime(&tm) != mk_gmtime(&tm1)) {
     Serial.println(F("Not able to set RTC"));
     while (1);
   }
   delay(5100);
   rtc.getTime(tm1);
-  if (makeTime(tm) + 5 != makeTime(tm1)) {
+  if (mk_gmtime(&tm) + 5 != mk_gmtime(&tm1)) {
     Serial.println(F("RTC does not advance"));
     while (1);
   }

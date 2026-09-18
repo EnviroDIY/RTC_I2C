@@ -62,18 +62,18 @@ void print2digits(int number) {
 }
 
 void showTime(tmElements_t tm) {
-  print2digits(tm.Hour);
+  print2digits(tm.tm_hour);
   Serial.write(':');
-  print2digits(tm.Minute);
+  print2digits(tm.tm_min);
   Serial.write(':');
-  print2digits(tm.Second);
+  print2digits(tm.tm_sec);
 }
 
 
 void showDate(tmElements_t tm) {
-  Serial.print(tm.Day);
+  Serial.print(tm.tm_mday);
   Serial.write('.');
-  Serial.print(tm.Month);
+  Serial.print(tm.tm_mon);
   Serial.write('.');
-  Serial.print(1970 + tm.Year);
+  Serial.print(1970 + tm.tm_year);
 }

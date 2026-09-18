@@ -22,7 +22,8 @@ time_t RV3028U::getTime(bool blocking) {
 }
 
 void RV3028U::getTime(tmElements_t &tm, bool blocking) {
-  breakTime(getTime(blocking), tm);
+  time_t t = getTime(blocking);
+  gmtime_r(&t, &tm);
 }
 
 void RV3028U::setTime(time_t t) {
@@ -38,5 +39,5 @@ void RV3028U::setTime(time_t t) {
 }
 
 void RV3028U::setTime(tmElements_t tm) {
-  setTime(makeTime(tm));
+  setTime(mk_gmtime(&tm));
 }

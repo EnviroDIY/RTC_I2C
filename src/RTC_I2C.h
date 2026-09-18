@@ -12,8 +12,13 @@
 #define _RTC_I2C_H_
 
 #include <Arduino.h>
-#include <TimeLib.h>
+// #include <TimeLib.h>
 #include <Wire.h>
+#include <time.h>
+
+// Type def for compatibility
+typedef tm tmElements_t;
+
 
 #define TIMEBYTES 7
 #define RTC_CAP_32KHZ 0x01        // can generate 32 kHz signal

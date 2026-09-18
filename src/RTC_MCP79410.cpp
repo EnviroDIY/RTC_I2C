@@ -5,7 +5,7 @@ void MCP79410::init(__attribute__((unused)) byte mode) {
 }
 
 bool MCP79410::isValid(void) {
-  return ((getRegister(MCP79410_STATUS) & 0b100000) != 0); // osciallator is running
+  return ((getRegister(MCP79410_STATUS) & 0b100000) != 0); // oscillator is running
 }
 
 void MCP79410::setTime(tmElements_t tm) {
@@ -14,22 +14,22 @@ void MCP79410::setTime(tmElements_t tm) {
   while (++timeout && getRegister(MCP79410_CLOCKREG + 3) & 0b100000); // wait for OSCON to become zero
   _wire->beginTransmission(_i2caddr);
   _wire->write(MCP79410_CLOCKREG);
-  _wire->write(bin2bcd(tm.Second));
-  _wire->write(bin2bcd(tm.Minute));
-  _wire->write(bin2bcd(tm.Hour));
-  _wire->write((bin2bcd(tm.Wday - 1 + _wdaybase)) |
+  _wire->write(bin2bcd(tm.tm_sec));
+  _wire->write(bin2bcd(tm.tm_min));
+  _wire->write(bin2bcd(tm.tm_hour));
+  _wire->write((bin2bcd(tm.tm_wday - 1 + _wdaybase)) |
                0b1000); // set the VBATEN enable bit so that the thing can run on batteries
-  _wire->write(bin2bcd(tm.Day));
-  _wire->write(bin2bcd(tm.Month));
-  _wire->write(bin2bcd(tm.Year - 30)); // readjust to 2000 instead of 1970!
+  _wire->write(bin2bcd(tm.tm_mday));
+  _wire->write(bin2bcd(tm.tm_mon));
+  _wire->write(bin2bcd(tm.tm_year - 30)); // readjust to 2000 instead of 1970!
   _wire->endTransmission();
-  setRegister(MCP79410_CLOCKREG, bin2bcd(tm.Second) | 0x80); // now enable oscillator!
+  setRegister(MCP79410_CLOCKREG, bin2bcd(tm.tm_sec) | 0x80); // now enable oscillator!
 }
 
 // set time from Unix time
 void MCP79410::setTime(time_t t) {
   tmElements_t tm;
-  breakTime(t, tm);
+  gmtime_r(&t, &tm);
   setTime(tm);
 }
 
@@ -37,17 +37,17 @@ void MCP79410::setTime(time_t t) {
 void MCP79410::setAlarm(byte minute, byte hour) {
   tmElements_t tm;
   time_t t;
-  getTime(tm);                                                          // current time
-  if (!((tm.Minute < minute && tm.Hour == hour) || (tm.Hour < hour))) { // alarm should be next day
-    t = makeTime(tm) + SECS_PER_DAY;
-    breakTime(t, tm);
+  getTime(tm);                                                                // current time
+  if (!((tm.tm_min < minute && tm.tm_hour == hour) || (tm.tm_hour < hour))) { // alarm should be next day
+    t = mk_gmtime(&tm) + ONE_DAY;
+    gmtime_r(&t, &tm);
   }
-  setRegister(MCP79410_ALARM, bin2bcd(0));                  // set second alarm
-  setRegister(MCP79410_ALARM + 1, bin2bcd(minute));         // set minute alarm
-  setRegister(MCP79410_ALARM + 2, bin2bcd(hour));           // set hour alarm
-  setRegister(MCP79410_ALARM + 3, 0x70 | bin2bcd(tm.Wday)); // set weekday alarm and set match condition
-  setRegister(MCP79410_ALARM + 4, bin2bcd(tm.Day));         // set day of month
-  setRegister(MCP79410_ALARM + 5, bin2bcd(tm.Month));       // set day of month
+  setRegister(MCP79410_ALARM, bin2bcd(0));                     // set second alarm
+  setRegister(MCP79410_ALARM + 1, bin2bcd(minute));            // set minute alarm
+  setRegister(MCP79410_ALARM + 2, bin2bcd(hour));              // set hour alarm
+  setRegister(MCP79410_ALARM + 3, 0x70 | bin2bcd(tm.tm_wday)); // set weekday alarm and set match condition
+  setRegister(MCP79410_ALARM + 4, bin2bcd(tm.tm_mday));        // set day of month
+  setRegister(MCP79410_ALARM + 5, bin2bcd(tm.tm_mon));         // set day of month
 }
 
 void MCP79410::setAlarm(byte minute) {

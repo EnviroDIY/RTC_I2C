@@ -63,18 +63,24 @@ void loop() {
     break;
   case 'f':
     rtc.getTime(tm);
-    if (tm.Minute < 1)
-      tm.Minute += 59;
+    if (tm.tm_min < 1)
+      tm.tm_min += 59;
     else {
-      if (tm.Hour++ == 23) tm.Hour = 0;
-      tm.Minute -= 1;
+      if (tm.tm_hour++ == 23) tm.tm_hour = 0;
+      tm.tm_min -= 1;
     }
     rtc.setTime(tm);
     Serial.print(F("Time has advanced by 59 minutes: "));
     showTime(tm);
     break;
   case 'y':
-    rtc.setTime(makeTime({45, 59, 23, 1, 28, 2, 2100 - 1970}));
+    tm.tm_sec = 45;
+    tm.tm_min = 59;
+    tm.tm_hour = 23;
+    tm.tm_mday = 28;
+    tm.tm_mon = 2;
+    tm.tm_year = 2100 - 1970;
+    rtc.setTime(tm);
     Serial.println(F("Time has advance to 28.2.2100, 23:59:45"));
     break;
   case '1':
@@ -128,12 +134,12 @@ void loop() {
     }
     rtc.disableAlarm();
     rtc.getTime(tm);
-    rtc.setAlarm(tm.Minute, (tm.Hour + 1) % 24);
+    rtc.setAlarm(tm.tm_min, (tm.tm_hour + 1) % 24);
     rtc.enableAlarm();
     Serial.print(F("Alarm set to hour/minute "));
-    Serial.print((tm.Hour + 1) % 24);
+    Serial.print((tm.tm_hour + 1) % 24);
     Serial.print(':');
-    Serial.println(tm.Minute);
+    Serial.println(tm.tm_min);
     break;
   case 'm':
     if ((rtc.getCapabilities() & RTC_CAP_HOURLY_ALARM) == 0) {
@@ -142,10 +148,10 @@ void loop() {
     }
     rtc.getTime(tm);
     rtc.disableAlarm();
-    rtc.setAlarm(tm.Minute);
+    rtc.setAlarm(tm.tm_min);
     rtc.enableAlarm();
     Serial.print(F("Alarm set to minute "));
-    Serial.println(tm.Minute);
+    Serial.println(tm.tm_min);
     break;
   case 'n':
     if ((rtc.getCapabilities() & RTC_CAP_ALARM) == 0) {
@@ -263,7 +269,7 @@ void help() {
 }
 
 void initRTC(void) {
-  tmElements_t tm, newtm;
+  tmElements_t tm, new_tm;
   bool parse = false;
   bool config = false;
   bool valid = false;
@@ -272,11 +278,11 @@ void initRTC(void) {
   if (getDate(__DATE__, tm) && getTime(__TIME__, tm)) {
     parse = true;
     rtc.setTime(tm);
-    rtc.getTime(newtm);
-    //Serial.println(makeTime(tm));
-    //Serial.println(makeTime(newtm));
+    rtc.getTime(new_tm);
+    //Serial.println(mk_gmtime(&tm));
+    //Serial.println(mk_gmtime(&new_tm));
     valid = rtc.isValid();
-    if (valid && makeTime(tm) == makeTime(newtm)) {
+    if (valid && mk_gmtime(&tm) == mk_gmtime(&new_tm)) {
       config = true;
     }
   }
@@ -288,9 +294,9 @@ void initRTC(void) {
     Serial.println(__DATE__);
   } else if (parse) {
     Serial.print("RTC Communication Error:\n\rInput=   ");
-    Serial.println(makeTime(tm));
+    Serial.println(mk_gmtime(&tm));
     Serial.print(F("Response="));
-    Serial.println(makeTime(newtm));
+    Serial.println(mk_gmtime(&new_tm));
     Serial.print(F("Valid=   "));
     Serial.println(valid);
   } else {
@@ -336,9 +342,9 @@ bool getTime(const char *str, tmElements_t &tm) {
   int Hour, Min, Sec;
 
   if (sscanf(str, "%d:%d:%d", &Hour, &Min, &Sec) != 3) return false;
-  tm.Hour = Hour;
-  tm.Minute = Min;
-  tm.Second = Sec;
+  tm.tm_hour = Hour;
+  tm.tm_min = Min;
+  tm.tm_sec = Sec;
   return true;
 }
 
@@ -352,28 +358,28 @@ bool getDate(const char *str, tmElements_t &tm) {
     if (strcmp(Month, monthName[monthIndex]) == 0) break;
   }
   if (monthIndex >= 12) return false;
-  tm.Day = Day;
-  tm.Month = monthIndex + 1;
-  tm.Year = CalendarYrToTm(Year);
+  tm.tm_mday = Day;
+  tm.tm_mon = monthIndex + 1;
+  tm.tm_year = Year - 1970;
   return true;
 }
 
 void showTime(tmElements_t tm) {
   rtc.getTime(tm);
-  print2digits(tm.Hour);
+  print2digits(tm.tm_hour);
   Serial.write(':');
-  print2digits(tm.Minute);
+  print2digits(tm.tm_min);
   Serial.write(':');
-  print2digits(tm.Second);
+  print2digits(tm.tm_sec);
   Serial.println();
 }
 
 
 void showDate(tmElements_t tm) {
-  Serial.print(tm.Day);
+  Serial.print(tm.tm_mday);
   Serial.write('.');
-  Serial.print(tm.Month);
+  Serial.print(tm.tm_mon);
   Serial.write('.');
-  Serial.print(1970 + tm.Year);
+  Serial.print(1970 + tm.tm_year);
   Serial.println();
 }
