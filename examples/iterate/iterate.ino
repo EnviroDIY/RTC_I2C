@@ -60,9 +60,9 @@ void loop(void) {
     showTime(tm);
     Serial.print(F("   "));
     showDate(tm);
-    Serial.println();
+    Serial.println("\n---\n");
   }
-  delay(1000);
+  delay(5000L);
 }
 
 
