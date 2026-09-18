@@ -67,3 +67,4 @@ src/wakeUp.h
 AGENTS.md
 .github/copilot-instructions.md
 .bumpversion.toml
+.github/workflows/LibraryBuild.yml
