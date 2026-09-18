@@ -54,3 +54,5 @@ class RV3028 : public RTC {
   void updateEEPROMByte(byte reg);
 };
 #endif
+
+// cSpell:ignore EECMD EEDATA EEADDR

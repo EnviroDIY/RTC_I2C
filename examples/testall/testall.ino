@@ -1,5 +1,5 @@
 // Simple test for RTC_I2C
-// Just include one RTC class and try out all implemeted methods
+// Just include one RTC class and try out all implemented methods
 
 #include <RTC_PCF8563.h>
 #include <Wire.h>
@@ -22,7 +22,7 @@ void setup(void) {
   Serial.begin(115200);
   while (!Serial); // wait for Arduino Serial Monitor
   Serial.println();
-  Serial.println(F("I2CRTC interactive test"));
+  Serial.println(F("I2C RTC interactive test"));
   if (!rtc.begin()) {
     Serial.println(F("RTC not present!"));
     while (1);
@@ -116,7 +116,7 @@ void loop() {
       Serial.println(F("0 Hz"));
     else {
       Serial.print(pw);
-      Serial.println(F(" us pulsewidth"));
+      Serial.println(F(" us pulse width"));
     }
     Serial.print(F("INT pin: "));
     Serial.println(digitalRead(PINALARM));

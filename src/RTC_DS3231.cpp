@@ -7,7 +7,7 @@ void DS3231::init(__attribute__((unused)) byte mode) {
 }
 
 bool DS3231::isValid(void) {
-  return ((getRegister(DS3231_STATUS) & 0x80) == 0); // OSF bit clerared = oscillator enabled
+  return ((getRegister(DS3231_STATUS) & 0x80) == 0); // OSF bit cleared = oscillator enabled
 }
 
 void DS3231::enable32kHz(void) {
@@ -39,7 +39,7 @@ int DS3231::getTemp(void) {
 // offset needs to be divided by ten since the common format is a step size of 0.01 ppm.
 // Since there is only one mode, we ignore the mode parameter.
 // After having changed the offset value, a conversion is triggered so that
-// changes are immdiately visible.
+// changes are immediately visible.
 void DS3231::setOffset(int offset, byte mode) {
   int timeout = 0;
   if (mode != 2) {
@@ -53,10 +53,12 @@ void DS3231::setOffset(int offset, byte mode) {
       offset = 127;
   }
   setRegister(DS3231_OFFSET, offset & 0xFF);
-  while (timeout++ && getRegister(DS3231_STATUS) & 0b100); // wait fcor non-busy period
+  while (timeout++ && getRegister(DS3231_STATUS) & 0b100); // wait for non-busy period
   setRegister(DS3231_CONTROL, getRegister(DS3231_CONTROL) | 0b100000);
 }
 
 unsigned int DS3231::getOffset(void) {
   return getRegister(DS3231_OFFSET);
 }
+
+//cSpell:ignore TEMPMSB

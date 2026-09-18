@@ -40,7 +40,7 @@ This library uses Paul Stoffregen's [*Time*](https://github.com/PaulStoffregen/T
 | Name           | Parameters                                      | Comments                                                     |
 | -------------- | ----------------------------------------------- | ------------------------------------------------------------ |
 | `begin`        | optional `TwoWire` instance  | Needs to be called in the beginning in order to initialize the I2C bus. The optional parameter can be used if you want to pass a Wire instance different from the default one. It is checked whether the RTC can be addressed on the I2C bus. Returns `false` if unsuccessful, otherwise `true`. |
-| `init`        | optional `byte` switch-mode  (default 1) | Restores state of clock to configuration after power-up. It sets 24 hour mode, disables all clock outputs and alarms, and it will also start the clock (if not already running) and clear all invalid flags. If switch-mode=0, then no switching from regular power supply to backup is enabled, if switch-mode=1 , then level switching is enabled, which draws more current than the next mode. If switch-mode=2, then direct switching is enabled. The latter should only be used when Vcc and Vbat are significantly different. |
+| `init`        | optional `byte` switch-mode  (default 1) | Restores state of clock to configuration after power-up. It sets 24 hour mode, disables all clock outputs and alarms, and it will also start the clock (if not already running) and clear all invalid flags. If switch-mode=0, then no switching from regular power supply to backup is enabled, if switch-mode=1 , then level switching is enabled, which draws more current than the next mode. If switch-mode=2, then direct switching is enabled. The latter should only be used when Vcc and VBat are significantly different. |
 | `isValid`      | none                                            | Returns `true` if the clock is valid and running, otherwise `false`. |
 | `setTime`      | Unix `time_t` value                           | Sets the RTC time from provided parameter. Will use the 24 hour format. |
 | `setTime` | `tmElements_t` record | Sets the RTC time from a `tmElements_t` structure. Note that it is Unix epoch based, i.e., the year field is the number of years since 1970. |
@@ -112,4 +112,5 @@ The following table lists all the capabilities for each RTC. For the frequency o
 
 <a name="f5"></a><sup>5)</sup> Since the MCP79410 requires that one has too specify a full date, we will in this case set the next alarm date (either today or tomorrow). In other words, this is not a recurring alarm as in all other cases.
 
-<a name="f6"></a><sup>6)</sup> The RS5C372 does not support hourly alarms. 
+
+<!-- cSpell:ignore capa -->

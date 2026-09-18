@@ -18,12 +18,12 @@ void MCP79410::setTime(tmElements_t tm) {
   _wire->write(bin2bcd(tm.Minute));
   _wire->write(bin2bcd(tm.Hour));
   _wire->write((bin2bcd(tm.Wday - 1 + _wdaybase)) |
-               0b1000); // set the VBATEN enbale bit so that the thing can run on batteries
+               0b1000); // set the VBATEN enable bit so that the thing can run on batteries
   _wire->write(bin2bcd(tm.Day));
   _wire->write(bin2bcd(tm.Month));
   _wire->write(bin2bcd(tm.Year - 30)); // readjust to 2000 instead of 1970!
   _wire->endTransmission();
-  setRegister(MCP79410_CLOCKREG, bin2bcd(tm.Second) | 0x80); // now enable osciallator!
+  setRegister(MCP79410_CLOCKREG, bin2bcd(tm.Second) | 0x80); // now enable oscillator!
 }
 
 // set time from Unix time
@@ -95,7 +95,7 @@ void MCP79410::disable1Hz(void) {
 // negative values make the clock faster by roughly 1 ppm/LSB in mode 0.
 // The range of the internal parameter goes from -128 to +127, but they use
 // apparently sign + magnitude instead of 2ers complement.
-// I do not support the coarse claibration, because it will screw up
+// I do not support the coarse calibration, because it will screw up
 // the SQW output and is too coarse anyways.
 void MCP79410::setOffset(int offset, byte mode) {
   bool sign = false;

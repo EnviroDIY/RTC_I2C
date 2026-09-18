@@ -40,3 +40,5 @@ class DS3231 : public DSAlarm {
   unsigned int getOffset(void);
 };
 #endif
+
+// cSpell:ignore TEMPMSB

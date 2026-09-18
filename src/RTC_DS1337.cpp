@@ -6,7 +6,7 @@ void DS1337::init(__attribute__((unused)) byte mode) {
 }
 
 bool DS1337::isValid(void) {
-  return ((getRegister(DS1337_STATUS) & 0x80) == 0); // OSF bit clerared = oscillator enabled
+  return ((getRegister(DS1337_STATUS) & 0x80) == 0); // OSF bit cleared = oscillator enabled
 }
 
 void DS1337::enable32kHz(void) {

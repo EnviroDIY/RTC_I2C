@@ -30,7 +30,7 @@ time_t RV8803::getTime(bool blocking) {
 }
 
 // implementing the time reading as described in the
-// applcation notes, section 4.12
+// application notes, section 4.12
 void RV8803::getTime(tmElements_t &tm, bool blocking) {
   tmElements_t tm1;
   RTC::getTime(tm, blocking);

@@ -79,3 +79,5 @@ void SD2405::setOffset(int offset, byte mode) {
 unsigned int SD2405::getOffset(void) {
   return (getRegister(SD2405_OFFSET) & 0x7F);
 }
+
+// cSpell:ignore INTAE

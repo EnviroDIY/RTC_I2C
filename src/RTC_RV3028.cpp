@@ -121,3 +121,5 @@ void RV3028::updateEEPROMByte(byte reg) {
   }
   setRegister(RV3028_CONTROL, getRegister(RV3028_CONTROL) & ~0b00001000); // set EERD = 0
 }
+
+//cSpell:ignore EEADDR EEDATA EECMD

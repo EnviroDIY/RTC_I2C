@@ -72,3 +72,5 @@ void RS5C372::setOffset(int offset, byte mode) {
 unsigned int RS5C372::getOffset(void) {
   return getRegister(RS5C372_OFFSET);
 }
+
+// cSpell:ignore XSTP AALE
