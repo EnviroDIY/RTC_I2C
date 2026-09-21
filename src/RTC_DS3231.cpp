@@ -62,7 +62,7 @@ unsigned int DS3231::getOffset(void) {
 }
 
 String DS3231::getManufacturer(void) {
-  return F("Maxim");
+  return F("Analog Devices");
 }
 
 String DS3231::getModel(void) {

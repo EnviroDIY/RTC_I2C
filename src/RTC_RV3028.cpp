@@ -123,7 +123,7 @@ void RV3028::updateEEPROMByte(byte reg) {
 }
 
 String RV3028::getManufacturer(void) {
-  return F("Microchip");
+  return F("Micro Crystal");
 }
 
 String RV3028::getModel(void) {

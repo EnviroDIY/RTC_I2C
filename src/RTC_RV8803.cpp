@@ -113,7 +113,7 @@ unsigned int RV8803::getOffset(void) {
 }
 
 String RV8803::getManufacturer(void) {
-  return F("Microchip");
+  return F("Micro Crystal");
 }
 
 String RV8803::getModel(void) {

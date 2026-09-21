@@ -81,7 +81,7 @@ unsigned int SD2405::getOffset(void) {
 }
 
 String SD2405::getManufacturer(void) {
-  return F("Radium");
+  return F("DFRobot");
 }
 
 String SD2405::getModel(void) {

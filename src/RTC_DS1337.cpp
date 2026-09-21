@@ -29,7 +29,7 @@ void DS1337::disable1Hz(void) {
 }
 
 String DS1337::getManufacturer(void) {
-  return F("Maxim");
+  return F("Analog Devices");
 }
 
 String DS1337::getModel(void) {

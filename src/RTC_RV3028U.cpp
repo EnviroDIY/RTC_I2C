@@ -43,7 +43,7 @@ void RV3028U::setTime(tm timeParts) {
 }
 
 String RV3028U::getManufacturer(void) {
-  return F("Microchip");
+  return F("Micro Crystal");
 }
 
 String RV3028U::getModel(void) {
