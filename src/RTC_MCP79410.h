@@ -4,7 +4,6 @@
 #define _RTC_MCP79410_H_
 
 #include <RTC_I2C.h>
-#include <util/delay.h>
 
 
 #define MCP79410_ADDRESS 0x6F   // I2C address for MCP79410

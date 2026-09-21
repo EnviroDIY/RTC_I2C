@@ -4,7 +4,6 @@
 #define _RTC_RV3028U_H_
 
 #include <RTC_RV3028.h>
-#include <util/delay.h>
 
 #define RV3028_UCLOCK 0x1B
 

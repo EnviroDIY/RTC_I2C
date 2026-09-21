@@ -104,7 +104,7 @@ void RV3028::updateEEPROMByte(byte reg) {
   setRegister(RV3028_EEADDR, reg);
   setRegister(RV3028_EEDATA, cnts);
   while (++timeout && (getRegister(RV3028_STATUS) & 0b10000000)) { // busy with reading/writing EEPROM
-    _delay_ms(20);                                                 // wait 2 ms
+    delay(20);                                                     // wait 20 ms
   }
   if (!timeout) {
     //Serial.println(F("Timeout in EEPROM wait"));
@@ -113,7 +113,7 @@ void RV3028::updateEEPROMByte(byte reg) {
   timeout = 0;
   setRegister(RV3028_EECMD, 0x21); // update EEPROM at EEADDR with value stored in EEADDR
   while (++timeout && (getRegister(RV3028_STATUS) & 0b10000000)) { // busy with reading/writing EEPROM
-    _delay_ms(10);                                                 // wait 10 ms
+    delay(10);                                                     // wait 10 ms
   }
   if (!timeout) {
     //Serial.println(F("Timeout in EEPROM write"));

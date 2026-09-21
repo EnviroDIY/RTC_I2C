@@ -109,11 +109,11 @@ void RV3032::updateEEPROMByte(byte reg) {
   setRegister(RV3032_EEADDR, reg);
   setRegister(RV3032_EEDATA, cnts);
   while (getRegister(RV3032_BUSY) & 0b100) { // busy with reading/writing EEPROM
-    _delay_ms(2);                            // wait 10 ms
+    delay(2);                                // wait 2 ms
   }
   setRegister(RV3032_EECMD, 0x21);           // update EEPROM at EEADDR with value stored in EEADDR
   while (getRegister(RV3032_BUSY) & 0b100) { // busy with reading/writing EEPROM
-    _delay_ms(10);                           // wait 10 ms
+    delay(10);                               // wait 10 ms
   }
   setRegister(RV3032_CONTROL, getRegister(RV3032_CONTROL) & ~0b00000100); // set EERD = 0
 }

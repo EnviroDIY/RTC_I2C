@@ -4,7 +4,6 @@
 #define _RTC_RV3028_H_
 
 #include <RTC_I2C.h>
-#include <util/delay.h>
 
 
 #define RV3028_ADDRESS 0x52  // I2C address for RV3028
