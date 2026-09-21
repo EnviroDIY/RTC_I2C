@@ -13,13 +13,13 @@ bool RV8803::isValid(void) {
 // set & clear reset bit when setting time/date
 void RV8803::setTime(time_t t) {
   setRegister(RV8803_CONTROL, getRegister(RV8803_CONTROL) | 1); // set RESET bit
-  RTC::setTime(t);
+  RTC_I2C::setTime(t);
   setRegister(RV8803_CONTROL, getRegister(RV8803_CONTROL) & 0b11111110); // clear RESET bit
 }
 
 void RV8803::setTime(tmElements_t tm) {
   setRegister(RV8803_CONTROL, getRegister(RV8803_CONTROL) | 1); // set RESET bit
-  RTC::setTime(tm);
+  RTC_I2C::setTime(tm);
   setRegister(RV8803_CONTROL, getRegister(RV8803_CONTROL) & 0b11111110); // clear RESET bit
 }
 
@@ -33,12 +33,12 @@ time_t RV8803::getTime(bool blocking) {
 // application notes, section 4.12
 void RV8803::getTime(tmElements_t &tm, bool blocking) {
   tmElements_t tm1;
-  RTC::getTime(tm, blocking);
+  RTC_I2C::getTime(tm, blocking);
   if (blocking) return;  // if we used a blocking call to getTime, then we always wait til the next second starts
   if (tm.tm_sec == 59) { // be careful when we read 59 seconds because there could have been an increment
-    RTC::getTime(tm1, blocking);  // query again
-    if (tm1.tm_sec == 59) return; // if again 59, the first reading was OK
-    tm = tm1;                     // otherwise the second reading must be OK
+    RTC_I2C::getTime(tm1, blocking); // query again
+    if (tm1.tm_sec == 59) return;    // if again 59, the first reading was OK
+    tm = tm1;                        // otherwise the second reading must be OK
   }
 }
 

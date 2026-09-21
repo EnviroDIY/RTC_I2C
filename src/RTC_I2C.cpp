@@ -2,7 +2,7 @@
 
 
 // try to establish connection to RTC after RTC specific parameters have been set
-bool RTC::begin(TwoWire *wi) {
+bool RTC_I2C::begin(TwoWire *wi) {
   if (_i2caddr == 0 || wi == NULL) return false;
   if (_started) return true;
   _wire = wi;
@@ -14,14 +14,14 @@ bool RTC::begin(TwoWire *wi) {
 }
 
 // set time from Unix time
-void RTC::setTime(time_t t) {
+void RTC_I2C::setTime(time_t t) {
   tmElements_t tm;
   gmtime_r(&t, &tm);
   setTime(tm);
 }
 
 // set time from a time record
-void RTC::setTime(tmElements_t tm) {
+void RTC_I2C::setTime(tmElements_t tm) {
   _wire->beginTransmission(_i2caddr);
   _wire->write((_capabilities & RTC_CAP_SREGADDR) ? (_clockreg << 4) : _clockreg);
   _wire->write(bin2bcd(tm.tm_sec) | ((_bit7set & 1) ? 0x80 : 0));
@@ -37,14 +37,14 @@ void RTC::setTime(tmElements_t tm) {
 }
 
 // get Unix time
-time_t RTC::getTime(bool blocking) {
+time_t RTC_I2C::getTime(bool blocking) {
   tmElements_t tm;
   getTime(tm, blocking);
   return mk_gmtime(&tm);
 }
 
 // get time as time record
-void RTC::getTime(tmElements_t &tm, bool blocking) {
+void RTC_I2C::getTime(tmElements_t &tm, bool blocking) {
   int timeout = 0;
   byte sec;
   tm = tmElements_t{0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -69,7 +69,7 @@ void RTC::getTime(tmElements_t &tm, bool blocking) {
   tm.tm_year = bcd2bin(_wire->read()) + 30; // rebase to 1970!
 }
 
-byte RTC::decodewday(byte bits) {
+byte RTC_I2C::decodewday(byte bits) {
   for (byte res = 1; res < 8; res++) {
     if (bits & 1) return res;
     bits = bits >> 1;
@@ -78,7 +78,7 @@ byte RTC::decodewday(byte bits) {
 }
 
 // set one RTC register
-void RTC::setRegister(byte reg, byte val) {
+void RTC_I2C::setRegister(byte reg, byte val) {
   //Serial.print(F("setReg(0x")); Serial.print(reg,HEX); Serial.print(F(")=0b")); Serial.println(val,BIN);
   _wire->beginTransmission(_i2caddr);
   _wire->write((_capabilities & RTC_CAP_SREGADDR) ? (reg << 4) : reg);
@@ -88,7 +88,7 @@ void RTC::setRegister(byte reg, byte val) {
 }
 
 // get one RTC register
-byte RTC::getRegister(byte reg) {
+byte RTC_I2C::getRegister(byte reg) {
   byte res;
   //Serial.print(F("getReg(0x")); Serial.print(reg,HEX); Serial.print(F(")=0b"));
   _wire->beginTransmission(_i2caddr);
@@ -171,14 +171,14 @@ void PCFAlarm::clearAlarm(void) {
 
 // Manufacturer and model information functions
 
-String RTC::getManufacturer(void) {
+String RTC_I2C::getManufacturer(void) {
   return F("unknown");
 }
 
-String RTC::getModel(void) {
+String RTC_I2C::getModel(void) {
   return F("unknown");
 }
 
-String RTC::getMakeModel(void) {
+String RTC_I2C::getMakeModel(void) {
   return String(getManufacturer()) + " " + String(getModel());
 }

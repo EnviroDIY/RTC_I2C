@@ -15,7 +15,7 @@
 #define DS1307_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ)
 
 
-class DS1307 : public RTC {
+class DS1307 : public RTC_I2C {
  public:
   DS1307(void) {
     _i2caddr = DS1307_ADDRESS;

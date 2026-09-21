@@ -24,7 +24,7 @@
 #define RV3028_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET)
 
 
-class RV3028 : public RTC {
+class RV3028 : public RTC_I2C {
  public:
   RV3028(void) {
     _i2caddr = RV3028_ADDRESS;

@@ -31,7 +31,7 @@ RV8523 rtc10;
 RV8803 rtc11;
 SD2405 rtc12;
 
-RTC *rtc[MAXRTC] = {&rtc0, &rtc1, &rtc2, &rtc3, &rtc4, &rtc5, &rtc6, &rtc7, &rtc8, &rtc9, &rtc10, &rtc11, &rtc12};
+RTC_I2C *rtc[MAXRTC] = {&rtc0, &rtc1, &rtc2, &rtc3, &rtc4, &rtc5, &rtc6, &rtc7, &rtc8, &rtc9, &rtc10, &rtc11, &rtc12};
 
 
 void setup(void) {

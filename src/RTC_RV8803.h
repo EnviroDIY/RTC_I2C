@@ -2,7 +2,7 @@
 
 /* Note that the CLKOUT pin can only be disabled by holding CLKOE low. For this reason
  * the two disable functions are no-ops.
- * In addition, when setting time, the RESET bit must be active. When getting time, 
+ * In addition, when setting time, the RESET bit must be active. When getting time,
  * we need to read twice if the seconds equal 59.
  */
 
@@ -25,7 +25,7 @@
 #define RV8803_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET)
 
 
-class RV8803 : public RTC {
+class RV8803 : public RTC_I2C {
  public:
   RV8803(void) {
     _i2caddr = RV8803_ADDRESS;

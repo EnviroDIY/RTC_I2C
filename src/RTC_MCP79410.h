@@ -18,7 +18,7 @@
 #define MCP79410_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET)
 
 
-class MCP79410 : public RTC {
+class MCP79410 : public RTC_I2C {
  public:
   MCP79410(void) {
     _i2caddr = MCP79410_ADDRESS;

@@ -18,7 +18,7 @@
 #define SD2405_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET)
 
 
-class SD2405 : public RTC {
+class SD2405 : public RTC_I2C {
  public:
   SD2405(void) {
     _i2caddr = SD2405_ADDRESS;

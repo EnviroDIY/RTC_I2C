@@ -31,7 +31,7 @@ typedef tm tmElements_t;
 
 
 /* A generic RTC base class */
-class RTC {
+class RTC_I2C {
  public:
   bool begin(TwoWire *wi = &Wire);
   virtual void init(byte mode = 1) = 0;
@@ -74,7 +74,7 @@ class RTC {
   byte _bit7set;      // if the 7th bit in a byte of the clock register must be set (bit 0=sec, bit 1=min, ...)
 };
 
-class DSAlarm : public RTC {
+class DSAlarm : public RTC_I2C {
  public:
   void setAlarm(byte minute, byte hour);
   void setAlarm(byte minute);
@@ -84,7 +84,7 @@ class DSAlarm : public RTC {
   void clearAlarm(void);
 };
 
-class PCFAlarm : public RTC {
+class PCFAlarm : public RTC_I2C {
  public:
   void setAlarm(byte minute, byte hour);
   void setAlarm(byte minute);

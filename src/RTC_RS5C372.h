@@ -23,7 +23,7 @@
 
 /* INTRB is used as SQW output fir 32 KHz and 1 Hz signals
  * INTRB is the alarm interrupt output */
-class RS5C372 : public RTC {
+class RS5C372 : public RTC_I2C {
  public:
   RS5C372(void) {
     _i2caddr = RS5C372_ADDRESS;
