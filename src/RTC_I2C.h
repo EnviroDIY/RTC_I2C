@@ -29,6 +29,11 @@ typedef tm tmElements_t;
 #define RTC_CAP_TEMP 0x20         // has a temperature sensor
 #define RTC_CAP_SREGADDR 0x40     // uses a strange format for register addresses (upper nibble)
 
+#ifndef SECONDS_IN_DAY
+/// @brief The number of seconds in a day
+#define SECONDS_IN_DAY 86400L
+#endif
+
 
 /* A generic RTC base class */
 class RTC_I2C {
