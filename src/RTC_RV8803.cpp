@@ -26,7 +26,7 @@ void RV8803::setTime(tm timeParts) {
 time_t RV8803::getTime(bool blocking) {
   tm timeParts;
   getTime(timeParts, blocking);
-  return mktime(&timeParts);
+  return tmToTimeT(timeParts);
 }
 
 // implementing the time reading as described in the

@@ -241,6 +241,31 @@ void loop() {
   while (Serial.available() && Serial.peek() <= ' ') Serial.read();
 }
 
+bool sameTime(const tm &a, const tm &b) {
+  return a.tm_sec == b.tm_sec &&
+         a.tm_min == b.tm_min &&
+         a.tm_hour == b.tm_hour &&
+         a.tm_mday == b.tm_mday &&
+         a.tm_mon == b.tm_mon &&
+         a.tm_year == b.tm_year &&
+         a.tm_wday == b.tm_wday;
+}
+
+void printTimeParts(const tm &timeParts) {
+  Serial.print(1900 + timeParts.tm_year);
+  Serial.print('-');
+  Serial.print(timeParts.tm_mon + 1);
+  Serial.print('-');
+  Serial.print(timeParts.tm_mday);
+  Serial.print(' ');
+  print2digits(timeParts.tm_hour);
+  Serial.print(':');
+  print2digits(timeParts.tm_min);
+  Serial.print(':');
+  print2digits(timeParts.tm_sec);
+  Serial.println();
+}
+
 void unsupported(void) {
   Serial.println(F("Command is unsupported on this RTC"));
 }
@@ -279,10 +304,9 @@ void initRTC(void) {
     parse = true;
     rtc.setTime(timeParts);
     rtc.getTime(new_tm);
-    //Serial.println(mktime(&timeParts));
-    //Serial.println(mktime(&new_tm));
+    // RTC_I2C performs tm/time_t conversions internally with TimeUtils.
     valid = rtc.isValid();
-    if (valid && mktime(&timeParts) == mktime(&new_tm)) {
+    if (valid && sameTime(timeParts, new_tm)) {
       config = true;
     }
   }
@@ -294,9 +318,9 @@ void initRTC(void) {
     Serial.println(__DATE__);
   } else if (parse) {
     Serial.print("RTC Communication Error:\n\rInput=   ");
-    Serial.println(mktime(&timeParts));
+    printTimeParts(timeParts);
     Serial.print(F("Response="));
-    Serial.println(mktime(&new_tm));
+    printTimeParts(new_tm);
     Serial.print(F("Valid=   "));
     Serial.println(valid);
   } else {

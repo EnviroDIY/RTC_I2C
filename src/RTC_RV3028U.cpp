@@ -23,7 +23,7 @@ time_t RV3028U::getTime(bool blocking) {
 
 void RV3028U::getTime(tm &timeParts, bool blocking) {
   time_t t = getTime(blocking);
-  gmtime_r(&t, &timeParts);
+  timeTToTm(t, timeParts);
 }
 
 void RV3028U::setTime(time_t t) {
@@ -43,7 +43,7 @@ void RV3028U::setTime(time_t t) {
 }
 
 void RV3028U::setTime(tm timeParts) {
-  setTime(mktime(&timeParts));
+  setTime(tmToTimeT(timeParts));
 }
 
 String RV3028U::getManufacturer(void) {
