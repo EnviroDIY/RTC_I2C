@@ -9,8 +9,8 @@ bool RTC_I2C::begin(TwoWire *wi) {
   _wire->begin();
   _wire->beginTransmission(_i2caddr);
   if (_wire->endTransmission() != 0) return false;
-  return true;
   _started = true;
+  return true;
 }
 
 // set time from Unix time
