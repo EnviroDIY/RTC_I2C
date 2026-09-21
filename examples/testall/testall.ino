@@ -241,16 +241,6 @@ void loop() {
   while (Serial.available() && Serial.peek() <= ' ') Serial.read();
 }
 
-bool sameTime(const tm &a, const tm &b) {
-  return a.tm_sec == b.tm_sec &&
-         a.tm_min == b.tm_min &&
-         a.tm_hour == b.tm_hour &&
-         a.tm_mday == b.tm_mday &&
-         a.tm_mon == b.tm_mon &&
-         a.tm_year == b.tm_year &&
-         a.tm_wday == b.tm_wday;
-}
-
 void printTimeParts(const tm &timeParts) {
   Serial.print(1900 + timeParts.tm_year);
   Serial.print('-');
@@ -306,7 +296,7 @@ void initRTC(void) {
     rtc.getTime(new_tm);
     // RTC_I2C performs tm/time_t conversions internally with TimeUtils.
     valid = rtc.isValid();
-    if (valid && sameTime(timeParts, new_tm)) {
+    if (valid && RTC_I2C::sameTime(timeParts, new_tm)) {
       config = true;
     }
   }

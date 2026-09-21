@@ -62,6 +62,7 @@ class RTC_I2C {
   virtual void setRegister(byte reg, byte val);
   virtual byte getRegister(byte reg);
   virtual byte getCapabilities(void) { return _capabilities; };
+  static bool sameTime(const tm &a, const tm &b);
 
  protected:
   static byte bcd2bin(byte val) { return val - 6 * (val >> 4); }

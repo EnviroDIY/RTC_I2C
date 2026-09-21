@@ -13,6 +13,17 @@ bool RTC_I2C::begin(TwoWire *wi) {
   return true;
 }
 
+// Compare the calendar fields of two tm values.  Fields derived from the
+// calendar time (tm_wday, tm_yday, and tm_isdst) are intentionally ignored.
+bool RTC_I2C::sameTime(const tm &a, const tm &b) {
+  return a.tm_sec == b.tm_sec &&
+         a.tm_min == b.tm_min &&
+         a.tm_hour == b.tm_hour &&
+         a.tm_mday == b.tm_mday &&
+         a.tm_mon == b.tm_mon &&
+         a.tm_year == b.tm_year;
+}
+
 // Convert a tm containing a UTC calendar time to the processor's time_t
 // representation without allowing mktime()'s local-time offset to change the
 // represented instant.
