@@ -40,7 +40,7 @@ void RTC_I2C::setTime(tmElements_t tm) {
 time_t RTC_I2C::getTime(bool blocking) {
   tmElements_t tm;
   getTime(tm, blocking);
-  return mk_gmtime(&tm);
+  return mktime(&tm);
 }
 
 // get time as time record

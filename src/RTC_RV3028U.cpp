@@ -39,7 +39,7 @@ void RV3028U::setTime(time_t t) {
 }
 
 void RV3028U::setTime(tmElements_t tm) {
-  setTime(mk_gmtime(&tm));
+  setTime(mktime(&tm));
 }
 
 String RV3028U::getManufacturer(void) {

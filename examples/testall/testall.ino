@@ -279,10 +279,10 @@ void initRTC(void) {
     parse = true;
     rtc.setTime(tm);
     rtc.getTime(new_tm);
-    //Serial.println(mk_gmtime(&tm));
-    //Serial.println(mk_gmtime(&new_tm));
+    //Serial.println(mktime(&tm));
+    //Serial.println(mktime(&new_tm));
     valid = rtc.isValid();
-    if (valid && mk_gmtime(&tm) == mk_gmtime(&new_tm)) {
+    if (valid && mktime(&tm) == mktime(&new_tm)) {
       config = true;
     }
   }
@@ -294,9 +294,9 @@ void initRTC(void) {
     Serial.println(__DATE__);
   } else if (parse) {
     Serial.print("RTC Communication Error:\n\rInput=   ");
-    Serial.println(mk_gmtime(&tm));
+    Serial.println(mktime(&tm));
     Serial.print(F("Response="));
-    Serial.println(mk_gmtime(&new_tm));
+    Serial.println(mktime(&new_tm));
     Serial.print(F("Valid=   "));
     Serial.println(valid);
   } else {

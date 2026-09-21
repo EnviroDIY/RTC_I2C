@@ -39,7 +39,7 @@ void MCP79410::setAlarm(byte minute, byte hour) {
   time_t t;
   getTime(tm);                                                                // current time
   if (!((tm.tm_min < minute && tm.tm_hour == hour) || (tm.tm_hour < hour))) { // alarm should be next day
-    t = mk_gmtime(&tm) + ONE_DAY;
+    t = mktime(&tm) + ONE_DAY;
     gmtime_r(&t, &tm);
   }
   setRegister(MCP79410_ALARM, bin2bcd(0));                     // set second alarm

@@ -26,7 +26,7 @@ void RV8803::setTime(tmElements_t tm) {
 time_t RV8803::getTime(bool blocking) {
   tmElements_t tm;
   getTime(tm, blocking);
-  return mk_gmtime(&tm);
+  return mktime(&tm);
 }
 
 // implementing the time reading as described in the
