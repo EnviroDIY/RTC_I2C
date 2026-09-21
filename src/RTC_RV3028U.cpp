@@ -27,7 +27,7 @@ void RV3028U::getTime(tmElements_t &tm, bool blocking) {
 }
 
 void RV3028U::setTime(time_t t) {
-  Serial.println(t, HEX);
+  // Serial.println(static_cast<uint32_t>(t), HEX);
   setRegister(RV3028_CONTROL + 1, getRegister(RV3028_CONTROL + 1) | 0b1); // reset counter chain in clock
   _wire->beginTransmission(_i2caddr);
   _wire->write(RV3028_UCLOCK);
