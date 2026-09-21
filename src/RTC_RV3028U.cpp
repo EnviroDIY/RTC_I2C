@@ -32,7 +32,11 @@ void RV3028U::setTime(time_t t) {
   _wire->beginTransmission(_i2caddr);
   _wire->write(RV3028_UCLOCK);
   for (byte i = 0; i < 4; i++) {
+#if defined(ARDUINO_ARCH_NRF52840)
+    _wire->write(static_cast<int>(t & 0xFF));
+#else
     _wire->write(static_cast<uint32_t>(t & 0xFF));
+#endif
     t = t >> 8;
   }
   _wire->endTransmission();
