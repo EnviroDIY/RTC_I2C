@@ -17,11 +17,11 @@ void MCP79410::setTime(tm timeParts) {
   _wire->write(bin2bcd(timeParts.tm_sec));
   _wire->write(bin2bcd(timeParts.tm_min));
   _wire->write(bin2bcd(timeParts.tm_hour));
-  _wire->write((bin2bcd(timeParts.tm_wday - 1 + _wdaybase)) |
+  _wire->write((bin2bcd(timeParts.tm_wday + _wdaybase)) |
                0b1000); // set the VBATEN enable bit so that the thing can run on batteries
   _wire->write(bin2bcd(timeParts.tm_mday));
   _wire->write(bin2bcd(timeParts.tm_mon));
-  _wire->write(bin2bcd(timeParts.tm_year - 30)); // readjust to 2000 instead of 1970!
+  _wire->write(bin2bcd(timeParts.tm_year - 100)); // readjust to 2000 instead of 1900!
   _wire->endTransmission();
   setRegister(MCP79410_CLOCKREG, bin2bcd(timeParts.tm_sec) | 0x80); // now enable oscillator!
 }
@@ -48,7 +48,7 @@ void MCP79410::setAlarm(byte minute, byte hour) {
   setRegister(MCP79410_ALARM + 2, bin2bcd(hour));                     // set hour alarm
   setRegister(MCP79410_ALARM + 3, 0x70 | bin2bcd(timeParts.tm_wday)); // set weekday alarm and set match condition
   setRegister(MCP79410_ALARM + 4, bin2bcd(timeParts.tm_mday));        // set day of month
-  setRegister(MCP79410_ALARM + 5, bin2bcd(timeParts.tm_mon));         // set day of month
+  setRegister(MCP79410_ALARM + 5, bin2bcd(timeParts.tm_mon + 1));     // set day of month
 }
 
 void MCP79410::setAlarm(byte minute) {

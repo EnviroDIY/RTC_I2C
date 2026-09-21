@@ -78,8 +78,8 @@ void loop() {
     timeParts.tm_min = 59;
     timeParts.tm_hour = 23;
     timeParts.tm_mday = 28;
-    timeParts.tm_mon = 2;
-    timeParts.tm_year = 2100 - 1970;
+    timeParts.tm_mon = 1;
+    timeParts.tm_year = 2100 - 1900;
     rtc.setTime(timeParts);
     Serial.println(F("Time has advance to 28.2.2100, 23:59:45"));
     break;
@@ -359,8 +359,8 @@ bool getDate(const char *str, tm &timeParts) {
   }
   if (monthIndex >= 12) return false;
   timeParts.tm_mday = Day;
-  timeParts.tm_mon = monthIndex + 1;
-  timeParts.tm_year = Year - 1970;
+  timeParts.tm_mon = monthIndex;
+  timeParts.tm_year = Year - 1900;
   return true;
 }
 
@@ -378,8 +378,8 @@ void showTime(tm timeParts) {
 void showDate(tm timeParts) {
   Serial.print(timeParts.tm_mday);
   Serial.write('.');
-  Serial.print(timeParts.tm_mon);
+  Serial.print(timeParts.tm_mon + 1);
   Serial.write('.');
-  Serial.print(1970 + timeParts.tm_year);
+  Serial.print(1900 + timeParts.tm_year);
   Serial.println();
 }

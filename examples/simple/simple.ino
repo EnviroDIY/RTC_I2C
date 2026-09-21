@@ -15,7 +15,14 @@ void setup(void) {
     while (1);
   }
   rtc.init();
-  timeParts = tm{1, 1, 1, 1, 2, 3, 55};
+  timeParts = {};
+  timeParts.tm_sec = 1;
+  timeParts.tm_min = 1;
+  timeParts.tm_hour = 1;
+  timeParts.tm_mday = 2;
+  timeParts.tm_mon = 2;
+  timeParts.tm_year = 125;
+  timeParts.tm_wday = 0;
   rtc.setTime(timeParts);
   rtc.getTime(timeParts1);
   if (mktime(&timeParts) != mktime(&timeParts1)) {
