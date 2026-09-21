@@ -21,9 +21,9 @@ time_t RV3028U::getTime(bool blocking) {
   return t1;
 }
 
-void RV3028U::getTime(tmElements_t &tm, bool blocking) {
+void RV3028U::getTime(tm &timeParts, bool blocking) {
   time_t t = getTime(blocking);
-  gmtime_r(&t, &tm);
+  gmtime_r(&t, &timeParts);
 }
 
 void RV3028U::setTime(time_t t) {
@@ -38,8 +38,8 @@ void RV3028U::setTime(time_t t) {
   _wire->endTransmission();
 }
 
-void RV3028U::setTime(tmElements_t tm) {
-  setTime(mktime(&tm));
+void RV3028U::setTime(tm timeParts) {
+  setTime(mktime(&timeParts));
 }
 
 String RV3028U::getManufacturer(void) {

@@ -31,7 +31,7 @@ class MCP79410 : public RTC_I2C {
   void init(byte mode = 1);
   bool isValid(void);
   void setTime(time_t t);
-  void setTime(tmElements_t tm);
+  void setTime(tm timeParts);
   void setAlarm(byte minute, byte hour); // here we can only set the alarm til next match
   void setAlarm(byte minute);
   bool senseAlarm(void);

@@ -16,9 +16,6 @@
 #include <Wire.h>
 #include <time.h>
 
-// Type def for compatibility
-typedef tm tmElements_t;
-
 
 #define TIMEBYTES 7
 #define RTC_CAP_32KHZ 0x01        // can generate 32 kHz signal
@@ -42,9 +39,9 @@ class RTC_I2C {
   virtual void init(byte mode = 1) = 0;
   virtual bool isValid(void) = 0;
   virtual void setTime(time_t t);
-  virtual void setTime(tmElements_t tm);
+  virtual void setTime(tm timeParts);
   virtual time_t getTime(bool blocking = false);
-  virtual void getTime(tmElements_t &tm, bool blocking = false);
+  virtual void getTime(tm &timeParts, bool blocking = false);
   virtual void enable32kHz(void) {};
   virtual void disable32kHz(void) {};
   virtual void enable1Hz(void) {};

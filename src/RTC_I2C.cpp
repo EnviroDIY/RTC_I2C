@@ -15,39 +15,39 @@ bool RTC_I2C::begin(TwoWire *wi) {
 
 // set time from Unix time
 void RTC_I2C::setTime(time_t t) {
-  tmElements_t tm;
-  gmtime_r(&t, &tm);
-  setTime(tm);
+  tm timeParts;
+  gmtime_r(&t, &timeParts);
+  setTime(timeParts);
 }
 
 // set time from a time record
-void RTC_I2C::setTime(tmElements_t tm) {
+void RTC_I2C::setTime(tm timeParts) {
   _wire->beginTransmission(_i2caddr);
   _wire->write((_capabilities & RTC_CAP_SREGADDR) ? (_clockreg << 4) : _clockreg);
-  _wire->write(bin2bcd(tm.tm_sec) | ((_bit7set & 1) ? 0x80 : 0));
-  _wire->write(bin2bcd(tm.tm_min) | ((_bit7set & (1 << 1)) ? 0x80 : 0));
-  _wire->write(bin2bcd(tm.tm_hour) | ((_bit7set & (1 << 2)) ? 0x80 : 0));
-  if (!_wdayfirst) _wire->write(bin2bcd(tm.tm_mday) | ((_bit7set & (1 << 4)) ? 0x80 : 0));
-  _wire->write((_wdaybase < 2 ? bin2bcd(tm.tm_wday - 1 + _wdaybase) : (1 << (tm.tm_wday - 1))) |
+  _wire->write(bin2bcd(timeParts.tm_sec) | ((_bit7set & 1) ? 0x80 : 0));
+  _wire->write(bin2bcd(timeParts.tm_min) | ((_bit7set & (1 << 1)) ? 0x80 : 0));
+  _wire->write(bin2bcd(timeParts.tm_hour) | ((_bit7set & (1 << 2)) ? 0x80 : 0));
+  if (!_wdayfirst) _wire->write(bin2bcd(timeParts.tm_mday) | ((_bit7set & (1 << 4)) ? 0x80 : 0));
+  _wire->write((_wdaybase < 2 ? bin2bcd(timeParts.tm_wday - 1 + _wdaybase) : (1 << (timeParts.tm_wday - 1))) |
                ((_bit7set & (1 << 3)) ? 0x80 : 0));
-  if (_wdayfirst) _wire->write(bin2bcd(tm.tm_mday) | ((_bit7set & (1 << 4)) ? 0x80 : 0));
-  _wire->write(bin2bcd(tm.tm_mon) | ((_bit7set & (1 << 5)) ? 0x80 : 0));
-  _wire->write(bin2bcd(tm.tm_year - 30)); // readjust to 2000 instead of 1970!
+  if (_wdayfirst) _wire->write(bin2bcd(timeParts.tm_mday) | ((_bit7set & (1 << 4)) ? 0x80 : 0));
+  _wire->write(bin2bcd(timeParts.tm_mon) | ((_bit7set & (1 << 5)) ? 0x80 : 0));
+  _wire->write(bin2bcd(timeParts.tm_year - 30)); // readjust to 2000 instead of 1970!
   _wire->endTransmission();
 }
 
 // get Unix time
 time_t RTC_I2C::getTime(bool blocking) {
-  tmElements_t tm;
-  getTime(tm, blocking);
-  return mktime(&tm);
+  tm timeParts;
+  getTime(timeParts, blocking);
+  return mktime(&timeParts);
 }
 
 // get time as time record
-void RTC_I2C::getTime(tmElements_t &tm, bool blocking) {
+void RTC_I2C::getTime(tm &timeParts, bool blocking) {
   int timeout = 0;
   byte sec;
-  tm = tmElements_t{0, 0, 0, 0, 0, 0, 0, 0, 0};
+  timeParts = tm{0, 0, 0, 0, 0, 0, 0, 0, 0};
 
   if (blocking) {
     sec = getRegister(_clockreg);
@@ -59,14 +59,14 @@ void RTC_I2C::getTime(tmElements_t &tm, bool blocking) {
   _wire->write((_capabilities & RTC_CAP_SREGADDR) ? (_clockreg << 4) : _clockreg);
   if (_wire->endTransmission(false) != 0) return;
   if (_wire->requestFrom(_i2caddr, (byte)7) != 7) return;
-  tm.tm_sec = bcd2bin(_wire->read() & 0x7F);
-  tm.tm_min = bcd2bin(_wire->read() & 0x7F);
-  tm.tm_hour = bcd2bin(_wire->read() & 0x3F);
-  if (!_wdayfirst) tm.tm_mday = bcd2bin(_wire->read() & 0x3F);
-  tm.tm_wday = (_wdaybase < 2 ? (bcd2bin(_wire->read() & 0x07)) - _wdaybase + 1 : decodewday(_wire->read()));
-  if (_wdayfirst) tm.tm_mday = bcd2bin(_wire->read() & 0x3F);
-  tm.tm_mon = bcd2bin(_wire->read() & 0x1F);
-  tm.tm_year = bcd2bin(_wire->read()) + 30; // rebase to 1970!
+  timeParts.tm_sec = bcd2bin(_wire->read() & 0x7F);
+  timeParts.tm_min = bcd2bin(_wire->read() & 0x7F);
+  timeParts.tm_hour = bcd2bin(_wire->read() & 0x3F);
+  if (!_wdayfirst) timeParts.tm_mday = bcd2bin(_wire->read() & 0x3F);
+  timeParts.tm_wday = (_wdaybase < 2 ? (bcd2bin(_wire->read() & 0x07)) - _wdaybase + 1 : decodewday(_wire->read()));
+  if (_wdayfirst) timeParts.tm_mday = bcd2bin(_wire->read() & 0x3F);
+  timeParts.tm_mon = bcd2bin(_wire->read() & 0x1F);
+  timeParts.tm_year = bcd2bin(_wire->read()) + 30; // rebase to 1970!
 }
 
 byte RTC_I2C::decodewday(byte bits) {

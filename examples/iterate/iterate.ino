@@ -50,16 +50,16 @@ void setup(void) {
 }
 
 void loop(void) {
-  tmElements_t tm;
+  tm timeParts;
   for (byte i = 0; i < MAXRTC; i++) {
     Serial.print(rtc[i]->getMakeModel());
     Serial.print(F(" ("));
     Serial.print(i);
     Serial.print(F("): "));
-    rtc[i]->getTime(tm);
-    showTime(tm);
+    rtc[i]->getTime(timeParts);
+    showTime(timeParts);
     Serial.print(F("   "));
-    showDate(tm);
+    showDate(timeParts);
     Serial.println("\n---\n");
   }
   delay(5000L);
@@ -73,19 +73,19 @@ void print2digits(int number) {
   Serial.print(number);
 }
 
-void showTime(tmElements_t tm) {
-  print2digits(tm.tm_hour);
+void showTime(tm timeParts) {
+  print2digits(timeParts.tm_hour);
   Serial.write(':');
-  print2digits(tm.tm_min);
+  print2digits(timeParts.tm_min);
   Serial.write(':');
-  print2digits(tm.tm_sec);
+  print2digits(timeParts.tm_sec);
 }
 
 
-void showDate(tmElements_t tm) {
-  Serial.print(tm.tm_mday);
+void showDate(tm timeParts) {
+  Serial.print(timeParts.tm_mday);
   Serial.write('.');
-  Serial.print(tm.tm_mon);
+  Serial.print(timeParts.tm_mon);
   Serial.write('.');
-  Serial.print(1970 + tm.tm_year);
+  Serial.print(1970 + timeParts.tm_year);
 }

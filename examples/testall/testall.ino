@@ -32,7 +32,7 @@ void setup(void) {
 
 void loop() {
   char c = '\0';
-  tmElements_t tm;
+  tm timeParts;
   int temp;
   bool alarm;
   int offset;
@@ -52,35 +52,35 @@ void loop() {
     initRTC();
     break;
   case 'c':
-    rtc.getTime(tm);
-    showTime(tm);
+    rtc.getTime(timeParts);
+    showTime(timeParts);
     if (!rtc.isValid()) Serial.println(F("(Time may be invalid)"));
     break;
   case 'd':
-    rtc.getTime(tm);
-    showDate(tm);
+    rtc.getTime(timeParts);
+    showDate(timeParts);
     if (!rtc.isValid()) Serial.println(F("(Date may be invalid)"));
     break;
   case 'f':
-    rtc.getTime(tm);
-    if (tm.tm_min < 1)
-      tm.tm_min += 59;
+    rtc.getTime(timeParts);
+    if (timeParts.tm_min < 1)
+      timeParts.tm_min += 59;
     else {
-      if (tm.tm_hour++ == 23) tm.tm_hour = 0;
-      tm.tm_min -= 1;
+      if (timeParts.tm_hour++ == 23) timeParts.tm_hour = 0;
+      timeParts.tm_min -= 1;
     }
-    rtc.setTime(tm);
+    rtc.setTime(timeParts);
     Serial.print(F("Time has advanced by 59 minutes: "));
-    showTime(tm);
+    showTime(timeParts);
     break;
   case 'y':
-    tm.tm_sec = 45;
-    tm.tm_min = 59;
-    tm.tm_hour = 23;
-    tm.tm_mday = 28;
-    tm.tm_mon = 2;
-    tm.tm_year = 2100 - 1970;
-    rtc.setTime(tm);
+    timeParts.tm_sec = 45;
+    timeParts.tm_min = 59;
+    timeParts.tm_hour = 23;
+    timeParts.tm_mday = 28;
+    timeParts.tm_mon = 2;
+    timeParts.tm_year = 2100 - 1970;
+    rtc.setTime(timeParts);
     Serial.println(F("Time has advance to 28.2.2100, 23:59:45"));
     break;
   case '1':
@@ -133,25 +133,25 @@ void loop() {
       break;
     }
     rtc.disableAlarm();
-    rtc.getTime(tm);
-    rtc.setAlarm(tm.tm_min, (tm.tm_hour + 1) % 24);
+    rtc.getTime(timeParts);
+    rtc.setAlarm(timeParts.tm_min, (timeParts.tm_hour + 1) % 24);
     rtc.enableAlarm();
     Serial.print(F("Alarm set to hour/minute "));
-    Serial.print((tm.tm_hour + 1) % 24);
+    Serial.print((timeParts.tm_hour + 1) % 24);
     Serial.print(':');
-    Serial.println(tm.tm_min);
+    Serial.println(timeParts.tm_min);
     break;
   case 'm':
     if ((rtc.getCapabilities() & RTC_CAP_HOURLY_ALARM) == 0) {
       unsupported();
       break;
     }
-    rtc.getTime(tm);
+    rtc.getTime(timeParts);
     rtc.disableAlarm();
-    rtc.setAlarm(tm.tm_min);
+    rtc.setAlarm(timeParts.tm_min);
     rtc.enableAlarm();
     Serial.print(F("Alarm set to minute "));
-    Serial.println(tm.tm_min);
+    Serial.println(timeParts.tm_min);
     break;
   case 'n':
     if ((rtc.getCapabilities() & RTC_CAP_ALARM) == 0) {
@@ -269,20 +269,20 @@ void help() {
 }
 
 void initRTC(void) {
-  tmElements_t tm, new_tm;
+  tm timeParts, new_tm;
   bool parse = false;
   bool config = false;
   bool valid = false;
 
   rtc.init(1); // select level switch-over mode
-  if (getDate(__DATE__, tm) && getTime(__TIME__, tm)) {
+  if (getDate(__DATE__, timeParts) && getTime(__TIME__, timeParts)) {
     parse = true;
-    rtc.setTime(tm);
+    rtc.setTime(timeParts);
     rtc.getTime(new_tm);
-    //Serial.println(mktime(&tm));
+    //Serial.println(mktime(&timeParts));
     //Serial.println(mktime(&new_tm));
     valid = rtc.isValid();
-    if (valid && mktime(&tm) == mktime(&new_tm)) {
+    if (valid && mktime(&timeParts) == mktime(&new_tm)) {
       config = true;
     }
   }
@@ -294,7 +294,7 @@ void initRTC(void) {
     Serial.println(__DATE__);
   } else if (parse) {
     Serial.print("RTC Communication Error:\n\rInput=   ");
-    Serial.println(mktime(&tm));
+    Serial.println(mktime(&timeParts));
     Serial.print(F("Response="));
     Serial.println(mktime(&new_tm));
     Serial.print(F("Valid=   "));
@@ -338,17 +338,17 @@ void print2digits(int number) {
   Serial.print(number);
 }
 
-bool getTime(const char *str, tmElements_t &tm) {
+bool getTime(const char *str, tm &timeParts) {
   int Hour, Min, Sec;
 
   if (sscanf(str, "%d:%d:%d", &Hour, &Min, &Sec) != 3) return false;
-  tm.tm_hour = Hour;
-  tm.tm_min = Min;
-  tm.tm_sec = Sec;
+  timeParts.tm_hour = Hour;
+  timeParts.tm_min = Min;
+  timeParts.tm_sec = Sec;
   return true;
 }
 
-bool getDate(const char *str, tmElements_t &tm) {
+bool getDate(const char *str, tm &timeParts) {
   char Month[12];
   int Day, Year;
   uint8_t monthIndex;
@@ -358,28 +358,28 @@ bool getDate(const char *str, tmElements_t &tm) {
     if (strcmp(Month, monthName[monthIndex]) == 0) break;
   }
   if (monthIndex >= 12) return false;
-  tm.tm_mday = Day;
-  tm.tm_mon = monthIndex + 1;
-  tm.tm_year = Year - 1970;
+  timeParts.tm_mday = Day;
+  timeParts.tm_mon = monthIndex + 1;
+  timeParts.tm_year = Year - 1970;
   return true;
 }
 
-void showTime(tmElements_t tm) {
-  rtc.getTime(tm);
-  print2digits(tm.tm_hour);
+void showTime(tm timeParts) {
+  rtc.getTime(timeParts);
+  print2digits(timeParts.tm_hour);
   Serial.write(':');
-  print2digits(tm.tm_min);
+  print2digits(timeParts.tm_min);
   Serial.write(':');
-  print2digits(tm.tm_sec);
+  print2digits(timeParts.tm_sec);
   Serial.println();
 }
 
 
-void showDate(tmElements_t tm) {
-  Serial.print(tm.tm_mday);
+void showDate(tm timeParts) {
+  Serial.print(timeParts.tm_mday);
   Serial.write('.');
-  Serial.print(tm.tm_mon);
+  Serial.print(timeParts.tm_mon);
   Serial.write('.');
-  Serial.print(1970 + tm.tm_year);
+  Serial.print(1970 + timeParts.tm_year);
   Serial.println();
 }
