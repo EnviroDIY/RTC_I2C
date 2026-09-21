@@ -32,7 +32,7 @@ void RV3028U::setTime(time_t t) {
   _wire->beginTransmission(_i2caddr);
   _wire->write(RV3028_UCLOCK);
   for (byte i = 0; i < 4; i++) {
-    _wire->write(t & 0xFF);
+    _wire->write(static_cast<uint32_t>(t) & 0xFFUL);
     t = t >> 8;
   }
   _wire->endTransmission();
