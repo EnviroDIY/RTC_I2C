@@ -68,3 +68,5 @@ AGENTS.md
 .github/copilot-instructions.md
 .bumpversion.toml
 .github/workflows/LibraryBuild.yml
+datasheets/*
+Datasheets.md
