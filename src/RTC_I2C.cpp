@@ -170,15 +170,6 @@ void PCFAlarm::clearAlarm(void) {
 }
 
 // Manufacturer and model information functions
-
-String RTC_I2C::getManufacturer(void) {
-  return F("unknown");
-}
-
-String RTC_I2C::getModel(void) {
-  return F("unknown");
-}
-
 String RTC_I2C::getMakeModel(void) {
   return String(getManufacturer()) + " " + String(getModel());
 }
