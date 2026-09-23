@@ -13,41 +13,6 @@ bool RTC_I2C::begin(TwoWire *wi) {
   return true;
 }
 
-// Compare the calendar fields of two tm values.  Fields derived from the
-// calendar time (tm_wday, tm_yday, and tm_isdst) are intentionally ignored.
-bool RTC_I2C::sameTime(const tm &a, const tm &b) {
-  return a.tm_sec == b.tm_sec &&
-         a.tm_min == b.tm_min &&
-         a.tm_hour == b.tm_hour &&
-         a.tm_mday == b.tm_mday &&
-         a.tm_mon == b.tm_mon &&
-         a.tm_year == b.tm_year;
-}
-
-// Convert a tm containing a UTC calendar time to the processor's time_t
-// representation without allowing mktime()'s local-time offset to change the
-// represented instant.
-time_t RTC_I2C::tmToTimeT(tm timeParts) {
-  TimeUtils::begin();
-  etime_t t = static_cast<etime_t>(mktime(&timeParts));
-  t = TimeUtils::convertTZOffset(t, TimeUtils::getCoreTimeZone(), 0);
-  return static_cast<time_t>(t);
-}
-
-// Convert a processor time_t containing a UTC timestamp to the tm form used
-// by the RTC API.  gmtime_r() is deliberately used without applying the core
-// timezone offset: adding the mktime offset here would turn a UTC timestamp
-// into local time.  TimeUtils still supplies the processor epoch information
-// so that this remains correct on cores whose time_t epoch is not Unix.
-void RTC_I2C::timeTToTm(time_t t, tm &timeParts) {
-  TimeUtils::begin();
-  etime_t coreTime = TimeUtils::convertEpoch(
-      static_cast<etime_t>(t), TimeUtils::getCoreEpochStart(),
-      TimeUtils::getCoreEpochStart());
-  time_t gmtimeTime = static_cast<time_t>(coreTime);
-  gmtime_r(&gmtimeTime, &timeParts);
-}
-
 // set time from Unix time
 void RTC_I2C::setTime(time_t t) {
   tm timeParts;

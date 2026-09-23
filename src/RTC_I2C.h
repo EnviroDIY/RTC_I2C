@@ -62,14 +62,11 @@ class RTC_I2C {
   virtual void setRegister(byte reg, byte val);
   virtual byte getRegister(byte reg);
   virtual byte getCapabilities(void) { return _capabilities; };
-  static bool sameTime(const tm &a, const tm &b);
 
  protected:
   static byte bcd2bin(byte val) { return val - 6 * (val >> 4); }
   static byte bin2bcd(byte val) { return val + 6 * (val / 10); }
   static byte decodewday(byte bits);
-  static time_t tmToTimeT(tm timeParts);
-  static void timeTToTm(time_t t, tm &timeParts);
   byte _i2caddr = 0;
   TwoWire *_wire = NULL;
   bool _started = false;
