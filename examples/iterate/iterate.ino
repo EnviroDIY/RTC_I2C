@@ -32,35 +32,68 @@ RV8803 rtc11;
 SD2405 rtc12;
 
 RTC_I2C *rtc[MAXRTC] = {&rtc0, &rtc1, &rtc2, &rtc3, &rtc4, &rtc5, &rtc6, &rtc7, &rtc8, &rtc9, &rtc10, &rtc11, &rtc12};
+RTC_I2C *attachedRTC[MAXRTC] = {nullptr};
+uint8_t n_attached = 0;
 
 
 void setup(void) {
   Serial.begin(115200);
   Serial.println(F("Starting RTC iteration test...\n"));
+
+  for (byte i = 0; i < MAXRTC; i++) {
+    attachedRTC[i] = nullptr;
+  }
+
   for (byte i = 0; i < MAXRTC; i++) {
     Serial.print(F("Initializing RTC"));
     Serial.print(i);
     Serial.print(F(": "));
     Serial.print(rtc[i]->getMakeModel());
+    Serial.print(F(" at "));
+    Serial.print(String(rtc[i]->getAddress(), HEX));
     Serial.println();
     bool success = rtc[i]->begin();
     Serial.print(F("    ..."));
     Serial.println(success ? "success" : "failure");
+    if (success) {
+      attachedRTC[n_attached++] = rtc[i];
+    }
+  }
+  // Friday, September 25, 2026 at 7:05:00 PM UTC in Unix epoch time
+  timestamp_t ts = 1790363100;
+  tm timeParts;
+  // convert to a tm object
+  TimeUtils::utcTimeTToTm(TimeUtils::getTimeT(ts, 0, epochStart::unix_epoch), timeParts);
+
+  for (byte i = 0; i < n_attached; i++) {
+    attachedRTC[i]->setTime(timeParts);
+    Serial.print(F("Set RTC"));
+    Serial.print(i);
+    Serial.print(F(": "));
+    Serial.print(attachedRTC[i]->getMakeModel());
+    Serial.print(F(" at "));
+    Serial.print(String(attachedRTC[i]->getAddress(), HEX));
+    Serial.print(" to ");
+    showDate(timeParts);
+    Serial.print(" ");
+    showTime(timeParts);
+    Serial.println();
   }
 }
 
 void loop(void) {
+  Serial.println("\n---\n");
   tm timeParts;
-  for (byte i = 0; i < MAXRTC; i++) {
-    Serial.print(rtc[i]->getMakeModel());
+  for (byte i = 0; i < n_attached; i++) {
+    Serial.print(attachedRTC[i]->getMakeModel());
     Serial.print(F(" ("));
     Serial.print(i);
     Serial.print(F("): "));
-    rtc[i]->getTime(timeParts);
+    attachedRTC[i]->getTime(timeParts);
     showTime(timeParts);
     Serial.print(F("   "));
     showDate(timeParts);
-    Serial.println("\n---\n");
+    Serial.println();
   }
   delay(5000L);
 }
