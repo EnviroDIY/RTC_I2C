@@ -25,7 +25,7 @@ void setup(void) {
   timeParts.tm_wday = 0;
   rtc.setTime(timeParts);
   rtc.getTime(timeParts1);
-  if (!RTC_I2C::sameTime(timeParts, timeParts1)) {
+  if (!TimeUtils::sameTime(timeParts, timeParts1)) {
     Serial.println(F("Not able to set RTC"));
     while (1);
   }
@@ -48,7 +48,7 @@ void setup(void) {
     expected.tm_hour -= 24;
     ++expected.tm_mday;
   }
-  if (!RTC_I2C::sameTime(expected, timeParts1)) {
+  if (!TimeUtils::sameTime(expected, timeParts1)) {
     Serial.println(F("RTC does not advance"));
     while (1);
   }

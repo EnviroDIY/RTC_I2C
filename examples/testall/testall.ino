@@ -296,7 +296,7 @@ void initRTC(void) {
     rtc.getTime(new_tm);
     // RTC_I2C performs tm/time_t conversions internally with TimeUtils.
     valid = rtc.isValid();
-    if (valid && RTC_I2C::sameTime(timeParts, new_tm)) {
+    if (valid && TimeUtils::sameTime(timeParts, new_tm)) {
       config = true;
     }
   }
