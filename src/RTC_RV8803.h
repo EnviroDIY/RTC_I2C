@@ -37,9 +37,9 @@ class RV8803 : public RTC_I2C {
   };
   void init(byte mode = 1);
   bool isValid(void);
-  void setTime(time_t t);
+  void setTime(timestamp_t t);
   void setTime(tm timeParts);
-  time_t getTime(bool blocking = false);
+  timestamp_t getTime(bool blocking = false);
   void getTime(tm &timeParts, bool blocking = false);
   void setAlarm(byte minute, byte hour);
   void setAlarm(byte minute);

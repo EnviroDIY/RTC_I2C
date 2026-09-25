@@ -14,7 +14,7 @@ bool RTC_I2C::begin(TwoWire *wi) {
 }
 
 // set time from Unix time
-void RTC_I2C::setTime(time_t t) {
+void RTC_I2C::setTime(timestamp_t t) {
   tm timeParts;
   timeTToTm(t, timeParts);
   setTime(timeParts);
@@ -42,7 +42,7 @@ void RTC_I2C::setTime(tm timeParts) {
 }
 
 // get Unix time
-time_t RTC_I2C::getTime(bool blocking) {
+timestamp_t RTC_I2C::getTime(bool blocking) {
   tm timeParts;
   getTime(timeParts, blocking);
   return tmToTimeT(timeParts);

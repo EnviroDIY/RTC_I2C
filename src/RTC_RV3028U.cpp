@@ -1,8 +1,8 @@
 #include <RTC_RV3028U.h>
 
 // get Unix time (from a Unix time counter)
-time_t RV3028U::getTime(bool blocking) {
-  time_t t1 = 0, t2;
+timestamp_t RV3028U::getTime(bool blocking) {
+  timestamp_t t1 = 0, t2;
   int timeout = 0;
   do {
     t2 = t1;
@@ -15,7 +15,7 @@ time_t RV3028U::getTime(bool blocking) {
     if (_wire->endTransmission(false) != 0) return 0;
     if (_wire->requestFrom(_i2caddr, (byte)4) != 4) return 0;
     t1 = 0;
-    for (byte i = 0; i < 4; i++) t1 = (t1 >> 8) | (((time_t)_wire->read()) << 24);
+    for (byte i = 0; i < 4; i++) t1 = (t1 >> 8) | (((timestamp_t)_wire->read()) << 24);
     if (blocking) return t1;
   } while (t1 != t2);
   return t1;
@@ -26,7 +26,7 @@ void RV3028U::getTime(tm &timeParts, bool blocking) {
   timeTToTm(t, timeParts);
 }
 
-void RV3028U::setTime(time_t t) {
+void RV3028U::setTime(timestamp_t t) {
   // Serial.println(static_cast<uint32_t>(t), HEX);
   setRegister(RV3028_CONTROL + 1, getRegister(RV3028_CONTROL + 1) | 0b1); // reset counter chain in clock
   _wire->beginTransmission(_i2caddr);

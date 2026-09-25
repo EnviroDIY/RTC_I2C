@@ -39,9 +39,10 @@ class RTC_I2C {
   bool begin(TwoWire *wi = &Wire);
   virtual void init(byte mode = 1) = 0;
   virtual bool isValid(void) = 0;
-  virtual void setTime(time_t t);
+  virtual void setTime(timestamp_t unixTimestamp);
+  virtual void setTime(epochTime eTime);
   virtual void setTime(tm timeParts);
-  virtual time_t getTime(bool blocking = false);
+  virtual timestamp_t getTime(bool blocking = false);
   virtual void getTime(tm &timeParts, bool blocking = false);
   virtual void enable32kHz(void) {};
   virtual void disable32kHz(void) {};

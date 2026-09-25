@@ -28,7 +28,7 @@ void MCP79410::setTime(tm timeParts) {
 }
 
 // set time from Unix time
-void MCP79410::setTime(time_t t) {
+void MCP79410::setTime(timestamp_t t) {
   tm timeParts;
   timeTToTm(t, timeParts);
   setTime(timeParts);

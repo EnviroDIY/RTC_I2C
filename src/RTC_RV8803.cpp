@@ -11,7 +11,7 @@ bool RV8803::isValid(void) {
 }
 
 // set & clear reset bit when setting time/date
-void RV8803::setTime(time_t t) {
+void RV8803::setTime(timestamp_t t) {
   setRegister(RV8803_CONTROL, getRegister(RV8803_CONTROL) | 1); // set RESET bit
   RTC_I2C::setTime(t);
   setRegister(RV8803_CONTROL, getRegister(RV8803_CONTROL) & 0b11111110); // clear RESET bit
@@ -23,7 +23,7 @@ void RV8803::setTime(tm timeParts) {
   setRegister(RV8803_CONTROL, getRegister(RV8803_CONTROL) & 0b11111110); // clear RESET bit
 }
 
-time_t RV8803::getTime(bool blocking) {
+timestamp_t RV8803::getTime(bool blocking) {
   tm timeParts;
   getTime(timeParts, blocking);
   return tmToTimeT(timeParts);

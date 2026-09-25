@@ -25,9 +25,9 @@ class RV3028U : public RV3028 {
   void clearAlarm(void) {};
   void enableAlarm(void) {};
   void disableAlarm(void) {};
-  void setTime(time_t t);
+  void setTime(timestamp_t t);
   void setTime(tm timeParts);
-  time_t getTime(bool blocking = false);
+  timestamp_t getTime(bool blocking = false);
   void getTime(tm &timeParts, bool blocking = false);
   String getManufacturer(void);
   String getModel(void);
