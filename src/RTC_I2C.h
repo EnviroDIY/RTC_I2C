@@ -64,8 +64,8 @@ class RTC_I2C {
   virtual byte getCapabilities(void) { return _capabilities; };
 
  protected:
-  static byte bcd2bin(byte val) { return val - 6 * (val >> 4); }
-  static byte bin2bcd(byte val) { return val + 6 * (val / 10); }
+  static byte bcd2bin(byte val) __attribute__((weak)) { return val - 6 * (val >> 4); }
+  static byte bin2bcd(byte val) __attribute__((weak)) { return val + 6 * (val / 10); }
   static byte decodewday(byte bits);
   byte _i2caddr = 0;
   TwoWire *_wire = NULL;
