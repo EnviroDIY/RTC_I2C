@@ -62,6 +62,7 @@ class RTC_I2C {
   virtual void setRegister(byte reg, byte val);
   virtual byte getRegister(byte reg);
   virtual byte getCapabilities(void) { return _capabilities; };
+  virtual uint8_t getAddress() { return _i2caddr; }
 
  protected:
   static byte bcd2bin(byte val) __attribute__((weak)) { return val - 6 * (val >> 4); }
