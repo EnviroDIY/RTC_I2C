@@ -24,15 +24,20 @@ void RTC_I2C::setTime(time_t t) {
 void RTC_I2C::setTime(tm timeParts) {
   _wire->beginTransmission(_i2caddr);
   _wire->write((_capabilities & RTC_CAP_SREGADDR) ? (_clockreg << 4) : _clockreg);
-  _wire->write(bin2bcd(timeParts.tm_sec) | ((_bit7set & 1) ? 0x80 : 0));
-  _wire->write(bin2bcd(timeParts.tm_min) | ((_bit7set & (1 << 1)) ? 0x80 : 0));
-  _wire->write(bin2bcd(timeParts.tm_hour) | ((_bit7set & (1 << 2)) ? 0x80 : 0));
+  _wire->write(bin2bcd(timeParts.tm_sec) | ((_bit7set & 1) ? 0x80 : 0));         // seconds after the minute
+  _wire->write(bin2bcd(timeParts.tm_min) | ((_bit7set & (1 << 1)) ? 0x80 : 0));  // minutes after the hour
+  _wire->write(bin2bcd(timeParts.tm_hour) | ((_bit7set & (1 << 2)) ? 0x80 : 0)); // hours since midnight
   if (!_wdayfirst) _wire->write(bin2bcd(timeParts.tm_mday) | ((_bit7set & (1 << 4)) ? 0x80 : 0));
-  _wire->write((_wdaybase < 2 ? bin2bcd(timeParts.tm_wday - 1 + _wdaybase) : (1 << (timeParts.tm_wday - 1))) |
+  // ^^ day of the month, if it comes before the day of the week in the RTC register
+  _wire->write((_wdaybase < 2 ? bin2bcd(timeParts.tm_wday + _wdaybase) : (1 << (timeParts.tm_wday))) |
                ((_bit7set & (1 << 3)) ? 0x80 : 0));
+  // ^^ day of the week, adjusted from tm's 0-6 numbering to whatever the RTC uses as its _wdaybase
   if (_wdayfirst) _wire->write(bin2bcd(timeParts.tm_mday) | ((_bit7set & (1 << 4)) ? 0x80 : 0));
-  _wire->write(bin2bcd(timeParts.tm_mon) | ((_bit7set & (1 << 5)) ? 0x80 : 0));
-  _wire->write(bin2bcd(timeParts.tm_year - 30)); // readjust to 2000 instead of 1970!
+  // ^^ day of the month, if it comes after the day of the week in the RTC register
+  _wire->write(bin2bcd(timeParts.tm_mon + 1) | ((_bit7set & (1 << 5)) ? 0x80 : 0));
+  // ^^ month of the year, shifted from 0-indexed to 1-indexed
+  _wire->write(bin2bcd(timeParts.tm_year - 100));
+  // ^^ years since 1900 (as in tm structure) converted to years since 2000 used by supported RTCs
   _wire->endTransmission();
 }
 

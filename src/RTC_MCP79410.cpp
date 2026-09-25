@@ -14,14 +14,15 @@ void MCP79410::setTime(tm timeParts) {
   while (++timeout && getRegister(MCP79410_CLOCKREG + 3) & 0b100000); // wait for OSCON to become zero
   _wire->beginTransmission(_i2caddr);
   _wire->write(MCP79410_CLOCKREG);
-  _wire->write(bin2bcd(timeParts.tm_sec));
-  _wire->write(bin2bcd(timeParts.tm_min));
-  _wire->write(bin2bcd(timeParts.tm_hour));
-  _wire->write((bin2bcd(timeParts.tm_wday + _wdaybase)) |
-               0b1000); // set the VBATEN enable bit so that the thing can run on batteries
-  _wire->write(bin2bcd(timeParts.tm_mday));
-  _wire->write(bin2bcd(timeParts.tm_mon));
-  _wire->write(bin2bcd(timeParts.tm_year - 100)); // readjust to 2000 instead of 1900!
+  _wire->write(bin2bcd(timeParts.tm_sec));  // seconds after the minute
+  _wire->write(bin2bcd(timeParts.tm_min));  // minutes after the hour
+  _wire->write(bin2bcd(timeParts.tm_hour)); // hours since midnight
+  _wire->write((bin2bcd(timeParts.tm_wday + _wdaybase)) | 0b1000);
+  // ^^ day of the week, adjusted from tm's 0-6 numbering to whatever the RTC uses as its _wdaybase
+  // XOR with 0b1000 to set the VBATEN enable bit so that the thing can run on batteries
+  _wire->write(bin2bcd(timeParts.tm_mday));       // day of the month
+  _wire->write(bin2bcd(timeParts.tm_mon + 1));    // month of the year, zero to 1 indexed
+  _wire->write(bin2bcd(timeParts.tm_year - 100)); // years since 1900 (as in tm structure) converted to years since 2000
   _wire->endTransmission();
   setRegister(MCP79410_CLOCKREG, bin2bcd(timeParts.tm_sec) | 0x80); // now enable oscillator!
 }

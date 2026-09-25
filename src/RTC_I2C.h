@@ -72,7 +72,7 @@ class RTC_I2C {
   TwoWire *_wire = NULL;
   bool _started = false;
   byte _clockreg;     // where clock reg starts
-  byte _wdaybase;     // base of weekday counting
+  byte _wdaybase;     // base of weekday counting, either 0 (days range from 0-6) or 1 (days range from 1-7)
   bool _wdayfirst;    // true when weekday comes before day in clock register
   byte _capabilities; // lists all capabilities of this RTC
   byte _bit7set;      // if the 7th bit in a byte of the clock register must be set (bit 0=sec, bit 1=min, ...)
