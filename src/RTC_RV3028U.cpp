@@ -23,7 +23,7 @@ timestamp_t RV3028U::getTime(bool blocking) {
 
 void RV3028U::getTime(tm &timeParts, bool blocking) {
   time_t t = getTime(blocking);
-  timeTToTm(t, timeParts);
+  TimeUtils::fillTimeParts(t, 0, epochStart::unix_epoch, timeParts);
 }
 
 void RV3028U::setTime(timestamp_t t) {
@@ -43,7 +43,7 @@ void RV3028U::setTime(timestamp_t t) {
 }
 
 void RV3028U::setTime(tm timeParts) {
-  setTime(tmToTimeT(timeParts));
+  setTime(TimeUtils::tmToEpochTime(timeParts).getTimestamp());
 }
 
 String RV3028U::getManufacturer(void) {

@@ -13,10 +13,15 @@ bool RTC_I2C::begin(TwoWire *wi) {
   return true;
 }
 
+// set time from epochTime object
+void RTC_I2C::setTime(epochTime eTime) {
+  setTime(eTime.getTimestamp());
+}
+
 // set time from Unix time
 void RTC_I2C::setTime(timestamp_t t) {
   tm timeParts;
-  timeTToTm(t, timeParts);
+  TimeUtils::fillTimeParts(t, 0, epochStart::unix_epoch, timeParts);
   setTime(timeParts);
 }
 
@@ -45,7 +50,7 @@ void RTC_I2C::setTime(tm timeParts) {
 timestamp_t RTC_I2C::getTime(bool blocking) {
   tm timeParts;
   getTime(timeParts, blocking);
-  return tmToTimeT(timeParts);
+  return TimeUtils::tmToEpochTime(timeParts).getTimestamp();
 }
 
 // get time as time record

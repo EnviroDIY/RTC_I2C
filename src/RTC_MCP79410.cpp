@@ -30,7 +30,7 @@ void MCP79410::setTime(tm timeParts) {
 // set time from Unix time
 void MCP79410::setTime(timestamp_t t) {
   tm timeParts;
-  timeTToTm(t, timeParts);
+  TimeUtils::fillTimeParts(t, 0, epochStart::unix_epoch, timeParts);
   setTime(timeParts);
 }
 
@@ -41,8 +41,8 @@ void MCP79410::setAlarm(byte minute, byte hour) {
   getTime(timeParts); // current time
   if (!((timeParts.tm_min < minute && timeParts.tm_hour == hour) ||
         (timeParts.tm_hour < hour))) { // alarm should be next day
-    t = tmToTimeT(timeParts) + SECONDS_IN_DAY;
-    timeTToTm(t, timeParts);
+    t = TimeUtils::tmToEpochTime(timeParts).getTimestamp() + SECONDS_IN_DAY;
+    TimeUtils::fillTimeParts(t, 0, epochStart::unix_epoch, timeParts);
   }
   setRegister(MCP79410_ALARM, bin2bcd(0));                            // set second alarm
   setRegister(MCP79410_ALARM + 1, bin2bcd(minute));                   // set minute alarm

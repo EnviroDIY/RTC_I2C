@@ -63,7 +63,7 @@ void setup(void) {
   timestamp_t ts = 1790363100;
   tm timeParts;
   // convert to a tm object
-  TimeUtils::utcTimeTToTm(TimeUtils::getTimeT(ts, 0, epochStart::unix_epoch), timeParts);
+  TimeUtils::fillTimeParts(ts, 0, epochStart::unix_epoch, timeParts);
 
   for (byte i = 0; i < n_attached; i++) {
     attachedRTC[i]->setTime(timeParts);
