@@ -311,7 +311,6 @@ void help() {
 
 bool initRTC(void) {
   tm timeParts, new_tm;
-  bool parse = false;
   bool config = false;
   bool valid = false;
 
