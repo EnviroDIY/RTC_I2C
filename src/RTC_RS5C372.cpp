@@ -56,8 +56,8 @@ void RS5C372::disable1Hz(void) {
   setRegister(RS5C372_CONTROL1, (clkout & 0b11111000));
 }
 
-void RS5C372::setOffset(int offset, byte mode) {
-  if (mode != 2) {
+void RS5C372::setOffset(int offset, OffsetMode mode) {
+  if (mode != OffsetMode::RAW) {
     offset = (offset + (offset > 0 ? +152 : -152)) / 305;
     if (offset < -64)
       offset = -64;

@@ -102,14 +102,15 @@ String MCP79410::getModel(void) {
 }
 
 
-// negative values make the clock faster by roughly 1 ppm/LSB in mode 0.
+// Negative values make the clock faster by roughly 1 ppm/LSB in the
+// normal calibrated correction modes.
 // The range of the internal parameter goes from -128 to +127, but they use
 // apparently sign + magnitude instead of 2ers complement.
 // I do not support the coarse calibration, because it will screw up
 // the SQW output and is too coarse anyways.
-void MCP79410::setOffset(int offset, byte mode) {
+void MCP79410::setOffset(int offset, OffsetMode mode) {
   bool sign = false;
-  if (mode == 2) {
+  if (mode == OffsetMode::RAW) {
     setRegister(MCP79410_OFFSET, offset & 0xFF);
   } else {
     if (offset < 0) {

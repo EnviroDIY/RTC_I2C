@@ -37,12 +37,13 @@ int DS3231::getTemp(void) {
 
 // negative values make the clock faster by roughly 0.1 ppm/LSB,
 // offset needs to be divided by ten since the common format is a step size of 0.01 ppm.
-// Since there is only one mode, we ignore the mode parameter.
+// This RTC has only one calibrated correction mode; the mode is used only
+// to distinguish the raw-register form from the normal calibrated form.
 // After having changed the offset value, a conversion is triggered so that
 // changes are immediately visible.
-void DS3231::setOffset(int offset, byte mode) {
+void DS3231::setOffset(int offset, OffsetMode mode) {
   int timeout = 0;
-  if (mode != 2) {
+  if (mode != OffsetMode::RAW) {
     if (offset < 0)
       offset = (offset - 5) / 10;
     else

@@ -42,7 +42,7 @@ class MCP79410 : public RTC_I2C {
   void disable32kHz(void) override;
   void enable1Hz(void) override;
   void disable1Hz(void) override;
-  void setOffset(int offset, byte mode = 1) override;
+  void setOffset(int offset, OffsetMode mode = OffsetMode::EVERY_MINUTE) override;
   unsigned int getOffset(void) override;
   String getManufacturer(void) override;
   String getModel(void) override;

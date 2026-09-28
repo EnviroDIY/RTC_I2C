@@ -97,8 +97,8 @@ void RV3032::disable1Hz(void) {
 // negative values make the clock faster by 0.2384 ppm/LSB
 // The range of the internal parameter goes from -32 to +31.
 // This means that possible values for offset range from -768 to +744 corresponding to -7.68 ppm to 7.44 ppm
-void RV3032::setOffset(int offset, byte mode) {
-  if (mode != 2) {
+void RV3032::setOffset(int offset, OffsetMode mode) {
+  if (mode != OffsetMode::RAW) {
     if (offset < 0)
       offset = offset - 12;
     else

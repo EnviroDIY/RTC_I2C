@@ -38,6 +38,13 @@ enum class BatteryMode : int8_t {
   DSM  ///< Direct Switching Mode (DSM). Switchover when VDD < VBACKUP.  Use when charging a rechargeable battery.
 };
 
+/// @brief Selects how a clock calibration offset is interpreted.
+enum class OffsetMode : byte {
+  EVERY_TWO_HOURS = 0, ///< Apply the correction every two hours (coarse correction mode).
+  EVERY_MINUTE = 1,    ///< Apply the correction every minute (fine correction mode).
+  RAW = 2              ///< Treat the offset as the RTC's raw calibration-register value.
+};
+
 
 /* A generic RTC base class */
 class RTC_I2C {
@@ -60,7 +67,8 @@ class RTC_I2C {
   virtual void disableAlarm(void) {};
   virtual bool senseAlarm(void) { return false; };
   virtual void clearAlarm(void) {};
-  virtual void setOffset(__attribute__((unused)) int offset, __attribute__((unused)) byte mode = 1) {};
+  virtual void setOffset(__attribute__((unused)) int offset,
+                         __attribute__((unused)) OffsetMode mode = OffsetMode::EVERY_MINUTE) {};
   virtual unsigned int getOffset(void) { return 0; };
   virtual int getTemp(void) { return -128; };
   virtual String getManufacturer(void) = 0;

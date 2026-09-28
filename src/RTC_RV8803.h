@@ -49,7 +49,7 @@ class RV8803 : public RTC_I2C {
   void disableAlarm(void) override;
   void enable32kHz(void) override;
   void enable1Hz(void) override;
-  void setOffset(int offset, byte mode = 1) override;
+  void setOffset(int offset, OffsetMode mode = OffsetMode::EVERY_MINUTE) override;
   unsigned int getOffset(void) override;
   String getManufacturer(void) override;
   String getModel(void) override;
