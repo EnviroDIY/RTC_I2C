@@ -82,22 +82,24 @@ The following tables list the hardware capabilities relevant to the common libra
 
 ### Capability bits
 
-| RTC        | 32 kHz | 1 Hz  | Alarm | Hourly alarm | Offset | Temperature | Special register addressing |
-| ---------- | :----: | :---: | :---: | :----------: | :----: | :---------: | :-------------------------: |
-| DS1307     |  Yes   |  Yes  |   —   |      —       |   —    |      —      |              —              |
-| DS1337     |  Yes   |  Yes  |  Yes  |     Yes      |   —    |      —      |              —              |
-| DS3231S(N) |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |     Yes     |              —              |
-| DS3231M    |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |     Yes     |              —              |
-| MCP79410   |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |              —              |
-| PCF8523    |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |              —              |
-| PCF8563    |  Yes   |  Yes  |  Yes  |     Yes      |   —    |      —      |              —              |
-| RS5C372    |  Yes   |  Yes  |  Yes  |      —       |  Yes   |      —      |             Yes             |
-| RV-3028    |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |              —              |
-| RV-3028U   |  Yes   |  Yes  |   —   |      —       |  Yes   |      —      |              —              |
-| RV-3032    |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |     Yes     |              —              |
-| RV-8523    |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |              —              |
-| RV-8803    |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |              —              |
-| SD2405     |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |              —              |
+| RTC        | 32 kHz | 1 Hz  | Alarm | Hourly alarm | Offset | Temperature | Event interrupt | Special register addressing |
+| ---------- | :----: | :---: | :---: | :----------: | :----: | :---------: | :-------------: | :-------------------------: |
+| DS1307     |  Yes   |  Yes  |   —   |      —       |   —    |      —      |        —        |              —              |
+| DS1337     |  Yes   |  Yes  |  Yes  |     Yes      |   —    |      —      |        —        |              —              |
+| DS3231S(N) |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |     Yes     |        —        |              —              |
+| DS3231M    |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |     Yes     |        —        |              —              |
+| MCP79410   |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |        —        |              —              |
+| PCF8523    |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |        —        |              —              |
+| PCF8563    |  Yes   |  Yes  |  Yes  |     Yes      |   —    |      —      |        —        |              —              |
+| RS5C372    |  Yes   |  Yes  |  Yes  |      —       |  Yes   |      —      |        —        |             Yes             |
+| RV-3028    |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |       Yes       |              —              |
+| RV-3028U   |  Yes   |  Yes  |   —   |      —       |  Yes   |      —      |       Yes       |              —              |
+| RV-3032    |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |     Yes     |       Yes       |              —              |
+| RV-8523    |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |        —        |              —              |
+| RV-8803    |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |       Yes       |              —              |
+| SD2405     |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |        —        |              —              |
+
+`Event interrupt` means the RTC provides a dedicated external event input that can generate an interrupt; it does not include alarm, timer, or periodic time-update interrupts.
 
 The `RTC_CAP_HOURLY_ALARM` bit describes the recurring hourly alarm supported by the common API. It is deliberately separate from the more general alarm capabilities described in the alarm table below.
 
