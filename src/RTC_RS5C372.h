@@ -33,7 +33,7 @@ class RS5C372 : public RTC_I2C {
     _capabilities = RS5C372_CAP;
     _bit7set = RS5C372_BIT7;
   }
-  void init(BatteryMode mode = BatteryMode::LSM) override;
+  void init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
   bool isValid(void) override;
   void setAlarm(byte minute, byte hour) override;
   void setAlarm(__attribute__((unused)) byte minute) override {} // no-op for this RTC!

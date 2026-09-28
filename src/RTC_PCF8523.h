@@ -31,7 +31,7 @@ class PCF8523 : public PCFAlarm {
     _capabilities = PCF8523_CAP;
     _bit7set = PCF8523_BIT7;
   };
-  void init(BatteryMode mode = BatteryMode::LSM) override;
+  void init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
   bool isValid(void) override;
   void enableAlarm(void) override;
   void disableAlarm(void) override;

@@ -28,7 +28,7 @@ class MCP79410 : public RTC_I2C {
     _capabilities = MCP79410_CAP;
     _bit7set = MCP79410_BIT7;
   };
-  void init(BatteryMode mode = BatteryMode::LSM) override;
+  void init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
   bool isValid(void) override;
   void setTime(timestamp_t t) override;
   void setTime(tm timeParts) override;

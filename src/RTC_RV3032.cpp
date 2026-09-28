@@ -17,12 +17,12 @@ void RV3032::init(BatteryMode mode) {
     coe_bsm_reg |= 0;
     break;
   }
-  case BatteryMode::LSM: {
+  case BatteryMode::LEVEL_SWITCHING: {
     // Enables the Level Switching Mode (LSM).  Switchover when VDD < VTH:LSM (2.0 V) AND VBACKUP > VTH:LSM (2.0 V).  Use this with a standard coin cell battery.
     coe_bsm_reg |= 0b100000;
     break;
   }
-  case BatteryMode::DSM: {
+  case BatteryMode::DIRECT_SWITCHING: {
     // Enables the Direct Switching Mode (DSM).  Switchover when VDD < VBACKUP.  Slightly lower power consumption than LSM.  Use this when charging a rechargeable battery.
     coe_bsm_reg |= 0b010000;
     break;

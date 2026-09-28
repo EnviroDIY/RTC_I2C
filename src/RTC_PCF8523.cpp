@@ -10,11 +10,11 @@ void PCF8523::init(BatteryMode mode) {
     bsm_reg = 0b01100000;
     break;
   }
-  case BatteryMode::LSM: {
+  case BatteryMode::LEVEL_SWITCHING: {
     bsm_reg = 0b00000000;
     break;
   }
-  case BatteryMode::DSM: {
+  case BatteryMode::DIRECT_SWITCHING: {
     bsm_reg = 0b00100000;
     break;
   }

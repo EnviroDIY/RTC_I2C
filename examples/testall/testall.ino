@@ -326,7 +326,7 @@ bool initRTC(void) {
   set_time = *localtime(&assembled_time);
   printTmComponents(set_time, Serial);
 
-  bool success = rtc.begin(&Wire, BatteryMode::DSM);
+  bool success = rtc.begin(&Wire, BatteryMode::DIRECT_SWITCHING);
   if (parse) {
     rtc.setTime(set_time);
     rtc.getTime(new_tm);
