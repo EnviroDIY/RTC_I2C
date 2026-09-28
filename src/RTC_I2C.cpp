@@ -69,22 +69,27 @@ void RTC_I2C::getTime(tm &timeParts, bool blocking) {
   _wire->write((_capabilities & RTC_CAP_SREGADDR) ? (_clockreg << 4) : _clockreg);
   if (_wire->endTransmission(false) != 0) return;
   if (_wire->requestFrom(_i2caddr, (byte)7) != 7) return;
-  timeParts.tm_sec = bcd2bin(_wire->read() & 0x7F);
-  timeParts.tm_min = bcd2bin(_wire->read() & 0x7F);
-  timeParts.tm_hour = bcd2bin(_wire->read() & 0x3F);
+  timeParts.tm_sec = bcd2bin(_wire->read() & 0x7F);  // seconds after the minute
+  timeParts.tm_min = bcd2bin(_wire->read() & 0x7F);  // minutes after the hour
+  timeParts.tm_hour = bcd2bin(_wire->read() & 0x3F); // hours since midnight
   if (!_wdayfirst) timeParts.tm_mday = bcd2bin(_wire->read() & 0x3F);
-  timeParts.tm_wday = (_wdaybase < 2 ? (bcd2bin(_wire->read() & 0x07)) - _wdaybase + 1 : decodewday(_wire->read()));
+  // ^^ day of the month, if it comes before the day of the week in the RTC register
+  timeParts.tm_wday = (_wdaybase < 2 ? (bcd2bin(_wire->read() & 0x07)) - _wdaybase : decodewday(_wire->read()));
+  // ^^ day of the week, adjusted from whatever the RTC uses as its _wdaybase to tm's 0-6 numbering
   if (_wdayfirst) timeParts.tm_mday = bcd2bin(_wire->read() & 0x3F);
-  timeParts.tm_mon = bcd2bin(_wire->read() & 0x1F);
-  timeParts.tm_year = bcd2bin(_wire->read()) + 30; // rebase to 1970!
+  // ^^ day of the month, if it comes after the day of the week in the RTC register
+  timeParts.tm_mon = bcd2bin(_wire->read() & 0x1F) - 1;
+  // ^^ month of the year, shifted from 1-indexed to 0-indexed
+  timeParts.tm_year = bcd2bin(_wire->read()) + 100;
+  // ^^ years since 2000 used by supported RTCs converted to years since 1900 (as in tm structure)
 }
 
 byte RTC_I2C::decodewday(byte bits) {
   for (byte res = 1; res < 8; res++) {
-    if (bits & 1) return res;
+    if (bits & 1) return res - 1;
     bits = bits >> 1;
   }
-  return 1; // default value
+  return 0; // default value
 }
 
 // set one RTC register

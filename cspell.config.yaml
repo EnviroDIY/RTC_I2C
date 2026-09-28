@@ -3,6 +3,7 @@ ignorePaths: []
 dictionaryDefinitions: []
 dictionaries: []
 words:
+  - Adafruit
   - ALARMHR
   - ALARMWDAYS
   - CLKOE
@@ -10,10 +11,12 @@ words:
   - decodewday
   - DSALARM
   - EEPROM
+  - EnviroDIY
   - INTB
   - INTCN
   - INTRB
   - MAXRTC
+  - MBED
   - PCFALARM
   - PINALARM
   - RTClib
