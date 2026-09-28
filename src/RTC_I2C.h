@@ -49,7 +49,7 @@ enum class OffsetMode : byte {
 /* A generic RTC base class */
 class RTC_I2C {
  public:
-  bool begin(TwoWire *wi = &Wire);
+  bool begin(TwoWire *wi = &Wire, BatteryMode mode = BatteryMode::LSM);
   virtual void init(BatteryMode mode = BatteryMode::LSM) = 0;
   virtual bool isValid(void) = 0;
   virtual void setTime(timestamp_t unixTimestamp);

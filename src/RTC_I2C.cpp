@@ -2,7 +2,7 @@
 
 
 // try to establish connection to RTC after RTC specific parameters have been set
-bool RTC_I2C::begin(TwoWire *wi) {
+bool RTC_I2C::begin(TwoWire *wi, BatteryMode mode) {
   if (_i2caddr == 0 || wi == NULL) return false;
   if (_started) return true;
   _wire = wi;
@@ -10,6 +10,7 @@ bool RTC_I2C::begin(TwoWire *wi) {
   _wire->beginTransmission(_i2caddr);
   if (_wire->endTransmission() != 0) return false;
   _started = true;
+  init(mode);
   return true;
 }
 
