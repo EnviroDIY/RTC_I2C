@@ -87,19 +87,19 @@ class RTC_I2C {
 
 class DSAlarm : public RTC_I2C {
  public:
-  void setAlarm(byte minute, byte hour);
-  void setAlarm(byte minute);
-  void enableAlarm(void);
-  void disableAlarm(void);
-  bool senseAlarm(void);
-  void clearAlarm(void);
+  void setAlarm(byte minute, byte hour) override;
+  void setAlarm(byte minute) override;
+  void enableAlarm(void) override;
+  void disableAlarm(void) override;
+  bool senseAlarm(void) override;
+  void clearAlarm(void) override;
 };
 
 class PCFAlarm : public RTC_I2C {
  public:
-  void setAlarm(byte minute, byte hour);
-  void setAlarm(byte minute);
-  bool senseAlarm(void);
-  void clearAlarm(void);
+  void setAlarm(byte minute, byte hour) override;
+  void setAlarm(byte minute) override;
+  bool senseAlarm(void) override;
+  void clearAlarm(void) override;
 };
 #endif

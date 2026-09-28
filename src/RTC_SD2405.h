@@ -28,21 +28,21 @@ class SD2405 : public RTC_I2C {
     _capabilities = SD2405_CAP;
     _bit7set = SD2405_BIT7;
   };
-  void init(BatteryMode mode = BatteryMode::LSM);
-  bool isValid(void);
-  void setAlarm(byte minute, byte hour); // here we can only set the alarm til next match
-  void setAlarm(byte minute);            // hourly alarm at a particular minute
-  bool senseAlarm(void);
-  void clearAlarm(void);
-  void enableAlarm(void);
-  void disableAlarm(void);
-  void enable32kHz(void);
-  void disable32kHz(void);
-  void enable1Hz(void);
-  void disable1Hz(void);
-  void setOffset(int offset, byte mode = 1);
-  unsigned int getOffset(void);
-  String getManufacturer(void);
-  String getModel(void);
+  void init(BatteryMode mode = BatteryMode::LSM) override;
+  bool isValid(void) override;
+  void setAlarm(byte minute, byte hour) override; // here we can only set the alarm til next match
+  void setAlarm(byte minute) override;            // hourly alarm at a particular minute
+  bool senseAlarm(void) override;
+  void clearAlarm(void) override;
+  void enableAlarm(void) override;
+  void disableAlarm(void) override;
+  void enable32kHz(void) override;
+  void disable32kHz(void) override;
+  void enable1Hz(void) override;
+  void disable1Hz(void) override;
+  void setOffset(int offset, byte mode = 1) override;
+  unsigned int getOffset(void) override;
+  String getManufacturer(void) override;
+  String getModel(void) override;
 };
 #endif

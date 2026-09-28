@@ -29,17 +29,17 @@ class DS3231 : public DSAlarm {
     _capabilities = DS3231_CAP;
     _bit7set = DS3231_BIT7;
   };
-  void init(BatteryMode mode = BatteryMode::LSM);
-  bool isValid(void);
-  void enable32kHz(void);
-  void disable32kHz(void);
-  void enable1Hz(void);
-  void disable1Hz(void);
-  int getTemp(void);
-  void setOffset(int offset, byte mode = 1);
-  unsigned int getOffset(void);
-  String getManufacturer(void);
-  String getModel(void);
+  void init(BatteryMode mode = BatteryMode::LSM) override;
+  bool isValid(void) override;
+  void enable32kHz(void) override;
+  void disable32kHz(void) override;
+  void enable1Hz(void) override;
+  void disable1Hz(void) override;
+  int getTemp(void) override;
+  void setOffset(int offset, byte mode = 1) override;
+  unsigned int getOffset(void) override;
+  String getManufacturer(void) override;
+  String getModel(void) override;
 };
 #endif
 

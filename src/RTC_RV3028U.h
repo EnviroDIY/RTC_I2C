@@ -20,16 +20,16 @@ class RV3028U : public RV3028 {
     _capabilities = RV3028U_CAP;
     _bit7set = RV3028_BIT7;
   };
-  void setAlarm(__attribute__((unused)) byte minute, __attribute__((unused)) byte hour) {};
-  bool senseAlarm(void) { return false; };
-  void clearAlarm(void) {};
-  void enableAlarm(void) {};
-  void disableAlarm(void) {};
-  void setTime(timestamp_t t);
-  void setTime(tm timeParts);
-  timestamp_t getTime(bool blocking = false);
-  void getTime(tm &timeParts, bool blocking = false);
-  String getManufacturer(void);
-  String getModel(void);
+  void setAlarm(__attribute__((unused)) byte minute, __attribute__((unused)) byte hour) override {};
+  bool senseAlarm(void) override { return false; };
+  void clearAlarm(void) override {};
+  void enableAlarm(void) override {};
+  void disableAlarm(void) override {};
+  void setTime(timestamp_t t) override;
+  void setTime(tm timeParts) override;
+  timestamp_t getTime(bool blocking = false) override;
+  void getTime(tm &timeParts, bool blocking = false) override;
+  String getManufacturer(void) override;
+  String getModel(void) override;
 };
 #endif

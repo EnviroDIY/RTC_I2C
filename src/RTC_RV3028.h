@@ -34,22 +34,22 @@ class RV3028 : public RTC_I2C {
     _capabilities = RV3028_CAP;
     _bit7set = RV3028_BIT7;
   };
-  void init(BatteryMode mode = BatteryMode::LSM);
-  bool isValid(void);
-  void setAlarm(byte minute, byte hour);
-  void setAlarm(byte minute);
-  bool senseAlarm(void);
-  void clearAlarm(void);
-  void enableAlarm(void);
-  void disableAlarm(void);
-  void enable32kHz(void);
-  void disable32kHz(void);
-  void enable1Hz(void);
-  void disable1Hz(void);
-  void setOffset(int offset, byte mode = 1);
-  unsigned int getOffset(void);
-  String getManufacturer(void);
-  String getModel(void);
+  void init(BatteryMode mode = BatteryMode::LSM) override;
+  bool isValid(void) override;
+  void setAlarm(byte minute, byte hour) override;
+  void setAlarm(byte minute) override;
+  bool senseAlarm(void) override;
+  void clearAlarm(void) override;
+  void enableAlarm(void) override;
+  void disableAlarm(void) override;
+  void enable32kHz(void) override;
+  void disable32kHz(void) override;
+  void enable1Hz(void) override;
+  void disable1Hz(void) override;
+  void setOffset(int offset, byte mode = 1) override;
+  unsigned int getOffset(void) override;
+  String getManufacturer(void) override;
+  String getModel(void) override;
 
  protected:
   void updateEEPROMByte(byte reg);

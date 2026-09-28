@@ -33,21 +33,21 @@ class RS5C372 : public RTC_I2C {
     _capabilities = RS5C372_CAP;
     _bit7set = RS5C372_BIT7;
   }
-  void init(BatteryMode mode = BatteryMode::LSM);
-  bool isValid(void);
-  void setAlarm(byte minute, byte hour);
-  void setAlarm(__attribute__((unused)) byte minute) {}; // no-op for this RTC!
-  void enableAlarm(void);
-  void disableAlarm(void);
-  bool senseAlarm(void);
-  void clearAlarm(void);
-  void enable32kHz(void);
-  void disable32kHz(void);
-  void enable1Hz(void);
-  void disable1Hz(void);
-  void setOffset(int offset, byte mode = 1);
-  unsigned int getOffset(void);
-  String getManufacturer(void);
-  String getModel(void);
+  void init(BatteryMode mode = BatteryMode::LSM) override;
+  bool isValid(void) override;
+  void setAlarm(byte minute, byte hour) override;
+  void setAlarm(__attribute__((unused)) byte minute) override {}; // no-op for this RTC!
+  void enableAlarm(void) override;
+  void disableAlarm(void) override;
+  bool senseAlarm(void) override;
+  void clearAlarm(void) override;
+  void enable32kHz(void) override;
+  void disable32kHz(void) override;
+  void enable1Hz(void) override;
+  void disable1Hz(void) override;
+  void setOffset(int offset, byte mode = 1) override;
+  unsigned int getOffset(void) override;
+  String getManufacturer(void) override;
+  String getModel(void) override;
 };
 #endif

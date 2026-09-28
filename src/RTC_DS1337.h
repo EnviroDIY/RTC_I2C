@@ -28,13 +28,13 @@ class DS1337 : public DSAlarm {
     _capabilities = DS1337_CAP;
     _bit7set = DS1337_BIT7;
   };
-  void init(BatteryMode mode = BatteryMode::LSM);
-  bool isValid(void);
-  void enable32kHz(void);
-  void disable32kHz(void);
-  void enable1Hz(void);
-  void disable1Hz(void);
-  String getManufacturer(void);
-  String getModel(void);
+  void init(BatteryMode mode = BatteryMode::LSM) override;
+  bool isValid(void) override;
+  void enable32kHz(void) override;
+  void disable32kHz(void) override;
+  void enable1Hz(void) override;
+  void disable1Hz(void) override;
+  String getManufacturer(void) override;
+  String getModel(void) override;
 };
 #endif
