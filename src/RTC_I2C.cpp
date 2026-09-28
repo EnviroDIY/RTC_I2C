@@ -48,24 +48,16 @@ void RTC_I2C::setTime(tm timeParts) {
 }
 
 // get Unix time
-timestamp_t RTC_I2C::getTime(bool blocking) {
+timestamp_t RTC_I2C::getTime() {
   tm timeParts;
-  getTime(timeParts, blocking);
+  getTime(timeParts);
   return TimeUtils::tmToEpochTime(timeParts).getTimestamp();
 }
 
 // get time as time record
-void RTC_I2C::getTime(tm &timeParts, bool blocking) {
-  int timeout = 0;
-  byte sec;
+void RTC_I2C::getTime(tm &timeParts) {
   timeParts = tm{0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-  if (blocking) {
-    sec = getRegister(_clockreg);
-    while (++timeout &&
-           sec == getRegister((_capabilities & RTC_CAP_SREGADDR) ? (_clockreg << 4) :
-                                                                   _clockreg)); // wait until next second is reached
-  }
   _wire->beginTransmission(_i2caddr);
   _wire->write((_capabilities & RTC_CAP_SREGADDR) ? (_clockreg << 4) : _clockreg);
   if (_wire->endTransmission(false) != 0) return;

@@ -1,28 +1,23 @@
 #include <RTC_RV3028U.h>
 
 // get Unix time (from a Unix time counter)
-timestamp_t RV3028U::getTime(bool blocking) {
+timestamp_t RV3028U::getTime() {
   timestamp_t t1 = 0, t2;
   int timeout = 0;
   do {
     t2 = t1;
-    if (blocking) {
-      t1 = getRegister(RV3028_UCLOCK);
-      while (++timeout && t1 == getRegister(RV3028_UCLOCK)); // wait until next second is reached
-    }
     _wire->beginTransmission(_i2caddr);
     _wire->write(RV3028_UCLOCK);
     if (_wire->endTransmission(false) != 0) return 0;
     if (_wire->requestFrom(_i2caddr, (byte)4) != 4) return 0;
     t1 = 0;
     for (byte i = 0; i < 4; i++) t1 = (t1 >> 8) | (((timestamp_t)_wire->read()) << 24);
-    if (blocking) return t1;
-  } while (t1 != t2);
+  } while (t1 != t2 && ++timeout);
   return t1;
 }
 
-void RV3028U::getTime(tm &timeParts, bool blocking) {
-  time_t t = getTime(blocking);
+void RV3028U::getTime(tm &timeParts) {
+  time_t t = getTime();
   TimeUtils::fillTimeParts(t, 0, epochStart::unix_epoch, timeParts);
 }
 

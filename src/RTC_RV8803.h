@@ -39,8 +39,8 @@ class RV8803 : public RTC_I2C {
   bool isValid(void) override;
   void setTime(timestamp_t t) override;
   void setTime(tm timeParts) override;
-  timestamp_t getTime(bool blocking) override;
-  void getTime(tm &timeParts, bool blocking) override;
+  timestamp_t getTime() override;
+  void getTime(tm &timeParts) override;
   void setAlarm(byte minute, byte hour) override;
   void setAlarm(byte minute) override;
   bool senseAlarm(void) override;

@@ -25,8 +25,7 @@
 #define RTC_CAP_HOURLY_ALARM 0x08 // can raise an alarm every hour
 #define RTC_CAP_OFFSET 0x10       // has an offset register
 #define RTC_CAP_TEMP 0x20         // has a temperature sensor
-#define RTC_CAP_SREGADDR                                                               \
-  0x40 // uses a strange format for register addresses (upper nibble)
+#define RTC_CAP_SREGADDR 0x40     // uses a strange format for register addresses (upper nibble)
 
 #ifndef SECONDS_IN_DAY
 /// @brief The number of seconds in a day
@@ -36,15 +35,14 @@
 enum class BatteryMode : int8_t {
   DISABLED, ///< Battery switch-over function is disabled, only VDD is used
   LSM, ///< Level Switching Mode (LSM). Switchover when VDD < threshold AND VBACKUP > threshold.  Use with a standard coin cell battery.
-  DSM ///< Direct Switching Mode (DSM). Switchover when VDD < VBACKUP.  Use when charging a rechargeable battery.
+  DSM  ///< Direct Switching Mode (DSM). Switchover when VDD < VBACKUP.  Use when charging a rechargeable battery.
 };
 
 /// @brief Selects how a clock calibration offset is interpreted.
 enum class OffsetMode : byte {
-  EVERY_TWO_HOURS =
-    0,              ///< Apply the correction every two hours (coarse correction mode).
-  EVERY_MINUTE = 1, ///< Apply the correction every minute (fine correction mode).
-  RAW = 2           ///< Treat the offset as the RTC's raw calibration-register value.
+  EVERY_TWO_HOURS = 0, ///< Apply the correction every two hours (coarse correction mode).
+  EVERY_MINUTE = 1,    ///< Apply the correction every minute (fine correction mode).
+  RAW = 2              ///< Treat the offset as the RTC's raw calibration-register value.
 };
 
 
@@ -100,27 +98,15 @@ class RTC_I2C {
 
   /**
    * @brief Read the RTC as a Unix timestamp.
-   *
-   * The calendar time is read using the `tm` overload and converted to the library's
-   * epoch representation. When `blocking` is true, the read waits for the RTC to
-   * advance to the next second before reading the complete time.
-   *
-   * @param blocking If `true`, wait for the next second boundary before reading.
    * @return The current RTC time as a Unix timestamp.
    */
-  virtual timestamp_t getTime(bool blocking = false);
+  virtual timestamp_t getTime();
 
   /**
    * @brief Read the RTC into a `tm` calendar-time structure.
-   *
-   * The base implementation reads the seven clock registers and converts the RTC's
-   * register encoding into the standard `tm` field conventions. When `blocking` is
-   * true, the read waits for the RTC to advance to the next second before reading.
-   *
    * @param[out] timeParts The calendar-time structure to populate.
-   * @param blocking If `true`, wait for the next second boundary before reading.
    */
-  virtual void getTime(tm &timeParts, bool blocking = false);
+  virtual void getTime(tm &timeParts);
 
   /**
    * @brief Enable the RTC's 32 kHz output; a no-op for RTCs that do not have a 32kHz output.
@@ -147,8 +133,7 @@ class RTC_I2C {
    * @param minute The minute at which the alarm should match.
    * @param hour The hour at which the alarm should match.
    */
-  virtual void setAlarm(__attribute__((unused)) byte minute,
-                        __attribute__((unused)) byte hour) {};
+  virtual void setAlarm(__attribute__((unused)) byte minute, __attribute__((unused)) byte hour) {};
 
   /**
    * @brief Configure an alarm that matches a specific minute; a no-op for RTCs that do not have an alarm.
@@ -186,9 +171,8 @@ class RTC_I2C {
    * @param offset The calibration correction to apply.
    * @param mode Selects whether the correction is interpreted as a coarse, fine, or raw offset.
    */
-  virtual void setOffset(
-    __attribute__((unused)) int offset,
-    __attribute__((unused)) OffsetMode mode = OffsetMode::EVERY_MINUTE) {};
+  virtual void setOffset(__attribute__((unused)) int offset,
+                         __attribute__((unused)) OffsetMode mode = OffsetMode::EVERY_MINUTE) {};
 
   /**
    * @brief Read the RTC calibration offset or zero for RTCs without a calibration register.

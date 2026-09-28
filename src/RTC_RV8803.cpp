@@ -23,22 +23,20 @@ void RV8803::setTime(tm timeParts) {
   setRegister(RV8803_CONTROL, getRegister(RV8803_CONTROL) & 0b11111110); // clear RESET bit
 }
 
-timestamp_t RV8803::getTime(bool blocking) {
+timestamp_t RV8803::getTime() {
   tm timeParts;
-  getTime(timeParts, blocking);
+  getTime(timeParts);
   return TimeUtils::tmToEpochTime(timeParts).getTimestamp();
 }
 
-// implementing the time reading as described in the
-// application notes, section 4.12
-void RV8803::getTime(tm &timeParts, bool blocking) {
+// Implement the time-reading procedure described in the application note, section 4.12.
+void RV8803::getTime(tm &timeParts) {
   tm timeParts1;
-  RTC_I2C::getTime(timeParts, blocking);
-  if (blocking) return;         // if we used a blocking call to getTime, then we always wait til the next second starts
-  if (timeParts.tm_sec == 59) { // be careful when we read 59 seconds because there could have been an increment
-    RTC_I2C::getTime(timeParts1, blocking); // query again
-    if (timeParts1.tm_sec == 59) return;    // if again 59, the first reading was OK
-    timeParts = timeParts1;                 // otherwise the second reading must be OK
+  RTC_I2C::getTime(timeParts);
+  if (timeParts.tm_sec == 59) {   // be careful when we read 59 seconds because there could have been an increment
+    RTC_I2C::getTime(timeParts1); // query again
+    if (timeParts1.tm_sec == 59) return; // if again 59, the first reading was OK
+    timeParts = timeParts1;              // otherwise the second reading must be OK
   }
 }
 

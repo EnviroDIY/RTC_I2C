@@ -27,8 +27,8 @@ class RV3028U : public RV3028 {
   void disableAlarm(void) override {}               // no-op for this RTC
   void setTime(timestamp_t t) override;
   void setTime(tm timeParts) override;
-  timestamp_t getTime(bool blocking) override;
-  void getTime(tm &timeParts, bool blocking) override;
+  timestamp_t getTime() override;
+  void getTime(tm &timeParts) override;
   String getManufacturer(void) override;
   String getModel(void) override;
 };
