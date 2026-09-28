@@ -25,7 +25,7 @@ class DS1307 : public RTC_I2C {
     _capabilities = DS1307_CAP;
     _bit7set = DS1307_BIT7;
   };
-  void init(byte mode = 1);
+  void init(BatteryMode mode = BatteryMode::LSM);
   bool isValid(void);
   void enable32kHz(void);
   void disable32kHz(void);

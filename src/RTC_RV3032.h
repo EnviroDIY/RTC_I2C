@@ -35,7 +35,7 @@ class RV3032 : public RTC_I2C {
     _capabilities = RV3032_CAP;
     _bit7set = RV3032_BIT7;
   };
-  void init(byte mode = 1);
+  void init(BatteryMode mode = BatteryMode::LSM);
   bool isValid(void);
   void setAlarm(byte minute, byte hour);
   void setAlarm(byte minute);

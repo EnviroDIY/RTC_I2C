@@ -27,7 +27,7 @@ class PCF8563 : public PCFAlarm {
     _capabilities = PCF8563_CAP;
     _bit7set = PCF8563_BIT7;
   };
-  void init(byte mode = 1);
+  void init(BatteryMode mode = BatteryMode::LSM);
   bool isValid(void);
   void enableAlarm(void);
   void disableAlarm(void);

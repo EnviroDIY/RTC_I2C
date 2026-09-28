@@ -1,12 +1,26 @@
 #include <RTC_PCF8523.h>
 
 // if Vbat disabled, connect to Vcc
-void PCF8523::init(byte mode) {
+void PCF8523::init(BatteryMode mode) {
   setRegister(PCF8523_CONTROL, 0b00010000); // initiate power-on reset by software
-  setRegister(PCF8523_CONTROL + 2,
-              (mode == 0 ? 0b01100000 : (mode == 1 ? 0 : 0b00100000))); // switch mode and battery low detection
-  setRegister(PCF8523_CONTROL + 1, 0);                                  // set default value for reg 1
-  setRegister(PCF8523_CLKOUT, 0b00111000);                              // disable clock output
+  setRegister(PCF8523_CONTROL + 1, 0);      // disable watchdog and countdown timers
+  byte bsm_reg = 0;
+  switch (mode) {
+  case BatteryMode::DISABLED: {
+    bsm_reg = 0b01100000;
+    break;
+  }
+  case BatteryMode::LSM: {
+    bsm_reg = 0b00000000;
+    break;
+  }
+  case BatteryMode::DSM: {
+    bsm_reg = 0b00100000;
+    break;
+  }
+  }
+  setRegister(PCF8523_CONTROL + 2, bsm_reg); // switch mode and battery low detection
+  setRegister(PCF8523_CLKOUT, 0b00111000);   // disable clock output
 }
 
 bool PCF8523::isValid(void) {

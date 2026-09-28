@@ -28,7 +28,7 @@ class SD2405 : public RTC_I2C {
     _capabilities = SD2405_CAP;
     _bit7set = SD2405_BIT7;
   };
-  void init(byte mode = 1);
+  void init(BatteryMode mode = BatteryMode::LSM);
   bool isValid(void);
   void setAlarm(byte minute, byte hour); // here we can only set the alarm til next match
   void setAlarm(byte minute);            // hourly alarm at a particular minute

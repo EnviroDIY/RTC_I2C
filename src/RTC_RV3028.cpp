@@ -1,12 +1,30 @@
 #include <RTC_RV3028.h>
 
-void RV3028::init(byte mode) {
+void RV3028::init(BatteryMode mode) {
   setRegister(RV3028_CONTROL, 0);         // clear control1 register
   setRegister(RV3028_CONTROL + 1, 0);     // clear control2 register
   setRegister(RV3028_STATUS, 0);          // clear all flags
   setRegister(RV3028_CLKOUT, 0b01000000); // 32 KHz output by default, CLKOUT is off
-  setRegister(RV3028_BSM, (getRegister(RV3028_BSM) & 0b11110011) |
-                            (mode == 1 ? 0b1100 : (mode == 2 ? 0b0100 : 0))); // switching mode
+  byte bsm_reg =
+    getRegister(RV3028_BSM) & 0b11110011; // get the current BSM register and zero only the switching mode bits
+  switch (mode) {
+  case BatteryMode::DISABLED: {
+    // Switchover Disabled. – Default value on delivery
+    bsm_reg |= 0;
+    break;
+  }
+  case BatteryMode::LSM: {
+    // Enables the Level Switching Mode (LSM).  Switchover when VDD < VTH:LSM (2.0 V) AND VBACKUP > VTH:LSM (2.0 V).  Use this with a standard coin cell battery.
+    bsm_reg |= 0b1100;
+    break;
+  }
+  case BatteryMode::DSM: {
+    // Enables the Direct Switching Mode (DSM).  Switchover when VDD < VBACKUP.  Slightly lower power consumption than LSM.  Use this when charging a rechargeable battery.
+    bsm_reg |= 0b0100;
+    break;
+  }
+  }
+  setRegister(RV3028_BSM, bsm_reg); // switching mode
   updateEEPROMByte(RV3028_CLKOUT);
   updateEEPROMByte(RV3028_BSM);
 }

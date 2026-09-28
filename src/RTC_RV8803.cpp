@@ -1,6 +1,6 @@
 #include <RTC_RV8803.h>
 
-void RV8803::init(__attribute__((unused)) byte mode) {
+void RV8803::init(__attribute__((unused)) BatteryMode mode) {
   setRegister(RV8803_CONTROL, 0); // clear control register
   setRegister(RV8803_STATUS, 0);  // clear all flags
   setRegister(RV8803_CLKOUT, 0);  // 32 KHz output by default

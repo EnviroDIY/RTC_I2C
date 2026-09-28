@@ -1,6 +1,6 @@
 #include <RTC_DS3231.h>
 
-void DS3231::init(__attribute__((unused)) byte mode) {
+void DS3231::init(__attribute__((unused)) BatteryMode mode) {
   setRegister(DS3231_CONTROL,
               0b00000100);                // typical value after power-on, except for bit 2 (disables SQW), starts clock
   setRegister(DS3231_STATUS, 0b00000000); // clear OSF flag, clear alarm flags, disable 32 kHz output

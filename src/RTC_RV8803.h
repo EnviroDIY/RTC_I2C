@@ -35,7 +35,7 @@ class RV8803 : public RTC_I2C {
     _capabilities = RV8803_CAP;
     _bit7set = RV8803_BIT7;
   };
-  void init(byte mode = 1);
+  void init(BatteryMode mode = BatteryMode::LSM);
   bool isValid(void);
   void setTime(timestamp_t t);
   void setTime(tm timeParts);

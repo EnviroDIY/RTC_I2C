@@ -32,12 +32,18 @@
 #define SECONDS_IN_DAY 86400L
 #endif
 
+enum class BatteryMode : int8_t {
+  DISABLED, ///< Battery switch-over function is disabled, only VDD is used
+  LSM, ///< Level Switching Mode (LSM). Switchover when VDD < threshold AND VBACKUP > threshold.  Use with a standard coin cell battery.
+  DSM  ///< Direct Switching Mode (DSM). Switchover when VDD < VBACKUP.  Use when charging a rechargeable battery.
+};
+
 
 /* A generic RTC base class */
 class RTC_I2C {
  public:
   bool begin(TwoWire *wi = &Wire);
-  virtual void init(byte mode = 1) = 0;
+  virtual void init(BatteryMode mode = BatteryMode::LSM) = 0;
   virtual bool isValid(void) = 0;
   virtual void setTime(timestamp_t unixTimestamp);
   virtual void setTime(epochTime eTime);

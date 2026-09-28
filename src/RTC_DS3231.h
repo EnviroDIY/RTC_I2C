@@ -29,7 +29,7 @@ class DS3231 : public DSAlarm {
     _capabilities = DS3231_CAP;
     _bit7set = DS3231_BIT7;
   };
-  void init(byte mode = 1);
+  void init(BatteryMode mode = BatteryMode::LSM);
   bool isValid(void);
   void enable32kHz(void);
   void disable32kHz(void);

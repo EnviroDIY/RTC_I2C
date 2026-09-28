@@ -1,7 +1,7 @@
 #include <RTC_PCF8563.h>
 
 
-void PCF8563::init(__attribute__((unused)) byte mode) {
+void PCF8563::init(__attribute__((unused)) BatteryMode mode) {
   setRegister(PCF8563_CONTROL, 0);
   setRegister(PCF8563_CONTROL + 1, 0);
   setRegister(PCF8563_CLKOUT, 0);

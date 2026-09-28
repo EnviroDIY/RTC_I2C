@@ -1,6 +1,6 @@
 #include <RTC_RV3032.h>
 
-void RV3032::init(byte mode) {
+void RV3032::init(BatteryMode mode) {
   setRegister(RV3032_CONTROL, 0);     // clear control1 register
   setRegister(RV3032_CONTROL + 1, 0); // clear control2 register
   setRegister(RV3032_CONTROL + 2, 0); // clear control3 register
@@ -9,9 +9,26 @@ void RV3032::init(byte mode) {
   setRegister(RV3032_CONTROL + 5, 0); // clear EVI control register
   setRegister(RV3032_CONTROL + 6, 0); // clear temperature threshold register
   setRegister(RV3032_STATUS, 0);      // clear all flags
-  setRegister(RV3032_CLKOUT, 0);      // 32 KHz output by default
-  setRegister(RV3032_COE,
-              0b01000000 | (mode == 0 ? 0 : (mode == 1 ? 0b100000 : 0b010000))); // CLKOUT=off & switching mode
+  setRegister(RV3032_CLKOUT, 0);      // Set the oscillator selector to 32 KHz crystal by default
+  byte coe_bsm_reg = 0b01000000;      // disable CLKOUT
+  switch (mode) {
+  case BatteryMode::DISABLED: {
+    // Switchover Disabled. – Default value on delivery
+    coe_bsm_reg |= 0;
+    break;
+  }
+  case BatteryMode::LSM: {
+    // Enables the Level Switching Mode (LSM).  Switchover when VDD < VTH:LSM (2.0 V) AND VBACKUP > VTH:LSM (2.0 V).  Use this with a standard coin cell battery.
+    coe_bsm_reg |= 0b100000;
+    break;
+  }
+  case BatteryMode::DSM: {
+    // Enables the Direct Switching Mode (DSM).  Switchover when VDD < VBACKUP.  Slightly lower power consumption than LSM.  Use this when charging a rechargeable battery.
+    coe_bsm_reg |= 0b010000;
+    break;
+  }
+  }
+  setRegister(RV3032_COE, coe_bsm_reg); // disable CLKOUT & set switching mode
   updateEEPROMByte(RV3032_COE);
 }
 

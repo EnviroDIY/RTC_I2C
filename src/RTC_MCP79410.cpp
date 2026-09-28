@@ -1,6 +1,6 @@
 #include <RTC_MCP79410.h>
 
-void MCP79410::init(__attribute__((unused)) byte mode) {
+void MCP79410::init(__attribute__((unused)) BatteryMode mode) {
   setRegister(MCP79410_CONTROL, 0x80);
 }
 

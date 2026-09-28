@@ -1,6 +1,6 @@
 #include <RTC_SD2405.h>
 
-void SD2405::init(__attribute__((unused)) byte mode) {
+void SD2405::init(__attribute__((unused)) BatteryMode mode) {
   setRegister(SD2405_CONTROL + 1, 0x80); // unlock RTC
   setRegister(SD2405_CONTROL, 0x84);     // unlock RTC
   setRegister(SD2405_CONTROL + 2, 0x00);
