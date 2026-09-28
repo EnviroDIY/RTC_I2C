@@ -28,7 +28,7 @@ class DS1337 : public DSAlarm {
     _capabilities = DS1337_CAP;
     _bit7set = DS1337_BIT7;
   };
-  void init(BatteryMode mode) override;
+  void init(BatteryMode mode = BatteryMode::LSM) override;
   bool isValid(void) override;
   void enable32kHz(void) override;
   void disable32kHz(void) override;

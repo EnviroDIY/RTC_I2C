@@ -31,7 +31,7 @@ class PCF8523 : public PCFAlarm {
     _capabilities = PCF8523_CAP;
     _bit7set = PCF8523_BIT7;
   };
-  void init(BatteryMode mode) override;
+  void init(BatteryMode mode = BatteryMode::LSM) override;
   bool isValid(void) override;
   void enableAlarm(void) override;
   void disableAlarm(void) override;
@@ -39,7 +39,7 @@ class PCF8523 : public PCFAlarm {
   void disable32kHz(void) override;
   void enable1Hz(void) override;
   void disable1Hz(void) override;
-  void setOffset(int offset, OffsetMode mode) override;
+  void setOffset(int offset, OffsetMode mode = OffsetMode::EVERY_MINUTE) override;
   unsigned int getOffset(void) override;
   String getManufacturer(void) override;
   String getModel(void) override;

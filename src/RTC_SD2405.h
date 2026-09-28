@@ -28,7 +28,7 @@ class SD2405 : public RTC_I2C {
     _capabilities = SD2405_CAP;
     _bit7set = SD2405_BIT7;
   };
-  void init(BatteryMode mode) override;
+  void init(BatteryMode mode = BatteryMode::LSM) override;
   bool isValid(void) override;
   void setAlarm(byte minute, byte hour) override; // here we can only set the alarm til next match
   void setAlarm(byte minute) override;            // hourly alarm at a particular minute
@@ -40,7 +40,7 @@ class SD2405 : public RTC_I2C {
   void disable32kHz(void) override;
   void enable1Hz(void) override;
   void disable1Hz(void) override;
-  void setOffset(int offset, OffsetMode mode) override;
+  void setOffset(int offset, OffsetMode mode = OffsetMode::EVERY_MINUTE) override;
   unsigned int getOffset(void) override;
   String getManufacturer(void) override;
   String getModel(void) override;

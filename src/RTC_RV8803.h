@@ -35,7 +35,7 @@ class RV8803 : public RTC_I2C {
     _capabilities = RV8803_CAP;
     _bit7set = RV8803_BIT7;
   };
-  void init(BatteryMode mode) override;
+  void init(BatteryMode mode = BatteryMode::LSM) override;
   bool isValid(void) override;
   void setTime(timestamp_t t) override;
   void setTime(tm timeParts) override;
@@ -49,7 +49,7 @@ class RV8803 : public RTC_I2C {
   void disableAlarm(void) override;
   void enable32kHz(void) override;
   void enable1Hz(void) override;
-  void setOffset(int offset, OffsetMode mode) override;
+  void setOffset(int offset, OffsetMode mode = OffsetMode::EVERY_MINUTE) override;
   unsigned int getOffset(void) override;
   String getManufacturer(void) override;
   String getModel(void) override;
