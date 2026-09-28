@@ -34,7 +34,7 @@ class RV3028 : public RTC_I2C {
     _capabilities = RV3028_CAP;
     _bit7set = RV3028_BIT7;
   };
-  void init(BatteryMode mode = BatteryMode::LSM) override;
+  void init(BatteryMode mode) override;
   bool isValid(void) override;
   void setAlarm(byte minute, byte hour) override;
   void setAlarm(byte minute) override;
@@ -46,7 +46,7 @@ class RV3028 : public RTC_I2C {
   void disable32kHz(void) override;
   void enable1Hz(void) override;
   void disable1Hz(void) override;
-  void setOffset(int offset, OffsetMode mode = OffsetMode::EVERY_MINUTE) override;
+  void setOffset(int offset, OffsetMode mode) override;
   unsigned int getOffset(void) override;
   String getManufacturer(void) override;
   String getModel(void) override;

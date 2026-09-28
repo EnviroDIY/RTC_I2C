@@ -28,7 +28,7 @@ class MCP79410 : public RTC_I2C {
     _capabilities = MCP79410_CAP;
     _bit7set = MCP79410_BIT7;
   };
-  void init(BatteryMode mode = BatteryMode::LSM) override;
+  void init(BatteryMode mode) override;
   bool isValid(void) override;
   void setTime(timestamp_t t) override;
   void setTime(tm timeParts) override;
@@ -42,7 +42,7 @@ class MCP79410 : public RTC_I2C {
   void disable32kHz(void) override;
   void enable1Hz(void) override;
   void disable1Hz(void) override;
-  void setOffset(int offset, OffsetMode mode = OffsetMode::EVERY_MINUTE) override;
+  void setOffset(int offset, OffsetMode mode) override;
   unsigned int getOffset(void) override;
   String getManufacturer(void) override;
   String getModel(void) override;
