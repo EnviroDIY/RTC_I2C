@@ -10,7 +10,7 @@
 
 PCF8563 rtc;
 
-const char *monthName[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+const char *monthAbbr[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
 
 void setup(void) {
@@ -71,6 +71,7 @@ void loop() {
     }
     rtc.setTime(timeParts);
     Serial.print(F("Time has advanced by 59 minutes: "));
+    rtc.getTime(timeParts);
     showTime(timeParts);
     break;
   case 'y':
@@ -241,19 +242,44 @@ void loop() {
   while (Serial.available() && Serial.peek() <= ' ') Serial.read();
 }
 
-void printTimeParts(const tm &timeParts) {
-  Serial.print(1900 + timeParts.tm_year);
-  Serial.print('-');
-  Serial.print(timeParts.tm_mon + 1);
-  Serial.print('-');
-  Serial.print(timeParts.tm_mday);
-  Serial.print(' ');
-  print2digits(timeParts.tm_hour);
-  Serial.print(':');
-  print2digits(timeParts.tm_min);
-  Serial.print(':');
-  print2digits(timeParts.tm_sec);
-  Serial.println();
+const char *months[] = {"January", "February", "March",     "April",   "May",      "June",
+                        "July",    "August",   "September", "October", "November", "December"};
+const char *week_days[] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+
+void printTmComponents(const tm &timeStruct, Stream &stream) {
+  stream.print("    Year: ");
+  stream.print(timeStruct.tm_year + 1900);
+  stream.print(", Month: ");
+  stream.print(timeStruct.tm_mon + 1);
+  stream.print(" (");
+  stream.print(timeStruct.tm_mon >= 0 && timeStruct.tm_mon < 12 ? months[timeStruct.tm_mon] : "invalid");
+  stream.print(")");
+  stream.print(", Day: ");
+  stream.println(timeStruct.tm_mday);
+  stream.print("    Day of Year: ");
+  stream.print(timeStruct.tm_yday + 1);
+  stream.print(", Day of Week: ");
+  stream.print(timeStruct.tm_wday + 1);
+  stream.print(" (");
+  stream.print((timeStruct.tm_wday >= 0 && timeStruct.tm_wday < 7) ? week_days[timeStruct.tm_wday] : "invalid");
+  stream.println(")");
+  stream.print("    Hour: ");
+  stream.print(timeStruct.tm_hour);
+  stream.print(", Minute: ");
+  stream.print(timeStruct.tm_min);
+  stream.print(", Second: ");
+  stream.println(timeStruct.tm_sec);
+  stream.print("    DST Flag: ");
+  stream.print(timeStruct.tm_isdst);
+#ifdef __TM_GMTOFF
+  stream.print("GMT Offset: ");
+  stream.print(timeStruct.__TM_GMTOFF);
+#endif
+#ifdef __TM_ZONE
+  stream.print("Time Zone: ");
+  stream.print(timeStruct.__TM_ZONE);
+#endif
+  stream.println();
 }
 
 void unsupported(void) {
@@ -289,8 +315,8 @@ void initRTC(void) {
   bool config = false;
   bool valid = false;
 
-  rtc.init(1); // select level switch-over mode
-  if (getDate(__DATE__, timeParts) && getTime(__TIME__, timeParts)) {
+  rtc.init(BatteryMode::DSM); // select level switch-over mode
+  if (parseDate(__DATE__, timeParts) && parseTime(__TIME__, timeParts)) {
     parse = true;
     rtc.setTime(timeParts);
     rtc.getTime(new_tm);
@@ -308,9 +334,9 @@ void initRTC(void) {
     Serial.println(__DATE__);
   } else if (parse) {
     Serial.print("RTC Communication Error:\n\rInput=   ");
-    printTimeParts(timeParts);
+    printTmComponents(timeParts, Serial);
     Serial.print(F("Response="));
-    printTimeParts(new_tm);
+    printTmComponents(new_tm, Serial);
     Serial.print(F("Valid=   "));
     Serial.println(valid);
   } else {
@@ -352,7 +378,7 @@ void print2digits(int number) {
   Serial.print(number);
 }
 
-bool getTime(const char *str, tm &timeParts) {
+bool parseTime(const char *str, tm &timeParts) {
   int Hour, Min, Sec;
 
   if (sscanf(str, "%d:%d:%d", &Hour, &Min, &Sec) != 3) return false;
@@ -362,14 +388,14 @@ bool getTime(const char *str, tm &timeParts) {
   return true;
 }
 
-bool getDate(const char *str, tm &timeParts) {
+bool parseDate(const char *str, tm &timeParts) {
   char Month[12];
   int Day, Year;
   uint8_t monthIndex;
 
   if (sscanf(str, "%s %d %d", Month, &Day, &Year) != 3) return false;
   for (monthIndex = 0; monthIndex < 12; monthIndex++) {
-    if (strcmp(Month, monthName[monthIndex]) == 0) break;
+    if (strcmp(Month, monthAbbr[monthIndex]) == 0) break;
   }
   if (monthIndex >= 12) return false;
   timeParts.tm_mday = Day;
@@ -379,21 +405,19 @@ bool getDate(const char *str, tm &timeParts) {
 }
 
 void showTime(tm timeParts) {
-  rtc.getTime(timeParts);
   print2digits(timeParts.tm_hour);
   Serial.write(':');
   print2digits(timeParts.tm_min);
   Serial.write(':');
   print2digits(timeParts.tm_sec);
-  Serial.println();
 }
 
-
 void showDate(tm timeParts) {
+  Serial.print((timeParts.tm_wday >= 0 && timeParts.tm_wday < 7) ? week_days[timeParts.tm_wday] : "invalid");
+  Serial.write(' ');
+  Serial.print(timeParts.tm_mon >= 0 && timeParts.tm_mon < 12 ? months[timeParts.tm_mon] : "invalid");
+  Serial.write(' ');
   Serial.print(timeParts.tm_mday);
-  Serial.write('.');
-  Serial.print(timeParts.tm_mon + 1);
-  Serial.write('.');
+  Serial.print(F(", "));
   Serial.print(1900 + timeParts.tm_year);
-  Serial.println();
 }
