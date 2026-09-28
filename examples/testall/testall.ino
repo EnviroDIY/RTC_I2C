@@ -309,20 +309,31 @@ void help() {
                    "  RXX=YY - set register XX with hex YY"));
 }
 
-void initRTC(void) {
+bool initRTC(void) {
   tm timeParts, new_tm;
   bool parse = false;
   bool config = false;
   bool valid = false;
 
-  rtc.init(BatteryMode::DSM); // select level switch-over mode
-  if (parseDate(__DATE__, timeParts) && parseTime(__TIME__, timeParts)) {
-    parse = true;
-    rtc.setTime(timeParts);
+  Serial.print(F("Compilation Time: "));
+  Serial.print(__DATE__);
+  Serial.print(' ');
+  Serial.println(__TIME__);
+
+  tm set_time = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+  bool parse = parseDate(__DATE__, set_time) && parseTime(__TIME__, set_time);
+  // to fill in the weekday and the day of year correctly, round trip through mktime
+  time_t assembled_time = mktime(&set_time);
+  set_time = *localtime(&assembled_time);
+  printTmComponents(set_time, Serial);
+
+  bool success = rtc.begin(&Wire, BatteryMode::DSM);
+  if (parse) {
+    rtc.setTime(set_time);
     rtc.getTime(new_tm);
-    // RTC_I2C performs tm/time_t conversions internally with TimeUtils.
+
     valid = rtc.isValid();
-    if (valid && TimeUtils::sameTime(timeParts, new_tm)) {
+    if (valid && TimeUtils::sameTime(set_time, new_tm)) {
       config = true;
     }
   }
@@ -332,6 +343,7 @@ void initRTC(void) {
     Serial.print(__TIME__);
     Serial.print(", Date=");
     Serial.println(__DATE__);
+    success = true;
   } else if (parse) {
     Serial.print("RTC Communication Error:\n\rInput=   ");
     printTmComponents(timeParts, Serial);
@@ -339,13 +351,16 @@ void initRTC(void) {
     printTmComponents(new_tm, Serial);
     Serial.print(F("Valid=   "));
     Serial.println(valid);
+    success = false;
   } else {
     Serial.print("Could not parse info from the compiler, Time=\"");
     Serial.print(__TIME__);
     Serial.print("\", Date=\"");
     Serial.print(__DATE__);
     Serial.println("\"");
+    success = false;
   }
+  return success;
 }
 
 int parse2Hex(void) {

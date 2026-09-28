@@ -39,6 +39,28 @@ void setup(void) {
   Serial.begin(115200);
   Serial.println(F("Starting RTC iteration test...\n"));
 
+  Serial.print(F("Compilation Time: "));
+  Serial.print(__DATE__);
+  Serial.print(' ');
+  Serial.println(__TIME__);
+
+  tm set_time = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+  bool use_compile_time = parseDate(__DATE__, set_time) && parseTime(__TIME__, set_time);
+  // to fill in the weekday and the day of year correctly, round trip through mktime
+  time_t assembled_time = mktime(&set_time);
+  set_time = *localtime(&assembled_time);
+  printTmComponents(set_time, Serial);
+
+  if (!use_compile_time) {
+    Serial.println(F("Using default time because compile time could not be parsed."));
+    // Friday, September 25, 2026 at 7:05:00 PM UTC in Unix epoch time
+    timestamp_t ts = 1790363100;
+    set_time = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+    // convert to a tm object
+    TimeUtils::fillTimeParts(ts, 0, epochStart::unix_epoch, set_time);
+    printTmComponents(set_time, Serial);
+  }
+
   for (byte i = 0; i < n_rtc; i++) {
     Serial.print(F("Initializing RTC"));
     Serial.print(i);
@@ -48,7 +70,7 @@ void setup(void) {
     Serial.print(String(rtc[i]->getAddress(), HEX));
     Serial.println();
 
-    bool success = beginRTC(*rtc[i]);
+    bool success = beginRTC(*rtc[i], set_time);
 
     Serial.print(F("    ..."));
     Serial.println(success ? "success" : "failure");
@@ -57,36 +79,6 @@ void setup(void) {
     } else {
       connected[i] = true;
     }
-  }
-  // Friday, September 25, 2026 at 7:05:00 PM UTC in Unix epoch time
-  timestamp_t ts = 1790363100;
-  tm timeParts;
-  // convert to a tm object
-  TimeUtils::fillTimeParts(ts, 0, epochStart::unix_epoch, timeParts);
-
-  for (byte i = 0; i < n_rtc; i++) {
-    if (!connected[i]) {
-      Serial.print(F("Skipped RTC"));
-      Serial.print(i);
-      Serial.print(F(": "));
-      Serial.print(rtc[i]->getMakeModel());
-      Serial.print(F(" at "));
-      Serial.print(String(rtc[i]->getAddress(), HEX));
-      Serial.println(F(" because setup failed"));
-      continue;
-    }
-    rtc[i]->setTime(timeParts);
-    Serial.print(F("Set RTC"));
-    Serial.print(i);
-    Serial.print(F(": "));
-    Serial.print(rtc[i]->getMakeModel());
-    Serial.print(F(" at "));
-    Serial.print(String(rtc[i]->getAddress(), HEX));
-    Serial.print(" to ");
-    showDate(timeParts);
-    Serial.print(" ");
-    showTime(timeParts);
-    Serial.println();
   }
 }
 
@@ -118,8 +110,6 @@ void loop(void) {
     Serial.println();
     Serial.print(F("  asctime: "));
     Serial.println(asctime(&timeParts));
-    Serial.print(F("  isotime: "));
-    Serial.println(isotime(&timeParts));
     printTmComponents(timeParts, Serial);
     Serial.println();
   }
@@ -166,9 +156,8 @@ void printTmComponents(const tm &timeStruct, Stream &stream) {
   stream.println();
 }
 
-bool beginRTC(RTC_I2C &rtc) {
-  tm timeParts, new_tm;
-  bool parse = false;
+bool beginRTC(RTC_I2C &rtc, tm &set_time) {
+  tm new_tm;
   bool config = false;
   bool valid = false;
 
@@ -177,36 +166,28 @@ bool beginRTC(RTC_I2C &rtc) {
     return success;
   }
 
-  if (parseDate(__DATE__, timeParts) && parseTime(__TIME__, timeParts)) {
-    parse = true;
-    rtc.setTime(timeParts);
-    rtc.getTime(new_tm);
-    valid = rtc.isValid();
-    if (valid && TimeUtils::sameTime(timeParts, new_tm)) {
-      config = true;
-    }
+  Serial.print(F("  RTC Set Time: "));
+  rtc.setTime(set_time);
+  printTmComponents(set_time, Serial);
+  Serial.print(F("  RTC Returned Time: "));
+  rtc.getTime(new_tm);
+  printTmComponents(new_tm, Serial);
+
+  valid = rtc.isValid();
+  if (valid && TimeUtils::sameTime(set_time, new_tm)) {
+    config = true;
   }
   //Serial.println(rtc.isValid());
-  if (parse && config) {
-    Serial.print("RTC configured Time=");
-    Serial.print(__TIME__);
-    Serial.print(", Date=");
-    Serial.println(__DATE__);
+  if (config) {
+    Serial.print(F("  RTC Time Valid and Matches Compilation Time\n\r"));
     success = true;
-  } else if (parse) {
+  } else {
     Serial.print("RTC Communication Error:\n\rInput=   ");
-    printTmComponents(timeParts, Serial);
+    printTmComponents(set_time, Serial);
     Serial.print(F("Response="));
     printTmComponents(new_tm, Serial);
     Serial.print(F("Valid=   "));
     Serial.println(valid);
-    success = false;
-  } else {
-    Serial.print("Could not parse info from the compiler, Time=\"");
-    Serial.print(__TIME__);
-    Serial.print("\", Date=\"");
-    Serial.print(__DATE__);
-    Serial.println("\"");
     success = false;
   }
   return success;
@@ -238,7 +219,9 @@ bool parseDate(const char *str, tm &timeParts) {
 
   if (sscanf(str, "%s %d %d", Month, &Day, &Year) != 3) return false;
   for (monthIndex = 0; monthIndex < 12; monthIndex++) {
-    if (strcmp(Month, monthAbbr[monthIndex]) == 0) break;
+    if (strcmp(Month, monthAbbr[monthIndex]) == 0) {
+      break;
+    }
   }
   if (monthIndex >= 12) return false;
   timeParts.tm_mday = Day;
