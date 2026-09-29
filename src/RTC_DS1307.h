@@ -5,13 +5,21 @@
 
 #include <RTC_I2C.h>
 
-#define DS1307_ADDRESS 0x68   // I2C address for DS1307
-#define DS1307_CONTROL 0x07   // Control register
-#define DS1307_CLOCKREG 0x00  // Clock register
-#define DS1307_OFFSET 0xFF    // no offset register
-#define DS1307_WDAYBASE 1     // wday range from 1 to 7
-#define DS1307_WDAYFIRST true // wday comes before day of month in clock reg
-#define DS1307_BIT7 0         // no 7th bit needs to be set
+/// 7-bit I2C slave address for the DS1307.
+#define DS1307_ADDRESS 0x68
+/// Control register; referred to as CONTROL: Control Register in documentation (ADDRESS 0x07).
+#define DS1307_CONTROL 0x07
+/// Start of the clock/calendar registers; the first clock register is at address 0x00.
+#define DS1307_CLOCKREG 0x00
+/// No offset/calibration register is provided by the DS1307.
+#define DS1307_OFFSET 0xFF
+/// Weekday numbering used by the RTC: 1 through 7.
+#define DS1307_WDAYBASE 1
+/// The weekday register comes before the day-of-month register in the clock register sequence.
+#define DS1307_WDAYFIRST true
+/// No clock-register bit 7 must be forced when writing time.
+#define DS1307_BIT7 0
+/// Capabilities supported by the DS1307 implementation.
 #define DS1307_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ)
 
 

@@ -7,17 +7,29 @@
 
 // Note that this RTC wants to see the register address (0x0-0xF) in the
 // upper nibble of the address byte. Took me a while to find that out.
-#define RS5C372_ADDRESS 0x32    // I2C address for RS5C372
-#define RS5C372_CLOCKREG 0x00   // Clock register
-#define RS5C372_ALARMMIN 0x08   // Alarm A register for minutes
-#define RS5C372_ALARMHR 0x09    // Alarm A register for the hour
-#define RS5C372_ALARMWDAYS 0x0A // Alarm A register for week days
-#define RS5C372_CONTROL1 0x0E   // Control 1 register
-#define RS5C372_CONTROL2 0x0F   // Control 2 register
-#define RS5C372_OFFSET 0x07     // Offset register
-#define RS5C372_WDAYBASE 0      // wday range from 0 to 6
-#define RS5C372_WDAYFIRST true  // wday comes before day of month in clock reg
+/// 7-bit I2C slave address for the RS5C372.
+#define RS5C372_ADDRESS 0x32
+/// Start of the time/calendar registers; the first clock register is at address 0x00.
+#define RS5C372_CLOCKREG 0x00
+/// Alarm A minute register; the alarm register set begins at address 0x08.
+#define RS5C372_ALARMMIN 0x08
+/// Alarm A hour register; the alarm register set continues at address 0x09.
+#define RS5C372_ALARMHR 0x09
+/// Alarm A weekday register; the alarm register set continues at address 0x0A.
+#define RS5C372_ALARMWDAYS 0x0A
+/// Control 1 register; referred to as Control 1 in documentation (ADDRESS 0x0E).
+#define RS5C372_CONTROL1 0x0E
+/// Control 2 register; referred to as Control 2 in documentation (ADDRESS 0x0F).
+#define RS5C372_CONTROL2 0x0F
+/// Offset register; referred to as the clock adjustment/offset register in documentation (ADDRESS 0x07).
+#define RS5C372_OFFSET 0x07
+/// Weekday numbering used by the RTC: 0 through 6.
+#define RS5C372_WDAYBASE 0
+/// The weekday register comes before the day-of-month register in the clock register sequence.
+#define RS5C372_WDAYFIRST true
+/// No clock-register bit 7 must be forced when writing time.
 #define RS5C372_BIT7 0
+/// Capabilities supported by the RS5C372 implementation.
 #define RS5C372_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_OFFSET | RTC_CAP_SREGADDR)
 
 

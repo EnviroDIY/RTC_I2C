@@ -5,8 +5,10 @@
 
 #include <RTC_RV3028.h>
 
+/// Unix Time 0 register; the RV-3028-U Unix time counter begins at address 0x1B.
 #define RV3028_UCLOCK 0x1B
 
+/// Capabilities supported by the RV-3028-U implementation.
 #define RV3028U_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_OFFSET)
 
 

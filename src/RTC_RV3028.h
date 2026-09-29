@@ -6,21 +6,36 @@
 #include <RTC_I2C.h>
 
 
-#define RV3028_ADDRESS 0x52  // I2C address for RV3028
-#define RV3028_CLOCKREG 0x00 // Clock register (that is where the seconds start)
-#define RV3028_ALARM 0x07    // Alarm minutes register
-#define RV3028_STATUS 0x0E   // Status register
-#define RV3028_CONTROL 0x0F  // Control register
-#define RV3028_CLKOUT 0x35   // Clockout enable & and FD
-#define RV3028_BSM 0x37      // Clockout enable & BSM register
-#define RV3028_OFFSET 0x36   // Offset register
-#define RV3028_EECMD 0x27    // EEPROM command
-#define RV3028_EEDATA 0x26   // value for  EEPROM data transfer
-#define RV3028_EEADDR 0x25   // address for EEPROM data transfer
+/// 7-bit I2C slave address for the RV-3028.
+#define RV3028_ADDRESS 0x52
+/// Seconds register; the clock/calendar register sequence begins at address 0x00.
+#define RV3028_CLOCKREG 0x00
+/// Minutes Alarm register; referred to as Minutes Alarm in documentation (ADDRESS 0x07).
+#define RV3028_ALARM 0x07
+/// Status register; referred to as Status in documentation (ADDRESS 0x0E).
+#define RV3028_STATUS 0x0E
+/// Control 1 register; referred to as Control 1 in documentation (ADDRESS 0x0F).
+#define RV3028_CONTROL 0x0F
+/// EEPROM Clkout register; referred to as Clkout in documentation (ADDRESS 0x35).
+#define RV3028_CLKOUT 0x35
+/// EEPROM Backup register; referred to as Backup in documentation (ADDRESS 0x37), containing the BSM field.
+#define RV3028_BSM 0x37
+/// EEPROM Offset register; referred to as Offset in documentation (ADDRESS 0x36).
+#define RV3028_OFFSET 0x36
+/// EE Command register; referred to as EECMD in documentation (ADDRESS 0x27).
+#define RV3028_EECMD 0x27
+/// EE Data register; referred to as EEDATA in documentation (ADDRESS 0x26).
+#define RV3028_EEDATA 0x26
+/// EE Address register; referred to as EEADDR in documentation (ADDRESS 0x25).
+#define RV3028_EEADDR 0x25
 
-#define RV3028_WDAYBASE 0     // wday range from 0 to 6,
-#define RV3028_WDAYFIRST true // wday comes after day of month in clock reg
+/// Weekday numbering used by the RTC: 0 through 6.
+#define RV3028_WDAYBASE 0
+/// The weekday register comes after the day-of-month register in the clock register sequence.
+#define RV3028_WDAYFIRST true
+/// No clock-register bit 7 must be forced when writing time.
 #define RV3028_BIT7 0
+/// Capabilities supported by the RV-3028 implementation.
 #define RV3028_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET)
 
 

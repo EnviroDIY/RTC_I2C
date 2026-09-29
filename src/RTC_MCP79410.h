@@ -6,15 +6,27 @@
 #include <RTC_I2C.h>
 
 
-#define MCP79410_ADDRESS 0x6F   // I2C address for MCP79410
-#define MCP79410_CLOCKREG 0x00  // Clock register (that is where the seconds start)
-#define MCP79410_ALARM 0x0A     // Alarm seconds register
-#define MCP79410_STATUS 0x03    // Status register
-#define MCP79410_CONTROL 0x07   // Control register
-#define MCP79410_OFFSET 0x08    // Offset register
-#define MCP79410_WDAYBASE 1     // wday range from 1 to 7,
-#define MCP79410_WDAYFIRST true // wday comes after day of month in clock reg
+/// 7-bit I2C slave address for the MCP79410.
+#define MCP79410_ADDRESS 0x6F
+/// Timekeeping seconds register; referred to as RTCSEC: TIMEKEEPING SECONDS VALUE REGISTER in documentation (ADDRESS
+/// 0x00).
+#define MCP79410_CLOCKREG 0x00
+/// Alarm 0 seconds register; referred to as ALMxSEC: ALARM0/1 SECONDS VALUE REGISTER in documentation (ADDRESS 0x0A).
+#define MCP79410_ALARM 0x0A
+/// Timekeeping weekday register; referred to as RTCWKDAY: TIMEKEEPING WEEKDAY VALUE REGISTER in documentation (ADDRESS
+/// 0x03).
+#define MCP79410_STATUS 0x03
+/// RTCC control register; referred to as CONTROL: RTCC CONTROL REGISTER in documentation (ADDRESS 0x07).
+#define MCP79410_CONTROL 0x07
+/// Oscillator trim register; referred to as OSCTRIM: OSCILLATOR DIGITAL TRIM REGISTER in documentation (ADDRESS 0x08).
+#define MCP79410_OFFSET 0x08
+/// Weekday numbering used by the RTC: 1 through 7.
+#define MCP79410_WDAYBASE 1
+/// The weekday register comes after the day-of-month register in the clock register sequence.
+#define MCP79410_WDAYFIRST true
+/// No clock-register bit 7 must be forced when writing time.
 #define MCP79410_BIT7 0
+/// Capabilities supported by the MCP79410 implementation.
 #define MCP79410_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET)
 
 

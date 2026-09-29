@@ -18,17 +18,25 @@
 #include <EpochTime.h>
 
 
+/// Number of clock/calendar bytes transferred by the common RTC implementation.
 #define TIMEBYTES 7
-#define RTC_CAP_32KHZ 0x01        // can generate 32 kHz signal
-#define RTC_CAP_1HZ 0x02          // can generate 1 Hz signal
-#define RTC_CAP_ALARM 0x04        // has alarm functionality to set hour and minute
-#define RTC_CAP_HOURLY_ALARM 0x08 // can raise an alarm every hour
-#define RTC_CAP_OFFSET 0x10       // has an offset register
-#define RTC_CAP_TEMP 0x20         // has a temperature sensor
-#define RTC_CAP_SREGADDR 0x40     // uses a strange format for register addresses (upper nibble)
+/// Capability flag: the RTC can generate a 32 kHz signal.
+#define RTC_CAP_32KHZ 0x01
+/// Capability flag: the RTC can generate a 1 Hz signal.
+#define RTC_CAP_1HZ 0x02
+/// Capability flag: the RTC has alarm functionality to set hour and minute.
+#define RTC_CAP_ALARM 0x04
+/// Capability flag: the RTC can raise an alarm every hour.
+#define RTC_CAP_HOURLY_ALARM 0x08
+/// Capability flag: the RTC has an offset/calibration register.
+#define RTC_CAP_OFFSET 0x10
+/// Capability flag: the RTC has a temperature sensor.
+#define RTC_CAP_TEMP 0x20
+/// Capability flag: the RTC uses the library's special upper-nibble register-address format.
+#define RTC_CAP_SREGADDR 0x40
 
 #ifndef SECONDS_IN_DAY
-/// @brief The number of seconds in a day
+/// Number of seconds in a day.
 #define SECONDS_IN_DAY 86400L
 #endif
 

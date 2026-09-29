@@ -6,15 +6,24 @@
 #include <RTC_I2C.h>
 
 
-#define SD2405_ADDRESS 0x32  // I2C address for SD2405
-#define SD2405_CLOCKREG 0x00 // Clock register (that is where the seconds start)
-#define SD2405_ALARM 0x07    // Alarm seconds register
-#define SD2405_CONTROL 0x0F  // Control register
-#define SD2405_OFFSET 0x12   // Offset register
+/// 7-bit I2C slave address for the SD2405.
+#define SD2405_ADDRESS 0x32
+/// Second register; referred to as Second in the Real time clock register table (ADDRESS 0x00).
+#define SD2405_CLOCKREG 0x00
+/// Second alarm register; referred to as Second alarm in the Time alarm register (ADDRESS 0x07).
+#define SD2405_ALARM 0x07
+/// Control register 1 (CTR1); referred to as CTR1 in the Control register table (ADDRESS 0x0F).
+#define SD2405_CONTROL 0x0F
+/// Time trimming register; referred to as Time Trimming Register in documentation (ADDRESS 0x12).
+#define SD2405_OFFSET 0x12
 
-#define SD2405_WDAYBASE 0     // wday range from 0 to 6
-#define SD2405_WDAYFIRST true // wday comes before day of month in clock reg
-#define SD2405_BIT7 (1 << 2)  // The 24H flag!
+/// Weekday numbering used by the RTC: 0 through 6.
+#define SD2405_WDAYBASE 0
+/// The weekday register comes before the day-of-month register in the clock register sequence.
+#define SD2405_WDAYFIRST true
+/// The 24-hour-mode flag is required in bit 2 of the hour register.
+#define SD2405_BIT7 (1 << 2)
+/// Capabilities supported by the SD2405 implementation.
 #define SD2405_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET)
 
 

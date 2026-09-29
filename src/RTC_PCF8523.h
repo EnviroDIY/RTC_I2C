@@ -10,14 +10,23 @@
 #include <RTC_I2C.h>
 
 
-#define PCF8523_ADDRESS 0x68    // I2C address for PCF8523
-#define PCF8523_CLOCKREG 0x03   // Clock register
-#define PCF8523_CONTROL 0x00    // Control register
-#define PCF8523_OFFSET 0x0E     // Offset register
-#define PCF8523_CLKOUT 0x0F     // Clock out control (and timer)
-#define PCF8523_WDAYBASE 0      // wday range from 0 to 6
-#define PCF8523_WDAYFIRST false // wday comes after day of month in clock reg
+/// 7-bit I2C slave address for the PCF8523.
+#define PCF8523_ADDRESS 0x68
+/// Seconds and clock integrity status register; referred to as Seconds in documentation (ADDRESS 0x03).
+#define PCF8523_CLOCKREG 0x03
+/// Control and status register 1; referred to as Control_1 in documentation (ADDRESS 0x00).
+#define PCF8523_CONTROL 0x00
+/// Offset calibration register; referred to as Offset in documentation (ADDRESS 0x0E).
+#define PCF8523_OFFSET 0x0E
+/// Timer and clock-output control register; referred to as Tmr_CLKOUT_ctrl in documentation (ADDRESS 0x0F).
+#define PCF8523_CLKOUT 0x0F
+/// Weekday numbering used by the RTC: 0 through 6.
+#define PCF8523_WDAYBASE 0
+/// The weekday register comes after the day-of-month register in the clock register sequence.
+#define PCF8523_WDAYFIRST false
+/// No clock-register bit 7 must be forced when writing time.
 #define PCF8523_BIT7 0
+/// Capabilities supported by the PCF8523 implementation.
 #define PCF8523_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET)
 
 

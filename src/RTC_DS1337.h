@@ -6,15 +6,26 @@
 #include <RTC_I2C.h>
 
 
-#define DS1337_ADDRESS 0x68   // I2C address for DS1337
-#define DS1337_CLOCKREG 0x00  // Clock register
-#define DS1337_ALARM1 0x07    // start of alarm 1 register (seconds)
-#define DS1337_CONTROL 0x0E   // Control register
-#define DS1337_STATUS 0x0F    // Status register
-#define DS1337_OFFSET 0xFF    // no offset register
-#define DS1337_WDAYBASE 1     // wday range from 1 to 7
-#define DS1337_WDAYFIRST true //  wday comes before day of month in clock reg
+/// 7-bit I2C slave address for the DS1337.
+#define DS1337_ADDRESS 0x68
+/// Start of the time-of-day/date registers; the first clock register is at address 0x00.
+#define DS1337_CLOCKREG 0x00
+/// Start of Alarm 1 registers; referred to as the Alarm 1 time-of-day/date alarm registers in documentation (ADDRESSES
+/// 0x07–0x0A).
+#define DS1337_ALARM1 0x07
+/// Control register; referred to as Control Register in documentation (ADDRESS 0x0E).
+#define DS1337_CONTROL 0x0E
+/// Status register; referred to as Status Register in documentation (ADDRESS 0x0F).
+#define DS1337_STATUS 0x0F
+/// No offset/calibration register is provided by the DS1337.
+#define DS1337_OFFSET 0xFF
+/// Weekday numbering used by the RTC: 1 through 7.
+#define DS1337_WDAYBASE 1
+/// The weekday register comes before the day-of-month register in the clock register sequence.
+#define DS1337_WDAYFIRST true
+/// No clock-register bit 7 must be forced when writing time.
 #define DS1337_BIT7 0
+/// Capabilities supported by the DS1337 implementation.
 #define DS1337_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM)
 
 

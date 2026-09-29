@@ -6,16 +6,27 @@
 #include <RTC_I2C.h>
 
 
-#define DS3231_ADDRESS 0x68   // I2C address for DS3231
-#define DS3231_CLOCKREG 0x00  // Clock register
-#define DS3231_ALARM1 0x07    // start of alarm 1 register (seconds)
-#define DS3231_CONTROL 0x0E   // Control register
-#define DS3231_STATUS 0x0F    // Status register
-#define DS3231_OFFSET 0x10    // Offset register
-#define DS3231_TEMPMSB 0x11   // MSB of temperature register
-#define DS3231_WDAYBASE 1     // wday range from 1 to 7
-#define DS3231_WDAYFIRST true // wday comes before day of month in clock reg
+/// 7-bit I2C slave address for the DS3231.
+#define DS3231_ADDRESS 0x68
+/// Start of the timekeeping registers; the first clock register is at address 0x00.
+#define DS3231_CLOCKREG 0x00
+/// Start of Alarm 1 registers; Alarm 1 occupies registers 0x07–0x0A.
+#define DS3231_ALARM1 0x07
+/// Control register; referred to as Control Register in documentation (ADDRESS 0x0E).
+#define DS3231_CONTROL 0x0E
+/// Status register; referred to as Status Register in documentation (ADDRESS 0x0F).
+#define DS3231_STATUS 0x0F
+/// Aging offset register; referred to as Crystal Aging Offset Register in documentation (ADDRESS 0x10).
+#define DS3231_OFFSET 0x10
+/// Temperature register upper byte; referred to as Temperature Register (Upper Byte) in documentation (ADDRESS 0x11).
+#define DS3231_TEMPMSB 0x11
+/// Weekday numbering used by the RTC: 1 through 7.
+#define DS3231_WDAYBASE 1
+/// The weekday register comes before the day-of-month register in the clock register sequence.
+#define DS3231_WDAYFIRST true
+/// No clock-register bit 7 must be forced when writing time.
 #define DS3231_BIT7 0
+/// Capabilities supported by the DS3231 implementation.
 #define DS3231_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET | RTC_CAP_TEMP)
 
 

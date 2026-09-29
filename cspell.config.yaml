@@ -9,6 +9,7 @@ words:
   - CLKOE
   - CLKOUT
   - decodewday
+  - doxyfile
   - DSALARM
   - EEPROM
   - EnviroDIY
@@ -17,6 +18,7 @@ words:
   - INTRB
   - MAXRTC
   - MBED
+  - mcss
   - PCFALARM
   - PINALARM
   - RTClib

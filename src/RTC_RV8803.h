@@ -12,16 +12,27 @@
 #include <RTC_I2C.h>
 
 
-#define RV8803_ADDRESS 0x32   // I2C address for RV8803
-#define RV8803_CLOCKREG 0x00  // Clock register
-#define RV8803_ALARM 0x08     // Alarm minutes register
-#define RV8803_CLKOUT 0x0D    // Clockout register
-#define RV8803_STATUS 0x0E    // Status register
-#define RV8803_CONTROL 0x0F   // Control register
-#define RV8803_OFFSET 0x2C    // Offset register
-#define RV8803_WDAYBASE 2     // wday range from 0 to 6, but it is now the 1-bit at this bit position!
-#define RV8803_WDAYFIRST true // wday comes after day of month in clock reg
+/// 7-bit I2C slave address for the RV-8803.
+#define RV8803_ADDRESS 0x32
+/// Seconds register; the clock/calendar register sequence begins at address 0x00.
+#define RV8803_CLOCKREG 0x00
+/// Minutes Alarm register; the alarm register set begins at address 0x08.
+#define RV8803_ALARM 0x08
+/// CLKOUT register; referred to as the CLKOUT register in documentation (ADDRESS 0x0D).
+#define RV8803_CLKOUT 0x0D
+/// Status register; referred to as the Status register in documentation (ADDRESS 0x0E).
+#define RV8803_STATUS 0x0E
+/// Control register; referred to as the Control register in documentation (ADDRESS 0x0F).
+#define RV8803_CONTROL 0x0F
+/// Offset register; referred to as the Digital Offset register in documentation (ADDRESS 0x2C).
+#define RV8803_OFFSET 0x2C
+/// Weekday encoding used by the RTC implementation; the weekday bit starts at bit position 2.
+#define RV8803_WDAYBASE 2
+/// The weekday register comes after the day-of-month register in the clock register sequence.
+#define RV8803_WDAYFIRST true
+/// No clock-register bit 7 must be forced when writing time.
 #define RV8803_BIT7 0
+/// Capabilities supported by the RV-8803 implementation.
 #define RV8803_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET)
 
 

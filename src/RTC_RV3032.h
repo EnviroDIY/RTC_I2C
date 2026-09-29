@@ -6,22 +6,40 @@
 #include <RTC_I2C.h>
 
 
-#define RV3032_ADDRESS 0x51  // I2C address for RV3032
-#define RV3032_CLOCKREG 0x01 // Clock register (that is where the seconds start)
-#define RV3032_ALARM 0x08    // Alarm minutes register
-#define RV3032_STATUS 0x0D   // Status register
-#define RV3032_CONTROL 0x10  // Control register
-#define RV3032_TEMP 0x0F     // Temperature register
-#define RV3032_BUSY 0x0E     // contains EE busy bit
-#define RV3032_COE 0xC0      // Clockout enable & BSM register
-#define RV3032_CLKOUT 0xC3   // Clockout register
-#define RV3032_OFFSET 0xC1   // Offset register
-#define RV3032_EECMD 0x3F    // EEPROM command
-#define RV3032_EEDATA 0x3E   // value for  EEPROM data transfer
-#define RV3032_EEADDR 0x3D   // address for EEPROM data transfer
+/// 7-bit I2C slave address for the RV-3032.
+#define RV3032_ADDRESS 0x51
+/// Seconds register; referred to as Seconds in documentation (ADDRESS 0x01).
+#define RV3032_CLOCKREG 0x01
+/// Minutes Alarm register; referred to as Minutes Alarm in documentation (ADDRESS 0x08).
+#define RV3032_ALARM 0x08
+/// Status register; referred to as Status in documentation (ADDRESS 0x0D).
+#define RV3032_STATUS 0x0D
+/// Control 1 register; referred to as Control 1 in documentation (ADDRESS 0x10).
+#define RV3032_CONTROL 0x10
+/// Temperature MSBs register; referred to as Temperature MSBs in documentation (ADDRESS 0x0F).
+#define RV3032_TEMP 0x0F
+/// Temperature LSBs register; referred to as Temperature LSBs in documentation (ADDRESS 0x0E), containing the EEbusy
+/// bit.
+#define RV3032_BUSY 0x0E
+/// EEPROM PMU register; referred to as EEPROM PMU in documentation (ADDRESS 0xC0).
+#define RV3032_COE 0xC0
+/// EEPROM Clkout 2 register; referred to as EEPROM Clkout 2 in documentation (ADDRESS 0xC3).
+#define RV3032_CLKOUT 0xC3
+/// EEPROM Offset register; referred to as EEPROM Offset in documentation (ADDRESS 0xC1).
+#define RV3032_OFFSET 0xC1
+/// EE Command register; the EEPROM command register is at address 0x3F.
+#define RV3032_EECMD 0x3F
+/// EE Data register; the EEPROM data register is at address 0x3E.
+#define RV3032_EEDATA 0x3E
+/// EE Address register; the EEPROM address register is at address 0x3D.
+#define RV3032_EEADDR 0x3D
+/// No clock-register bit 7 must be forced when writing time.
 #define RV3032_BIT7 0
-#define RV3032_WDAYBASE 0     // wday range from 0 to 6,
-#define RV3032_WDAYFIRST true // wday comes after day of month in clock reg
+/// Weekday numbering used by the RTC: 0 through 6.
+#define RV3032_WDAYBASE 0
+/// The weekday register comes after the day-of-month register in the clock register sequence.
+#define RV3032_WDAYFIRST true
+/// Capabilities supported by the RV-3032 implementation.
 #define RV3032_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET | RTC_CAP_TEMP)
 
 
