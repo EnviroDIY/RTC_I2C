@@ -41,11 +41,16 @@ enum class BatteryMode : int8_t {
                    ///< battery.
 };
 
-/// @brief Selects how a clock calibration offset is interpreted.
+/**
+ * @brief Selects how a clock calibration offset or trim is interpreted.
+ *
+ * See the specific RTC documentation for details on the correction frequencies that are considered to be coarse, fine,
+ * or very fine.
+ */
 enum class OffsetMode : byte {
-  EVERY_TWO_HOURS = 0, ///< Apply the correction every two hours (coarse correction mode).
-  EVERY_MINUTE = 1,    ///< Apply the correction every minute (fine correction mode).
-  RAW = 2              ///< Treat the offset as the RTC's raw calibration-register value.
+  COARSE_OFFSET = 0, ///< Apply the offset as a coarse correction.
+  FINE_OFFSET = 1,   ///< Apply the offset as a fine correction.
+  RAW_OFFSET = 2     ///< Treat the given offset as the exact value to write to the RTC's offset/calibration-register.
 };
 
 
@@ -178,7 +183,7 @@ class RTC_I2C {
    * @param mode Selects whether the correction is interpreted as a coarse, fine, or raw offset.
    */
   virtual void setOffset(__attribute__((unused)) int offset,
-                         __attribute__((unused)) OffsetMode mode = OffsetMode::EVERY_MINUTE) {};
+                         __attribute__((unused)) OffsetMode mode = OffsetMode::FINE_OFFSET) {};
 
   /**
    * @brief Read the RTC calibration offset or zero for RTCs without a calibration register.

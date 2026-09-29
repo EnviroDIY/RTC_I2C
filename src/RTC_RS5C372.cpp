@@ -57,16 +57,19 @@ void RS5C372::disable1Hz(void) {
 }
 
 void RS5C372::setOffset(int offset, OffsetMode mode) {
-  if (mode != OffsetMode::RAW) {
+  if (mode != OffsetMode::RAW_OFFSET) {
+    // add and then divide to round the offset instead of truncating it
     offset = (offset + (offset > 0 ? +152 : -152)) / 305;
+    // force offset into range
     if (offset < -64)
       offset = -64;
     else if (offset > 63)
       offset = 63;
   }
-  //Serial.println(offset);
-  //Serial.println(((offset&0x7F)|(mode<<7)));
+  // write the offset
   setRegister(RS5C372_OFFSET, (offset & 0x7F));
+  // Serial.println(offset);
+  // Serial.println(((offset&0x7F)|(mode<<7)));
 }
 
 unsigned int RS5C372::getOffset(void) {

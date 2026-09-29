@@ -39,7 +39,14 @@ class PCF8523 : public PCFAlarm {
   void disable32kHz(void) override;
   void enable1Hz(void) override;
   void disable1Hz(void) override;
-  void setOffset(int offset, OffsetMode mode = OffsetMode::EVERY_MINUTE) override;
+  /**
+   * @copydocs RTC_I2C::setOffset()
+   * Negative values make the clock faster by roughly 4.0 ppm/LSB
+   * In OffsetMode::COARSE_OFFSET, 1 LSB is roughly 4.34 ppm;
+   * In OffsetMode::FINE_OFFSET, 1 LSB is roughly 4.06 ppm.
+   * The range goes from -64 to +63.
+   */
+  void setOffset(int offset, OffsetMode mode = OffsetMode::FINE_OFFSET) override;
   unsigned int getOffset(void) override;
   String getManufacturer(void) override;
   String getModel(void) override;

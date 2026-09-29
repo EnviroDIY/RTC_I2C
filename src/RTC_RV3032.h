@@ -47,7 +47,17 @@ class RV3032 : public RTC_I2C {
   void disable32kHz(void) override;
   void enable1Hz(void) override;
   void disable1Hz(void) override;
-  void setOffset(int offset, OffsetMode mode = OffsetMode::EVERY_MINUTE) override;
+  /**
+   * @copydocs RTC_I2C::setOffset()
+   *
+   * This RTC has only one calibrated correction mode. Both `OffsetMode::FINE_OFFSET` and `OffsetMode::COARSE_OFFSET`
+   * are treated identically.
+   * .
+   * Negative values make the clock faster by 0.2384 ppm/LSB.
+   * The range of the internal parameter goes from -32 to +31.
+   * This means that possible values for offset range from -768 to +744 corresponding to -7.68 ppm to 7.44 ppm
+   */
+  void setOffset(int offset, OffsetMode mode = OffsetMode::FINE_OFFSET) override;
   unsigned int getOffset(void) override;
   String getManufacturer(void) override;
   String getModel(void) override;

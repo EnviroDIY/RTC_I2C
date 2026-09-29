@@ -94,7 +94,8 @@ void RV3028::disable1Hz(void) {
 // The range of the internal parameter goes from -256 to +255.
 // This means that possible values for offset range from -243.2 ppm to +244.1 ppm.
 void RV3028::setOffset(int offset, OffsetMode mode) {
-  if (mode != OffsetMode::RAW) {
+  if (mode != OffsetMode::RAW_OFFSET) {
+    // Force the offset into range
     if (offset < 0)
       offset = offset - 47;
     else
@@ -104,10 +105,12 @@ void RV3028::setOffset(int offset, OffsetMode mode) {
       offset = -256;
     else if (offset > 255)
       offset = 255;
-    //Serial.println(offset);
+    // Serial.println(offset);
   }
+  // set the offset registers
   setRegister(RV3028_OFFSET, (offset >> 1));
   setRegister(RV3028_OFFSET + 1, (getRegister(RV3028_OFFSET + 1) & 0b01111111) | ((offset & 1) << 7));
+  // update the EEPROM with the new offset values
   updateEEPROMByte(RV3028_OFFSET);
   updateEEPROMByte(RV3028_OFFSET + 1);
 }
@@ -127,7 +130,7 @@ void RV3028::updateEEPROMByte(byte reg) {
     delay(20);                                                     // wait 20 ms
   }
   if (!timeout) {
-    //Serial.println(F("Timeout in EEPROM wait"));
+    // Serial.println(F("Timeout in EEPROM wait"));
     return;
   }
   timeout = 0;
@@ -136,7 +139,7 @@ void RV3028::updateEEPROMByte(byte reg) {
     delay(10);                                                     // wait 10 ms
   }
   if (!timeout) {
-    //Serial.println(F("Timeout in EEPROM write"));
+    // Serial.println(F("Timeout in EEPROM write"));
     return;
   }
   setRegister(RV3028_CONTROL, getRegister(RV3028_CONTROL) & ~0b00001000); // set EERD = 0
@@ -150,4 +153,4 @@ String RV3028::getModel(void) {
   return F("RV3028");
 }
 
-//cSpell:ignore EEADDR EEDATA EECMD
+// cSpell:ignore EEADDR EEDATA EECMD

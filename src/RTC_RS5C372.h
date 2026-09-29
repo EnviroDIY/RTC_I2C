@@ -45,7 +45,12 @@ class RS5C372 : public RTC_I2C {
   void disable32kHz(void) override;
   void enable1Hz(void) override;
   void disable1Hz(void) override;
-  void setOffset(int offset, OffsetMode mode = OffsetMode::EVERY_MINUTE) override;
+  /**
+   * @copydocs RTC_I2C::setOffset()
+   * This RTC has only one calibrated correction mode. Both `OffsetMode::FINE_OFFSET` and `OffsetMode::COARSE_OFFSET`
+   * are treated identically.
+   */
+  void setOffset(int offset, OffsetMode mode = OffsetMode::FINE_OFFSET) override;
   unsigned int getOffset(void) override;
   String getManufacturer(void) override;
   String getModel(void) override;

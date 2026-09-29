@@ -42,7 +42,15 @@ class MCP79410 : public RTC_I2C {
   void disable32kHz(void) override;
   void enable1Hz(void) override;
   void disable1Hz(void) override;
-  void setOffset(int offset, OffsetMode mode = OffsetMode::EVERY_MINUTE) override;
+  /**
+   * @copydocs RTC_I2C::setOffset()
+   * Negative values make the clock faster by roughly 1 ppm/LSB in the normal calibrated correction modes. The range of
+   * the internal parameter goes from -128 to +127, but they use apparently sign + magnitude instead of 2ers complement.
+   *
+   * Only raw and fine calibrations are supported, coarse calibration will screw up the SQW output and is too coarse
+   * anyways.
+   */
+  void setOffset(int offset, OffsetMode mode = OffsetMode::FINE_OFFSET) override;
   unsigned int getOffset(void) override;
   String getManufacturer(void) override;
   String getModel(void) override;

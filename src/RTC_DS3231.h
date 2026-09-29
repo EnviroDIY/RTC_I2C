@@ -36,7 +36,17 @@ class DS3231 : public DSAlarm {
   void enable1Hz(void) override;
   void disable1Hz(void) override;
   int getTemp(void) override;
-  void setOffset(int offset, OffsetMode mode = OffsetMode::EVERY_MINUTE) override;
+  /**
+   * @copydocs RTC_I2C::setOffset()
+   * This RTC has only one calibrated correction mode - an aging offset that is added to or subtracted from the
+   * capacitance for temperature correction. This is called the fine offset. If `OffsetMode::COARSE_OFFSET` is used, the
+   * input is interpreted as a calibrated offset in 0.01 ppm steps.
+   *
+   * After having changed the offset value, a conversion is triggered so that changes are immediately visible.
+   *
+   * Negative values make the clock faster by roughly 0.1 ppm/LSB; positive values make it slower.
+   */
+  void setOffset(int offset, OffsetMode mode = OffsetMode::FINE_OFFSET) override;
   unsigned int getOffset(void) override;
   String getManufacturer(void) override;
   String getModel(void) override;

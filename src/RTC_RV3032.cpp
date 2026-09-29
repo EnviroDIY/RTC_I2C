@@ -96,11 +96,9 @@ void RV3032::disable1Hz(void) {
 }
 
 
-// negative values make the clock faster by 0.2384 ppm/LSB
-// The range of the internal parameter goes from -32 to +31.
-// This means that possible values for offset range from -768 to +744 corresponding to -7.68 ppm to 7.44 ppm
 void RV3032::setOffset(int offset, OffsetMode mode) {
-  if (mode != OffsetMode::RAW) {
+  if (mode != OffsetMode::RAW_OFFSET) {
+    // Force the offset into range
     if (offset < 0)
       offset = offset - 12;
     else
@@ -111,10 +109,12 @@ void RV3032::setOffset(int offset, OffsetMode mode) {
     else if (offset > 31)
       offset = 31;
   }
-  //Serial.println(offset);
-  //Serial.println(offset&0x3F);
+  // set the offset register
   setRegister(RV3032_OFFSET, (offset & 0x3F));
+  // update the EEPROM with the new offset value
   updateEEPROMByte(RV3032_OFFSET);
+  // Serial.println(offset);
+  // Serial.println(offset&0x3F);
 }
 
 unsigned int RV3032::getOffset(void) {

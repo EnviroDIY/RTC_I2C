@@ -59,25 +59,26 @@ void PCF8523::disable1Hz(void) {
   disable32kHz();
 }
 
-// negative values make the clock faster by roughly 4.0 ppm/LSB
-// In OffsetMode::EVERY_TWO_HOURS, 1 LSB is roughly 4.34 ppm;
-// in OffsetMode::EVERY_MINUTE, 1 LSB is roughly 4.06 ppm.
-// The range goes from -64 to +63.
 void PCF8523::setOffset(int offset, OffsetMode mode) {
-  if (mode == OffsetMode::RAW)
+  if (mode == OffsetMode::RAW_OFFSET)
+    // put the raw value into the register
     setRegister(PCF8523_OFFSET, (offset & 0xFF));
   else {
-    if (mode == OffsetMode::EVERY_TWO_HOURS)
+    if (mode == OffsetMode::COARSE_OFFSET)
+      // add and then divide to round the offset instead of truncating it
       offset = (offset + (offset > 0 ? +217 : -217)) / 434;
     else
+      // add and then divide to round the offset instead of truncating it
       offset = (offset + (offset > 0 ? +203 : -203)) / 406;
+    // force offset into range
     if (offset < -64)
       offset = -64;
     else if (offset > 63)
       offset = 63;
-    //Serial.println(offset);
-    //Serial.println(((offset&0x7F)|(mode<<7)));
+    // set the offset register with the calculated value and mode
     setRegister(PCF8523_OFFSET, ((offset & 0x7F) | (static_cast<byte>(mode) << 7)));
+    // Serial.println(offset);
+    // Serial.println(((offset&0x7F)|(mode<<7)));
   }
 }
 

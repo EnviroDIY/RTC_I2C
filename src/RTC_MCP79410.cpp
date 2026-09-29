@@ -102,31 +102,35 @@ String MCP79410::getModel(void) {
 }
 
 
-// Negative values make the clock faster by roughly 1 ppm/LSB in the
-// normal calibrated correction modes.
-// The range of the internal parameter goes from -128 to +127, but they use
-// apparently sign + magnitude instead of 2ers complement.
-// I do not support the coarse calibration, because it will screw up
-// the SQW output and is too coarse anyways.
 void MCP79410::setOffset(int offset, OffsetMode mode) {
   bool sign = false;
-  if (mode == OffsetMode::RAW) {
+  switch (mode) {
+  case OffsetMode::RAW_OFFSET: {
+    // with a raw offset, directly write the given value to the offset register
     setRegister(MCP79410_OFFSET, offset & 0xFF);
-  } else {
+    break;
+  }
+  case OffsetMode::FINE_OFFSET: {
+    // force the offset into supported range
+    if (offset < -127)
+      offset = -127;
+    else if (offset > 127)
+      offset = 127;
+    // split the offset into sign and magnitude
     if (offset < 0) {
       sign = true;
       offset = -offset;
     }
     offset = (offset + 50) / 100;
-    if (offset < -127)
-      offset = -127;
-    else if (offset > 127)
-      offset = 127;
-    //Serial.println(sign);
-    //Serial.println(offset);
+    // Serial.println(sign);
+    // Serial.println(offset);
     setRegister(MCP79410_OFFSET, (sign << 7) | offset);
+    break;
   }
-  setRegister(MCP79410_CONTROL, getRegister(MCP79410_CONTROL) & 0b11111011); // clear RS2
+  default:
+    break;
+  }
+  setRegister(MCP79410_CONTROL, getRegister(MCP79410_CONTROL) & 0b11111011); // clear RS2 to use fine trim
 }
 
 unsigned int MCP79410::getOffset(void) {

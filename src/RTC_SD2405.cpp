@@ -62,18 +62,19 @@ void SD2405::disable1Hz(void) {
 }
 
 
-// negative values make the clock faster by roughly 3.051 ppm/LSB.
-// The range of the internal parameter goes from -64 to +63,
 void SD2405::setOffset(int offset, OffsetMode mode) {
-  if (mode != OffsetMode::RAW) {
+  if (mode != OffsetMode::RAW_OFFSET) {
+    // add and then divide to round the offset instead of truncating it
     offset = (offset + (offset > 0 ? +152 : -152)) / 305;
+    // force the offset into range
     if (offset < -62)
       offset = -62;
     else if (offset > 63)
       offset = 63;
   }
-  //Serial.println(offset);
+  // set the offset register
   setRegister(SD2405_OFFSET, (offset & 0x7F));
+  // Serial.println(offset);
 }
 
 unsigned int SD2405::getOffset(void) {
