@@ -26,6 +26,7 @@
 /// DS1307](https://www.analog.com/media/en/technical-documentation/data-sheets/ds1307.pdf)
 class DS1307 : public RTC_I2C {
  public:
+  /// Initializes the instance for the DS1307 hardware.
   DS1307() {
     _i2caddr = DS1307_ADDRESS;
     _clockreg = DS1307_CLOCKREG;

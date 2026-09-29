@@ -30,6 +30,7 @@
 /// SD2405](https://image.dfrobot.com/image/data/TOY0021/SD2405AL%20datasheet%20(Angelo%20v0.1).pdf)
 class SD2405 : public RTC_I2C {
  public:
+  /// Initializes the instance for the SD2405 hardware.
   SD2405() {
     _i2caddr = SD2405_ADDRESS;
     _clockreg = SD2405_CLOCKREG;

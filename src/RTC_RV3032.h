@@ -46,6 +46,7 @@
 /// RV-3032](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-3032-C7.pdf)
 class RV3032 : public RTC_I2C {
  public:
+  /// Initializes the instance for the RV3032 hardware.
   RV3032() {
     _i2caddr = RV3032_ADDRESS;
     _clockreg = RV3032_CLOCKREG;

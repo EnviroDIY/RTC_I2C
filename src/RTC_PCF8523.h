@@ -32,6 +32,7 @@
 /// The class for the [NXP Semiconductors PCF8523](https://www.nxp.com/docs/en/data-sheet/PCF8523.pdf)
 class PCF8523 : public PCFAlarm {
  public:
+  /// Initializes the instance for the PCF8523 hardware.
   PCF8523() {
     _i2caddr = PCF8523_ADDRESS;
     _clockreg = PCF8523_CLOCKREG;

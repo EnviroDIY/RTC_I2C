@@ -33,6 +33,7 @@
 /// DS3231](https://www.analog.com/media/en/technical-documentation/data-sheets/ds3231.pdf)
 class DS3231 : public DSAlarm {
  public:
+  /// Initializes the instance for the DS3231 hardware.
   DS3231() {
     _i2caddr = DS3231_ADDRESS;
     _clockreg = DS3231_CLOCKREG;

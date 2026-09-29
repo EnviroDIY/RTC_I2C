@@ -39,6 +39,7 @@
 /// RV-8803](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-8803-C7.pdf)
 class RV8803 : public RTC_I2C {
  public:
+  /// Initializes the instance for the RV8803 hardware.
   RV8803() {
     _i2caddr = RV8803_ADDRESS;
     _clockreg = RV8803_CLOCKREG;

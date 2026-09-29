@@ -42,6 +42,7 @@
 /// RV-3028](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-3028-C7.pdf)
 class RV3028 : public RTC_I2C {
  public:
+  /// Initializes the instance for the RV3028 hardware.
   RV3028() {
     _i2caddr = RV3028_ADDRESS;
     _clockreg = RV3028_CLOCKREG;

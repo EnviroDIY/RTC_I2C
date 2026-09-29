@@ -16,6 +16,7 @@
 /// RV-3028](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-3028-C7.pdf), using the Unix clock.
 class RV3028U : public RV3028 {
  public:
+  /// Initializes the instance for the RV3028U hardware variant.
   RV3028U() {
     _i2caddr = RV3028_ADDRESS;
     _clockreg = RV3028_UCLOCK;

@@ -33,6 +33,7 @@
 /// MCP79410](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ProductDocuments/DataSheets/20005010H.pdf)
 class MCP79410 : public RTC_I2C {
  public:
+  /// Initializes the instance for the MCP79410 hardware.
   MCP79410() {
     _i2caddr = MCP79410_ADDRESS;
     _clockreg = MCP79410_CLOCKREG;

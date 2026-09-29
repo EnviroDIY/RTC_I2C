@@ -32,6 +32,7 @@
 /// DS1337](https://www.analog.com/media/en/technical-documentation/data-sheets/ds1337-ds1337c.pdf)
 class DS1337 : public DSAlarm {
  public:
+  /// Initializes the instance for the DS1337 hardware.
   DS1337() {
     _i2caddr = DS1337_ADDRESS;
     _clockreg = DS1337_CLOCKREG;

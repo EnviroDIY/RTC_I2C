@@ -40,6 +40,7 @@
  */
 class RS5C372 : public RTC_I2C {
  public:
+  /// Initializes the instance for the RS5C372 hardware.
   RS5C372() {
     _i2caddr = RS5C372_ADDRESS;
     _clockreg = RS5C372_CLOCKREG;
