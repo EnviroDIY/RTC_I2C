@@ -336,7 +336,7 @@ bool initRTC(void) {
       config = true;
     }
   }
-  //Serial.println(rtc.isValid());
+  // Serial.println(rtc.isValid());
   if (parse && config) {
     Serial.print("RTC configured Time=");
     Serial.print(__TIME__);

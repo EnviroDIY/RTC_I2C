@@ -177,7 +177,7 @@ bool beginRTC(RTC_I2C &rtc, tm &set_time) {
   if (valid && TimeUtils::sameTime(set_time, new_tm)) {
     config = true;
   }
-  //Serial.println(rtc.isValid());
+  // Serial.println(rtc.isValid());
   if (config) {
     Serial.print(F("  RTC Time Valid and Matches Compilation Time\n\r"));
     success = true;
