@@ -40,15 +40,36 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Changed
 
-- Removed dependency on Paul Stoffregen's Time library.
+- Replaced Paul Stoffregen's Time library with the EnviroDIY EpochTime library
+  and the standard `time.h` `tm` structure.
+- Renamed the base `RTC` class to `RTC_I2C` to avoid conflicts with platform
+  core definitions.
+- Changed initialization, time-setting, alarm, output, offset, and register
+  operations to return success or failure.
+- Added strongly typed battery-switching and offset-mode enums, and made
+  `begin()` perform device initialization.
+- Expanded support from AVR-only to all Arduino architectures.
+- Updated and documented the examples, public API, and RTC capability tables.
 
 ### Added
 
-- Added functions to get the make and model of each clock.
+- Added functions to get each clock's manufacturer, model, combined make and
+  model, and I2C address.
+- Added timestamp and `epochTime` overloads plus portable time-conversion
+  helpers.
+- Added documentation and example-build workflows, Doxygen configuration, and
+  ReadMe files for each example.
 
 ### Removed
 
+- Removed the blocking-read option from `getTime()`.
+
 ### Fixed
+
+- Corrected weekday and calendar-time conversions, including behavior on mbed
+  and Raspberry Pi Pico platforms.
+- Corrected RTC manufacturer names and propagated I2C communication failures
+  through the public API.
 
 ***
 
