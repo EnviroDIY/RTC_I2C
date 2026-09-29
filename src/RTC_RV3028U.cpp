@@ -51,10 +51,10 @@ bool RV3028U::setTime(tm timeParts) {
   return setTime(TimeUtils::tmToEpochTime(timeParts).getTimestamp());
 }
 
-String RV3028U::getManufacturer(void) {
+String RV3028U::getManufacturer() {
   return F("Micro Crystal");
 }
 
-String RV3028U::getModel(void) {
+String RV3028U::getModel() {
   return F("RV3028U");
 }

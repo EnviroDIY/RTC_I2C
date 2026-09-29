@@ -92,7 +92,7 @@ class RTC_I2C {
    * @brief Check whether the RTC is operating normally.
    * @return `true` when the RTC reports a valid operating state; otherwise `false`.
    */
-  virtual bool isValid(void) = 0;
+  virtual bool isValid() = 0;
 
   /**
    * @brief Set the RTC from a Unix timestamp.
@@ -136,25 +136,25 @@ class RTC_I2C {
    * @brief Enable the RTC's 32 kHz output; a no-op for RTCs that do not have a 32kHz output.
    * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
    */
-  virtual bool enable32kHz(void) { return true; }
+  virtual bool enable32kHz() { return true; }
 
   /**
    * @brief Disable the RTC's 32 kHz output; a no-op for RTCs that do not have a 32kHz output.
    * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
    */
-  virtual bool disable32kHz(void) { return true; }
+  virtual bool disable32kHz() { return true; }
 
   /**
    * @brief Enable the RTC's 1 Hz output; a no-op for RTCs that do not have a 1Hz output.
    * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
    */
-  virtual bool enable1Hz(void) { return true; }
+  virtual bool enable1Hz() { return true; }
 
   /**
    * @brief Disable the RTC's 1 Hz output; a no-op for RTCs that do not have a 1Hz output.
    * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
    */
-  virtual bool disable1Hz(void) { return true; }
+  virtual bool disable1Hz() { return true; }
 
   /**
    * @brief Configure an alarm that matches a specific hour and minute; a no-op for RTCs that do not have an alarm.
@@ -175,25 +175,25 @@ class RTC_I2C {
    * @brief Enable the RTC alarm interrupt or alarm function; a no-op for RTCs that do not have an alarm.
    * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
    */
-  virtual bool enableAlarm(void) { return true; }
+  virtual bool enableAlarm() { return true; }
 
   /**
    * @brief Disable the RTC alarm interrupt or alarm function; a no-op for RTCs that do not have an alarm.
    * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
    */
-  virtual bool disableAlarm(void) { return true; }
+  virtual bool disableAlarm() { return true; }
 
   /**
    * @brief Check whether the RTC alarm condition is asserted.
    * @return `true` if the RTC reports an asserted alarm; otherwise `false`.
    */
-  virtual bool senseAlarm(void) { return false; }
+  virtual bool senseAlarm() { return false; }
 
   /**
    * @brief Clear the RTC alarm condition; a no-op for RTCs that do not have an alarm.
    * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
    */
-  virtual bool clearAlarm(void) { return true; }
+  virtual bool clearAlarm() { return true; }
 
   /**
    * @brief Apply a calibration offset to the RTC.
@@ -214,31 +214,31 @@ class RTC_I2C {
    * @brief Read the RTC calibration offset or zero for RTCs without a calibration register.
    * @return The calibration offset in the RTC-specific library representation.
    */
-  virtual unsigned int getOffset(void) { return 0; }
+  virtual unsigned int getOffset() { return 0; }
 
   /**
    * @brief Read the RTC's temperature measurement or `-128` for RTCs without a temperature sensor.
    * @return The RTC temperature, or `-128` when no temperature sensor is available.
    */
-  virtual int getTemp(void) { return -128; }
+  virtual int getTemp() { return -128; }
 
   /**
    * @brief Get the RTC manufacturer name.
    * @return The manufacturer name.
    */
-  virtual String getManufacturer(void) = 0;
+  virtual String getManufacturer() = 0;
 
   /**
    * @brief Get the RTC model name.
    * @return The model name.
    */
-  virtual String getModel(void) = 0;
+  virtual String getModel() = 0;
 
   /**
    * @brief Get the RTC manufacturer and model as one string.
    * @return The manufacturer and model separated by a space.
    */
-  virtual String getMakeModel(void);
+  virtual String getMakeModel();
 
   /**
    * @brief Write one RTC register.
@@ -270,7 +270,7 @@ class RTC_I2C {
    *
    * @return The RTC capability bitmask.
    */
-  virtual byte getCapabilities(void) { return _capabilities; }
+  virtual byte getCapabilities() { return _capabilities; }
 
   /**
    * @brief Get the RTC's I2C address.
@@ -347,26 +347,26 @@ class DSAlarm : public RTC_I2C {
    * @brief Enable the DS-family alarm.
    * @return `true` if the alarm was successfully enabled; otherwise `false`.
    */
-  bool enableAlarm(void) override;
+  bool enableAlarm() override;
 
   /**
    * @brief Disable the DS-family alarm.
    * @return `true` if the alarm was successfully disabled; otherwise `false`.
    */
-  bool disableAlarm(void) override;
+  bool disableAlarm() override;
 
   /**
    * @brief Check the DS-family alarm status flag.
    *
    * @return `true` if the alarm status bit is set; otherwise `false`.
    */
-  bool senseAlarm(void) override;
+  bool senseAlarm() override;
 
   /**
    * @brief Clear the DS-family alarm status flag.
    * @return `true` if the alarm status flag was successfully cleared; otherwise `false`.
    */
-  bool clearAlarm(void) override;
+  bool clearAlarm() override;
 };
 
 /// Base class for Alarms for PCF-family RTCs
@@ -398,12 +398,12 @@ class PCFAlarm : public RTC_I2C {
    *
    * @return `true` if the alarm status bit is set; otherwise `false`.
    */
-  bool senseAlarm(void) override;
+  bool senseAlarm() override;
 
   /**
    * @brief Clear the PCF-family alarm status flag.
    * @return `true` if the alarm status flag was successfully cleared; otherwise `false`.
    */
-  bool clearAlarm(void) override;
+  bool clearAlarm() override;
 };
 #endif

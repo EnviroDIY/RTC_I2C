@@ -35,7 +35,7 @@ bool connected[sizeof(rtc) / sizeof(rtc[0])] = {false};
 uint8_t n_attached = 0;
 
 
-void setup(void) {
+void setup() {
   Serial.begin(115200);
   Serial.println(F("Starting RTC iteration test...\n"));
 
@@ -82,7 +82,7 @@ void setup(void) {
   }
 }
 
-void loop(void) {
+void loop() {
   Serial.println("\n---\n");
   for (byte i = 0; i < n_rtc; i++) {
     if (!connected[i]) {

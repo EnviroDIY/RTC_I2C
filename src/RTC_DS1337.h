@@ -32,7 +32,7 @@
 /// DS1337](https://www.analog.com/media/en/technical-documentation/data-sheets/ds1337-ds1337c.pdf)
 class DS1337 : public DSAlarm {
  public:
-  DS1337(void) {
+  DS1337() {
     _i2caddr = DS1337_ADDRESS;
     _clockreg = DS1337_CLOCKREG;
     _wdaybase = DS1337_WDAYBASE;
@@ -41,12 +41,12 @@ class DS1337 : public DSAlarm {
     _bit7set = DS1337_BIT7;
   }
   bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
-  bool isValid(void) override;
-  bool enable32kHz(void) override;
-  bool disable32kHz(void) override;
-  bool enable1Hz(void) override;
-  bool disable1Hz(void) override;
-  String getManufacturer(void) override;
-  String getModel(void) override;
+  bool isValid() override;
+  bool enable32kHz() override;
+  bool disable32kHz() override;
+  bool enable1Hz() override;
+  bool disable1Hz() override;
+  String getManufacturer() override;
+  String getModel() override;
 };
 #endif

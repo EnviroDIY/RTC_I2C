@@ -30,7 +30,7 @@
 /// SD2405](https://image.dfrobot.com/image/data/TOY0021/SD2405AL%20datasheet%20(Angelo%20v0.1).pdf)
 class SD2405 : public RTC_I2C {
  public:
-  SD2405(void) {
+  SD2405() {
     _i2caddr = SD2405_ADDRESS;
     _clockreg = SD2405_CLOCKREG;
     _wdaybase = SD2405_WDAYBASE;
@@ -39,17 +39,17 @@ class SD2405 : public RTC_I2C {
     _bit7set = SD2405_BIT7;
   }
   bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
-  bool isValid(void) override;
+  bool isValid() override;
   bool setAlarm(byte minute, byte hour) override; // here we can only set the alarm til next match
   bool setAlarm(byte minute) override;            // hourly alarm at a particular minute
-  bool senseAlarm(void) override;
-  bool clearAlarm(void) override;
-  bool enableAlarm(void) override;
-  bool disableAlarm(void) override;
-  bool enable32kHz(void) override;
-  bool disable32kHz(void) override;
-  bool enable1Hz(void) override;
-  bool disable1Hz(void) override;
+  bool senseAlarm() override;
+  bool clearAlarm() override;
+  bool enableAlarm() override;
+  bool disableAlarm() override;
+  bool enable32kHz() override;
+  bool disable32kHz() override;
+  bool enable1Hz() override;
+  bool disable1Hz() override;
   /**
    * @copydoc RTC_I2C::setOffset()
    *
@@ -60,8 +60,8 @@ class SD2405 : public RTC_I2C {
    * The range of the internal parameter goes from -64 to +63.
    */
   bool setOffset(int offset, OffsetMode mode = OffsetMode::FINE_OFFSET) override;
-  unsigned int getOffset(void) override;
-  String getManufacturer(void) override;
-  String getModel(void) override;
+  unsigned int getOffset() override;
+  String getManufacturer() override;
+  String getModel() override;
 };
 #endif

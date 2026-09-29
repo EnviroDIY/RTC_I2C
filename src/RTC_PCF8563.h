@@ -28,7 +28,7 @@
 /// The class for the [NXP Semiconductors PCF8563](https://www.nxp.com/docs/en/data-sheet/PCF8563.pdf)
 class PCF8563 : public PCFAlarm {
  public:
-  PCF8563(void) {
+  PCF8563() {
     _i2caddr = PCF8563_ADDRESS;
     _clockreg = PCF8563_CLOCKREG;
     _wdaybase = PCF8563_WDAYBASE;
@@ -37,14 +37,14 @@ class PCF8563 : public PCFAlarm {
     _bit7set = PCF8563_BIT7;
   }
   bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
-  bool isValid(void) override;
-  bool enableAlarm(void) override;
-  bool disableAlarm(void) override;
-  bool enable32kHz(void) override;
-  bool disable32kHz(void) override;
-  bool enable1Hz(void) override;
-  bool disable1Hz(void) override;
-  String getManufacturer(void) override;
-  String getModel(void) override;
+  bool isValid() override;
+  bool enableAlarm() override;
+  bool disableAlarm() override;
+  bool enable32kHz() override;
+  bool disable32kHz() override;
+  bool enable1Hz() override;
+  bool disable1Hz() override;
+  String getManufacturer() override;
+  String getModel() override;
 };
 #endif

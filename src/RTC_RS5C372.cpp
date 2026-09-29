@@ -9,16 +9,16 @@ bool RS5C372::init(__attribute__((unused)) BatteryMode mode) {
   return success;
 }
 
-bool RS5C372::isValid(void) {
+bool RS5C372::isValid() {
   return ((getRegister(RS5C372_CONTROL2) & 0b00010000) == 0); // XSTP=0, otherwise clock is/was halted
 }
 
-bool RS5C372::enableAlarm(void) {
+bool RS5C372::enableAlarm() {
   byte ctr = getRegister(RS5C372_CONTROL1);
   return setRegister(RS5C372_CONTROL1, (ctr | 0b10000000)); // set AALE bit
 }
 
-bool RS5C372::disableAlarm(void) {
+bool RS5C372::disableAlarm() {
   byte ctr = getRegister(RS5C372_CONTROL1);
   return setRegister(RS5C372_CONTROL1, (ctr & ~0b10000000)); // reset AALE bit
 }
@@ -31,32 +31,32 @@ bool RS5C372::setAlarm(byte minute, byte hour) {
   return success;
 }
 
-bool RS5C372::senseAlarm(void) {
+bool RS5C372::senseAlarm() {
   return ((getRegister(RS5C372_CONTROL2) & 0b10) != 0);
 }
 
-bool RS5C372::clearAlarm(void) {
+bool RS5C372::clearAlarm() {
   byte ctr = getRegister(RS5C372_CONTROL2);
   return setRegister(RS5C372_CONTROL2, (ctr & 0b11111101));
 }
 
 
-bool RS5C372::enable32kHz(void) {
+bool RS5C372::enable32kHz() {
   byte clkout = getRegister(RS5C372_CONTROL2);
   return setRegister(RS5C372_CONTROL2, (clkout & ~0b00001000)); // set CLEN to 0
 }
 
-bool RS5C372::disable32kHz(void) {
+bool RS5C372::disable32kHz() {
   byte clkout = getRegister(RS5C372_CONTROL2);
   return setRegister(RS5C372_CONTROL2, (clkout | 0b00001000)); // set CLEN to 1
 }
 
-bool RS5C372::enable1Hz(void) {
+bool RS5C372::enable1Hz() {
   byte clkout = getRegister(RS5C372_CONTROL1);
   return setRegister(RS5C372_CONTROL1, (clkout & 0b11111000) | 0b00000011);
 }
 
-bool RS5C372::disable1Hz(void) {
+bool RS5C372::disable1Hz() {
   byte clkout = getRegister(RS5C372_CONTROL1);
   return setRegister(RS5C372_CONTROL1, (clkout & 0b11111000));
 }
@@ -78,15 +78,15 @@ bool RS5C372::setOffset(int offset, OffsetMode mode) {
   return success;
 }
 
-unsigned int RS5C372::getOffset(void) {
+unsigned int RS5C372::getOffset() {
   return getRegister(RS5C372_OFFSET);
 }
 
-String RS5C372::getManufacturer(void) {
+String RS5C372::getManufacturer() {
   return F("Ricoh");
 }
 
-String RS5C372::getModel(void) {
+String RS5C372::getModel() {
   return F("RS5C372");
 }
 

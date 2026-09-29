@@ -26,7 +26,7 @@
 /// DS1307](https://www.analog.com/media/en/technical-documentation/data-sheets/ds1307.pdf)
 class DS1307 : public RTC_I2C {
  public:
-  DS1307(void) {
+  DS1307() {
     _i2caddr = DS1307_ADDRESS;
     _clockreg = DS1307_CLOCKREG;
     _wdaybase = DS1307_WDAYBASE;
@@ -35,12 +35,12 @@ class DS1307 : public RTC_I2C {
     _bit7set = DS1307_BIT7;
   }
   bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
-  bool isValid(void) override;
-  bool enable32kHz(void) override;
-  bool disable32kHz(void) override;
-  bool enable1Hz(void) override;
-  bool disable1Hz(void) override;
-  String getManufacturer(void) override;
-  String getModel(void) override;
+  bool isValid() override;
+  bool enable32kHz() override;
+  bool disable32kHz() override;
+  bool enable1Hz() override;
+  bool disable1Hz() override;
+  String getManufacturer() override;
+  String getModel() override;
 };
 #endif

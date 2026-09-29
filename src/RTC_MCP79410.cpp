@@ -4,7 +4,7 @@ bool MCP79410::init(__attribute__((unused)) BatteryMode mode) {
   return setRegister(MCP79410_CONTROL, 0x80); // 0b10000000
 }
 
-bool MCP79410::isValid(void) {
+bool MCP79410::isValid() {
   return ((getRegister(MCP79410_STATUS) & 0b100000) != 0); // oscillator is running
 }
 
@@ -63,47 +63,47 @@ bool MCP79410::setAlarm(byte minute) {
          setRegister(MCP79410_ALARM + 3, 0x10);             // set match condition to minutes must match
 }
 
-bool MCP79410::enableAlarm(void) {
+bool MCP79410::enableAlarm() {
   byte ctr = getRegister(MCP79410_CONTROL);
   return setRegister(MCP79410_CONTROL, ctr | 0b10000); // set the ALM0 bit
 }
 
-bool MCP79410::disableAlarm(void) {
+bool MCP79410::disableAlarm() {
   byte ctr = getRegister(MCP79410_CONTROL + 1);
   return setRegister(MCP79410_CONTROL, (ctr & 0b11101111)); // clear ALM0 bit
 }
 
-bool MCP79410::senseAlarm(void) {
+bool MCP79410::senseAlarm() {
   return ((getRegister(MCP79410_ALARM + 3) & 0b1000) != 0);
 }
 
-bool MCP79410::clearAlarm(void) {
+bool MCP79410::clearAlarm() {
   byte ctr = getRegister(MCP79410_ALARM + 3);
   return setRegister(MCP79410_ALARM + 3, (ctr & 0b11110111));
 }
 
 
-bool MCP79410::enable32kHz(void) {
+bool MCP79410::enable32kHz() {
   return setRegister(MCP79410_CONTROL, (getRegister(MCP79410_CONTROL) & 0b10111100) | 0b1000011); // enable SQW 32 kHz
 }
 
-bool MCP79410::disable32kHz(void) {
+bool MCP79410::disable32kHz() {
   return setRegister(MCP79410_CONTROL, getRegister(MCP79410_CONTROL) & ~0b01000000); // disable SQW
 }
 
-bool MCP79410::enable1Hz(void) {
+bool MCP79410::enable1Hz() {
   return setRegister(MCP79410_CONTROL, (getRegister(MCP79410_CONTROL) & 0b10111000) | 0b1000000); // set 1Hz
 }
 
-bool MCP79410::disable1Hz(void) {
+bool MCP79410::disable1Hz() {
   return disable32kHz();
 }
 
-String MCP79410::getManufacturer(void) {
+String MCP79410::getManufacturer() {
   return F("Microchip");
 }
 
-String MCP79410::getModel(void) {
+String MCP79410::getModel() {
   return F("MCP79410");
 }
 
@@ -141,6 +141,6 @@ bool MCP79410::setOffset(int offset, OffsetMode mode) {
   return success;
 }
 
-unsigned int MCP79410::getOffset(void) {
+unsigned int MCP79410::getOffset() {
   return getRegister(MCP79410_OFFSET);
 }

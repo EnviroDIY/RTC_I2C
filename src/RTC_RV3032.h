@@ -46,7 +46,7 @@
 /// RV-3032](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-3032-C7.pdf)
 class RV3032 : public RTC_I2C {
  public:
-  RV3032(void) {
+  RV3032() {
     _i2caddr = RV3032_ADDRESS;
     _clockreg = RV3032_CLOCKREG;
     _wdaybase = RV3032_WDAYBASE;
@@ -55,17 +55,17 @@ class RV3032 : public RTC_I2C {
     _bit7set = RV3032_BIT7;
   }
   bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
-  bool isValid(void) override;
+  bool isValid() override;
   bool setAlarm(byte minute, byte hour) override;
   bool setAlarm(byte minute) override;
-  bool senseAlarm(void) override;
-  bool clearAlarm(void) override;
-  bool enableAlarm(void) override;
-  bool disableAlarm(void) override;
-  bool enable32kHz(void) override;
-  bool disable32kHz(void) override;
-  bool enable1Hz(void) override;
-  bool disable1Hz(void) override;
+  bool senseAlarm() override;
+  bool clearAlarm() override;
+  bool enableAlarm() override;
+  bool disableAlarm() override;
+  bool enable32kHz() override;
+  bool disable32kHz() override;
+  bool enable1Hz() override;
+  bool disable1Hz() override;
   /**
    * @copydoc RTC_I2C::setOffset()
    *
@@ -77,9 +77,9 @@ class RV3032 : public RTC_I2C {
    * This means that possible values for offset range from -768 to +744 corresponding to -7.68 ppm to 7.44 ppm
    */
   bool setOffset(int offset, OffsetMode mode = OffsetMode::FINE_OFFSET) override;
-  unsigned int getOffset(void) override;
-  String getManufacturer(void) override;
-  String getModel(void) override;
+  unsigned int getOffset() override;
+  String getManufacturer() override;
+  String getModel() override;
 
 
  protected:

@@ -16,7 +16,7 @@
 /// RV-3028](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-3028-C7.pdf), using the Unix clock.
 class RV3028U : public RV3028 {
  public:
-  RV3028U(void) {
+  RV3028U() {
     _i2caddr = RV3028_ADDRESS;
     _clockreg = RV3028_UCLOCK;
     _wdaybase = 0;
@@ -25,16 +25,16 @@ class RV3028U : public RV3028 {
     _bit7set = RV3028_BIT7;
   }
   bool setAlarm(__attribute__((unused)) byte minute, __attribute__((unused)) byte hour) override { return true; }
-  bool senseAlarm(void) override { return false; }  // no-op for this RTC
-  bool clearAlarm(void) override { return true; }   // no-op for this RTC
-  bool enableAlarm(void) override { return true; }  // no-op for this RTC
-  bool disableAlarm(void) override { return true; } // no-op for this RTC
+  bool senseAlarm() override { return false; }  // no-op for this RTC
+  bool clearAlarm() override { return true; }   // no-op for this RTC
+  bool enableAlarm() override { return true; }  // no-op for this RTC
+  bool disableAlarm() override { return true; } // no-op for this RTC
   bool setTime(timestamp_t t) override;
   bool setTime(tm timeParts) override;
   timestamp_t getTime() override;
   bool getTime(tm &timeParts) override;
-  String getManufacturer(void) override;
-  String getModel(void) override;
+  String getManufacturer() override;
+  String getModel() override;
 
  private:
   bool readUnixTime(timestamp_t &timestamp);

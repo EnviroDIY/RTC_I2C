@@ -8,31 +8,31 @@ bool DS3231::init(__attribute__((unused)) BatteryMode mode) {
   return success;
 }
 
-bool DS3231::isValid(void) {
+bool DS3231::isValid() {
   return ((getRegister(DS3231_STATUS) & 0x80) == 0); // OSF bit cleared = oscillator enabled
 }
 
-bool DS3231::enable32kHz(void) {
+bool DS3231::enable32kHz() {
   byte stat = getRegister(DS3231_STATUS);
   return setRegister(DS3231_STATUS, (stat & 0b11110111) | 0b00001000); // EN32kHz = 1
 }
 
-bool DS3231::disable32kHz(void) {
+bool DS3231::disable32kHz() {
   byte stat = getRegister(DS3231_STATUS);
   return setRegister(DS3231_STATUS, (stat & 0b11110111) | 0b00000000); //  EN32kHz = 0
 }
 
-bool DS3231::enable1Hz(void) {
+bool DS3231::enable1Hz() {
   byte ctr = getRegister(DS3231_CONTROL);
   return setRegister(DS3231_CONTROL, (ctr & 0b11100011) | 0b00000000); // RS1=0 RS=0 INTCN=0
 }
 
-bool DS3231::disable1Hz(void) {
+bool DS3231::disable1Hz() {
   byte ctr = getRegister(DS3231_CONTROL);
   return setRegister(DS3231_CONTROL, (ctr & 0b11100011) | 0b00000100); // RS1=0 RS=0 INTCN=1 disables 1 Hz
 }
 
-int DS3231::getTemp(void) {
+int DS3231::getTemp() {
   byte temp = getRegister(DS3231_TEMPMSB);
   return (int8_t)temp;
 }
@@ -59,15 +59,15 @@ bool DS3231::setOffset(int offset, OffsetMode mode) {
   return success;
 }
 
-unsigned int DS3231::getOffset(void) {
+unsigned int DS3231::getOffset() {
   return getRegister(DS3231_OFFSET);
 }
 
-String DS3231::getManufacturer(void) {
+String DS3231::getManufacturer() {
   return F("Analog Devices");
 }
 
-String DS3231::getModel(void) {
+String DS3231::getModel() {
   return F("DS3231");
 }
 

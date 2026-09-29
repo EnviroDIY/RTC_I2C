@@ -33,7 +33,7 @@
 /// MCP79410](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ProductDocuments/DataSheets/20005010H.pdf)
 class MCP79410 : public RTC_I2C {
  public:
-  MCP79410(void) {
+  MCP79410() {
     _i2caddr = MCP79410_ADDRESS;
     _clockreg = MCP79410_CLOCKREG;
     _wdaybase = MCP79410_WDAYBASE;
@@ -42,19 +42,19 @@ class MCP79410 : public RTC_I2C {
     _bit7set = MCP79410_BIT7;
   }
   bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
-  bool isValid(void) override;
+  bool isValid() override;
   bool setTime(timestamp_t t) override;
   bool setTime(tm timeParts) override;
   bool setAlarm(byte minute, byte hour) override; // here we can only set the alarm til next match
   bool setAlarm(byte minute) override;
-  bool senseAlarm(void) override;
-  bool clearAlarm(void) override;
-  bool enableAlarm(void) override;
-  bool disableAlarm(void) override;
-  bool enable32kHz(void) override;
-  bool disable32kHz(void) override;
-  bool enable1Hz(void) override;
-  bool disable1Hz(void) override;
+  bool senseAlarm() override;
+  bool clearAlarm() override;
+  bool enableAlarm() override;
+  bool disableAlarm() override;
+  bool enable32kHz() override;
+  bool disable32kHz() override;
+  bool enable1Hz() override;
+  bool disable1Hz() override;
   /**
    * @copydoc RTC_I2C::setOffset()
    * Negative values make the clock faster by roughly 1 ppm/LSB in the normal calibrated correction modes. The range of
@@ -64,8 +64,8 @@ class MCP79410 : public RTC_I2C {
    * anyways.
    */
   bool setOffset(int offset, OffsetMode mode = OffsetMode::FINE_OFFSET) override;
-  unsigned int getOffset(void) override;
-  String getManufacturer(void) override;
-  String getModel(void) override;
+  unsigned int getOffset() override;
+  String getManufacturer() override;
+  String getModel() override;
 };
 #endif

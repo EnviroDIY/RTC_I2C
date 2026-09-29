@@ -8,7 +8,7 @@ bool SD2405::init(__attribute__((unused)) BatteryMode mode) {
   return success;
 }
 
-bool SD2405::isValid(void) {
+bool SD2405::isValid() {
   return ((getRegister(SD2405_CONTROL) & 0b1) == 0); // power on bit (not sure, but believe that = 0 means valid)
 }
 
@@ -26,44 +26,44 @@ bool SD2405::setAlarm(byte minute) {
 }
 
 
-bool SD2405::enableAlarm(void) {
+bool SD2405::enableAlarm() {
   byte ctr = getRegister(SD2405_CONTROL + 1);
   return setRegister(SD2405_CONTROL + 1, (ctr & 0b11001101) | 0b00010010); // set the INTAE bit and INTS1/INTS=01
 }
 
-bool SD2405::disableAlarm(void) {
+bool SD2405::disableAlarm() {
   byte ctr = getRegister(SD2405_CONTROL + 1);
   return setRegister(SD2405_CONTROL + 1, (ctr & 0b11111101)); // clear INTAE bit
 }
 
-bool SD2405::senseAlarm(void) {
+bool SD2405::senseAlarm() {
   return ((getRegister(SD2405_CONTROL) & 0b00100000) != 0);
 }
 
-bool SD2405::clearAlarm(void) {
+bool SD2405::clearAlarm() {
   byte ctr = getRegister(SD2405_ALARM + 3);
   return setRegister(SD2405_ALARM + 3, (ctr & 0b11011111));
 }
 
 
-bool SD2405::enable32kHz(void) {
+bool SD2405::enable32kHz() {
   return setRegister(SD2405_CONTROL + 1,
                      (getRegister(SD2405_CONTROL + 1) & 0b11001110) | 0b00100001) &                // enable SQW output
          setRegister(SD2405_CONTROL + 2, (getRegister(SD2405_CONTROL + 2) & 0b11110000) | 0b0001); // 32kHz
 }
 
-bool SD2405::disable32kHz(void) {
+bool SD2405::disable32kHz() {
   return setRegister(SD2405_CONTROL + 1, getRegister(SD2405_CONTROL + 1) & ~0b00110001); // disable SQW and alarm INT
 }
 
-bool SD2405::enable1Hz(void) {
+bool SD2405::enable1Hz() {
   return setRegister(SD2405_CONTROL + 1,
                      (getRegister(SD2405_CONTROL + 1) & 0b11001110) | 0b00100001) &                // enable SQW output
          setRegister(SD2405_CONTROL + 2, (getRegister(SD2405_CONTROL + 2) & 0b11110000) | 0b1010); // 1 Hz
 }
 
 
-bool SD2405::disable1Hz(void) {
+bool SD2405::disable1Hz() {
   return disable32kHz();
 }
 
@@ -84,15 +84,15 @@ bool SD2405::setOffset(int offset, OffsetMode mode) {
   return success;
 }
 
-unsigned int SD2405::getOffset(void) {
+unsigned int SD2405::getOffset() {
   return (getRegister(SD2405_OFFSET) & 0x7F);
 }
 
-String SD2405::getManufacturer(void) {
+String SD2405::getManufacturer() {
   return F("DFRobot");
 }
 
-String SD2405::getModel(void) {
+String SD2405::getModel() {
   return F("SD2405");
 }
 

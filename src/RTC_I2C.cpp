@@ -137,21 +137,21 @@ bool DSAlarm::setAlarm(byte minute) {
   return success;
 }
 
-bool DSAlarm::enableAlarm(void) {
+bool DSAlarm::enableAlarm() {
   byte ctr = getRegister(DSALARM_CONTROL);
   return setRegister(DSALARM_CONTROL, (ctr & 0b11111110) | 0b00000001);
 }
 
-bool DSAlarm::disableAlarm(void) {
+bool DSAlarm::disableAlarm() {
   byte ctr = getRegister(DSALARM_CONTROL);
   return setRegister(DSALARM_CONTROL, (ctr & 0b11111110) | 0b00000000);
 }
 
-bool DSAlarm::senseAlarm(void) {
+bool DSAlarm::senseAlarm() {
   return getRegister(DSALARM_STATUS) & 0x01;
 }
 
-bool DSAlarm::clearAlarm(void) {
+bool DSAlarm::clearAlarm() {
   byte ctr = getRegister(DSALARM_STATUS);
   return setRegister(DSALARM_STATUS, (ctr & 0b11111110) | 0b00000000);
 }
@@ -181,16 +181,16 @@ bool PCFAlarm::setAlarm(byte minute) {
   return success;
 }
 
-bool PCFAlarm::senseAlarm(void) {
+bool PCFAlarm::senseAlarm() {
   return ((getRegister(PCFALARM_STATUS) & 0b1000) != 0);
 }
 
-bool PCFAlarm::clearAlarm(void) {
+bool PCFAlarm::clearAlarm() {
   byte ctr = getRegister(PCFALARM_STATUS);
   return setRegister(PCFALARM_STATUS, (ctr & 0b11110111) | 0b00000000);
 }
 
 // Manufacturer and model information functions
-String RTC_I2C::getMakeModel(void) {
+String RTC_I2C::getMakeModel() {
   return String(getManufacturer()) + " " + String(getModel());
 }

@@ -39,7 +39,7 @@
 /// RV-8803](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-8803-C7.pdf)
 class RV8803 : public RTC_I2C {
  public:
-  RV8803(void) {
+  RV8803() {
     _i2caddr = RV8803_ADDRESS;
     _clockreg = RV8803_CLOCKREG;
     _wdaybase = RV8803_WDAYBASE;
@@ -48,19 +48,19 @@ class RV8803 : public RTC_I2C {
     _bit7set = RV8803_BIT7;
   }
   bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
-  bool isValid(void) override;
+  bool isValid() override;
   bool setTime(timestamp_t t) override;
   bool setTime(tm timeParts) override;
   timestamp_t getTime() override;
   bool getTime(tm &timeParts) override;
   bool setAlarm(byte minute, byte hour) override;
   bool setAlarm(byte minute) override;
-  bool senseAlarm(void) override;
-  bool clearAlarm(void) override;
-  bool enableAlarm(void) override;
-  bool disableAlarm(void) override;
-  bool enable32kHz(void) override;
-  bool enable1Hz(void) override;
+  bool senseAlarm() override;
+  bool clearAlarm() override;
+  bool enableAlarm() override;
+  bool disableAlarm() override;
+  bool enable32kHz() override;
+  bool enable1Hz() override;
   /**
    * @copydoc RTC_I2C::setOffset()
    *
@@ -72,8 +72,8 @@ class RV8803 : public RTC_I2C {
    * This means that possible values for offset range from -768 to +744 corresponding to -7.68 ppm to 7.44 ppm
    */
   bool setOffset(int offset, OffsetMode mode = OffsetMode::FINE_OFFSET) override;
-  unsigned int getOffset(void) override;
-  String getManufacturer(void) override;
-  String getModel(void) override;
+  unsigned int getOffset() override;
+  String getManufacturer() override;
+  String getModel() override;
 };
 #endif

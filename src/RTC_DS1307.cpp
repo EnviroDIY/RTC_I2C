@@ -8,30 +8,30 @@ bool DS1307::init(__attribute__((unused)) BatteryMode mode) {
   return success;
 }
 
-bool DS1307::isValid(void) {
+bool DS1307::isValid() {
   return ((getRegister(DS1307_CLOCKREG) & 0x80) == 0); // oscillator enabled
 }
 
-bool DS1307::enable32kHz(void) {
+bool DS1307::enable32kHz() {
   return setRegister(DS1307_CONTROL, 0b00010011);
 }
 
-bool DS1307::disable32kHz(void) {
+bool DS1307::disable32kHz() {
   return setRegister(DS1307_CONTROL, 0b00000000);
 }
 
-bool DS1307::enable1Hz(void) {
+bool DS1307::enable1Hz() {
   return setRegister(DS1307_CONTROL, 0b00010000);
 }
 
-bool DS1307::disable1Hz(void) {
+bool DS1307::disable1Hz() {
   return setRegister(DS1307_CONTROL, 0b00000000);
 }
 
-String DS1307::getManufacturer(void) {
+String DS1307::getManufacturer() {
   return F("Analog Devices");
 }
 
-String DS1307::getModel(void) {
+String DS1307::getModel() {
   return F("DS1307");
 }

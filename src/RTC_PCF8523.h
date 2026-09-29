@@ -32,7 +32,7 @@
 /// The class for the [NXP Semiconductors PCF8523](https://www.nxp.com/docs/en/data-sheet/PCF8523.pdf)
 class PCF8523 : public PCFAlarm {
  public:
-  PCF8523(void) {
+  PCF8523() {
     _i2caddr = PCF8523_ADDRESS;
     _clockreg = PCF8523_CLOCKREG;
     _wdaybase = PCF8523_WDAYBASE;
@@ -41,13 +41,13 @@ class PCF8523 : public PCFAlarm {
     _bit7set = PCF8523_BIT7;
   }
   bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
-  bool isValid(void) override;
-  bool enableAlarm(void) override;
-  bool disableAlarm(void) override;
-  bool enable32kHz(void) override;
-  bool disable32kHz(void) override;
-  bool enable1Hz(void) override;
-  bool disable1Hz(void) override;
+  bool isValid() override;
+  bool enableAlarm() override;
+  bool disableAlarm() override;
+  bool enable32kHz() override;
+  bool disable32kHz() override;
+  bool enable1Hz() override;
+  bool disable1Hz() override;
   /**
    * @copydoc RTC_I2C::setOffset()
    * Negative values make the clock faster by roughly 4.0 ppm/LSB
@@ -56,8 +56,8 @@ class PCF8523 : public PCFAlarm {
    * The range goes from -64 to +63.
    */
   bool setOffset(int offset, OffsetMode mode = OffsetMode::FINE_OFFSET) override;
-  unsigned int getOffset(void) override;
-  String getManufacturer(void) override;
-  String getModel(void) override;
+  unsigned int getOffset() override;
+  String getManufacturer() override;
+  String getModel() override;
 };
 #endif

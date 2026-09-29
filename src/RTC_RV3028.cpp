@@ -33,7 +33,7 @@ bool RV3028::init(BatteryMode mode) {
   return success;
 }
 
-bool RV3028::isValid(void) {
+bool RV3028::isValid() {
   return ((getRegister(RV3028_STATUS) & 0b1) == 0); // POR flag is cleared
 }
 
@@ -54,44 +54,44 @@ bool RV3028::setAlarm(byte minute) {
 }
 
 
-bool RV3028::enableAlarm(void) {
+bool RV3028::enableAlarm() {
   byte ctr = getRegister(RV3028_CONTROL + 1);
   return setRegister(RV3028_CONTROL + 1, ctr | 0b1000); // set the AIE bit
 }
 
-bool RV3028::disableAlarm(void) {
+bool RV3028::disableAlarm() {
   byte ctr = getRegister(RV3028_CONTROL + 1);
   return setRegister(RV3028_CONTROL + 1, (ctr & 0b11110111)); // clear AIE bit
 }
 
-bool RV3028::senseAlarm(void) {
+bool RV3028::senseAlarm() {
   return ((getRegister(RV3028_STATUS) & 0b100) != 0);
 }
 
-bool RV3028::clearAlarm(void) {
+bool RV3028::clearAlarm() {
   byte ctr = getRegister(RV3028_STATUS);
   return setRegister(RV3028_STATUS, (ctr & 0b11111011));
 }
 
 
-bool RV3028::enable32kHz(void) {
+bool RV3028::enable32kHz() {
   return setRegister(RV3028_CLKOUT, 0b11000000) & // enable CLKOUT 32kHz
          updateEEPROMByte(RV3028_CLKOUT);
 }
 
-bool RV3028::disable32kHz(void) {
+bool RV3028::disable32kHz() {
   return setRegister(RV3028_CLKOUT, 0b01000000) & // disable CLKOUT
          updateEEPROMByte(RV3028_CLKOUT);
 }
 
 // use nINT as output since the CLICK board does not
 // support the output of CLKOUT
-bool RV3028::enable1Hz(void) {
+bool RV3028::enable1Hz() {
   return setRegister(RV3028_CONTROL + 1, getRegister(RV3028_CONTROL) & ~0b00010000) &   // USEL = 0
          setRegister(RV3028_CONTROL + 1, getRegister(RV3028_CONTROL + 1) | 0b00100000); // UIE = 1
 }
 
-bool RV3028::disable1Hz(void) {
+bool RV3028::disable1Hz() {
   return setRegister(RV3028_CONTROL + 1, getRegister(RV3028_CONTROL + 1) & ~0b00100000); // UIE = 0
 }
 
@@ -123,7 +123,7 @@ bool RV3028::setOffset(int offset, OffsetMode mode) {
   return success;
 }
 
-unsigned int RV3028::getOffset(void) {
+unsigned int RV3028::getOffset() {
   return ((((unsigned int)getRegister(RV3028_OFFSET)) << 1) | (getRegister(RV3028_OFFSET + 1) >> 7));
 }
 
@@ -155,11 +155,11 @@ bool RV3028::updateEEPROMByte(byte reg) {
   return success;
 }
 
-String RV3028::getManufacturer(void) {
+String RV3028::getManufacturer() {
   return F("Micro Crystal");
 }
 
-String RV3028::getModel(void) {
+String RV3028::getModel() {
   return F("RV3028");
 }
 

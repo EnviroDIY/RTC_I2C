@@ -33,7 +33,7 @@
 /// DS3231](https://www.analog.com/media/en/technical-documentation/data-sheets/ds3231.pdf)
 class DS3231 : public DSAlarm {
  public:
-  DS3231(void) {
+  DS3231() {
     _i2caddr = DS3231_ADDRESS;
     _clockreg = DS3231_CLOCKREG;
     _wdaybase = DS3231_WDAYBASE;
@@ -42,12 +42,12 @@ class DS3231 : public DSAlarm {
     _bit7set = DS3231_BIT7;
   }
   bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
-  bool isValid(void) override;
-  bool enable32kHz(void) override;
-  bool disable32kHz(void) override;
-  bool enable1Hz(void) override;
-  bool disable1Hz(void) override;
-  int getTemp(void) override;
+  bool isValid() override;
+  bool enable32kHz() override;
+  bool disable32kHz() override;
+  bool enable1Hz() override;
+  bool disable1Hz() override;
+  int getTemp() override;
   /**
    * @copydoc RTC_I2C::setOffset()
    * This RTC has only one calibrated correction mode - an aging offset that is added to or subtracted from the
@@ -59,9 +59,9 @@ class DS3231 : public DSAlarm {
    * Negative values make the clock faster by roughly 0.1 ppm/LSB; positive values make it slower.
    */
   bool setOffset(int offset, OffsetMode mode = OffsetMode::FINE_OFFSET) override;
-  unsigned int getOffset(void) override;
-  String getManufacturer(void) override;
-  String getModel(void) override;
+  unsigned int getOffset() override;
+  String getManufacturer() override;
+  String getModel() override;
 };
 #endif
 

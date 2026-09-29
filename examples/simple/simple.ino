@@ -4,7 +4,7 @@
 
 DS3231 rtc;
 
-void setup(void) {
+void setup() {
   tm timeParts, timeParts1;
   Serial.begin(115200);
   while (!Serial);

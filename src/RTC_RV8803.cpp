@@ -8,7 +8,7 @@ bool RV8803::init(__attribute__((unused)) BatteryMode mode) {
   return success;
 }
 
-bool RV8803::isValid(void) {
+bool RV8803::isValid() {
   return ((getRegister(RV8803_STATUS) & 0b11) == 0); // both voltage low flags are cleared
 }
 
@@ -63,32 +63,32 @@ bool RV8803::setAlarm(byte minute) {
 }
 
 
-bool RV8803::enableAlarm(void) {
+bool RV8803::enableAlarm() {
   byte ctr = getRegister(RV8803_CONTROL);
   return setRegister(RV8803_CONTROL, ctr | 0b1000); // set the AIE bit
 }
 
-bool RV8803::disableAlarm(void) {
+bool RV8803::disableAlarm() {
   byte ctr = getRegister(RV8803_CONTROL);
   return setRegister(RV8803_CONTROL, (ctr & 0b11110111)); // clear AIE bit
 }
 
-bool RV8803::senseAlarm(void) {
+bool RV8803::senseAlarm() {
   return ((getRegister(RV8803_STATUS) & 0b1000) != 0);
 }
 
-bool RV8803::clearAlarm(void) {
+bool RV8803::clearAlarm() {
   byte ctr = getRegister(RV8803_STATUS);
   return setRegister(RV8803_STATUS, (ctr & 0b11110111));
 }
 
 
-bool RV8803::enable32kHz(void) {
+bool RV8803::enable32kHz() {
   byte clkout = getRegister(RV8803_CLKOUT);
   return setRegister(RV8803_CLKOUT, (clkout | 0b1100));
 }
 
-bool RV8803::enable1Hz(void) {
+bool RV8803::enable1Hz() {
   byte clkout = getRegister(RV8803_CLKOUT);
   return setRegister(RV8803_CLKOUT, (clkout & 0b11110011) | 0b00001000);
 }
@@ -114,14 +114,14 @@ bool RV8803::setOffset(int offset, OffsetMode mode) {
 }
 
 
-unsigned int RV8803::getOffset(void) {
+unsigned int RV8803::getOffset() {
   return (getRegister(RV8803_OFFSET) & 0x3F);
 }
 
-String RV8803::getManufacturer(void) {
+String RV8803::getManufacturer() {
   return F("Micro Crystal");
 }
 
-String RV8803::getModel(void) {
+String RV8803::getModel() {
   return F("RV8803");
 }

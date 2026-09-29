@@ -25,39 +25,39 @@ bool PCF8523::init(BatteryMode mode) {
   return success;
 }
 
-bool PCF8523::isValid(void) {
+bool PCF8523::isValid() {
   return ((getRegister(PCF8523_CONTROL + 2) & 0b00000100) == 0) && // no battery low flag and
          ((getRegister(PCF8523_CONTROL) & 0b00100000) == 0) &&     // oscillator is running
          ((getRegister(PCF8523_CLOCKREG) & 0b10000000) == 0);      // OS flag cleared
 }
 
-bool PCF8523::enableAlarm(void) {
+bool PCF8523::enableAlarm() {
   byte ctr = getRegister(PCF8523_CONTROL);
   return setRegister(PCF8523_CONTROL, (ctr & 0b11111101) | 0b00000010);
 }
 
-bool PCF8523::disableAlarm(void) {
+bool PCF8523::disableAlarm() {
   byte ctr = getRegister(PCF8523_CONTROL);
   return setRegister(PCF8523_CONTROL, (ctr & 0b11111101) | 0b00000000);
 }
 
 
-bool PCF8523::enable32kHz(void) {
+bool PCF8523::enable32kHz() {
   byte clkout = getRegister(PCF8523_CLKOUT);
   return setRegister(PCF8523_CLKOUT, (clkout & 0b11000111) | 0b00000000);
 }
 
-bool PCF8523::disable32kHz(void) {
+bool PCF8523::disable32kHz() {
   byte clkout = getRegister(PCF8523_CLKOUT);
   return setRegister(PCF8523_CLKOUT, (clkout & 0b11000111) | 0b00111000);
 }
 
-bool PCF8523::enable1Hz(void) {
+bool PCF8523::enable1Hz() {
   byte clkout = getRegister(PCF8523_CLKOUT);
   return setRegister(PCF8523_CLKOUT, (clkout & 0b11000111) | 0b00110000);
 }
 
-bool PCF8523::disable1Hz(void) {
+bool PCF8523::disable1Hz() {
   return disable32kHz();
 }
 
@@ -86,15 +86,15 @@ bool PCF8523::setOffset(int offset, OffsetMode mode) {
   return success;
 }
 
-unsigned int PCF8523::getOffset(void) {
+unsigned int PCF8523::getOffset() {
   return getRegister(PCF8523_OFFSET);
 }
 
-String PCF8523::getManufacturer(void) {
+String PCF8523::getManufacturer() {
   return F("NXP");
 }
 
-String PCF8523::getModel(void) {
+String PCF8523::getModel() {
   return F("PCF8523");
 }
 

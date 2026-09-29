@@ -9,42 +9,42 @@ bool PCF8563::init(__attribute__((unused)) BatteryMode mode) {
   return success;
 }
 
-bool PCF8563::isValid(void) {
+bool PCF8563::isValid() {
   return ((getRegister(PCF8563_CONTROL) & 0b00010000) == 0) && // STOP not asserted
          ((getRegister(PCF8563_CONTROL) & 0b10000000) == 0);   // VL bit not asserted
 }
 
-bool PCF8563::enableAlarm(void) {
+bool PCF8563::enableAlarm() {
   byte ctr = getRegister(PCF8563_CONTROL + 1);
   return setRegister(PCF8563_CONTROL + 1, (ctr & 0b11111101) | 0b00000010);
 }
 
-bool PCF8563::disableAlarm(void) {
+bool PCF8563::disableAlarm() {
   byte ctr = getRegister(PCF8563_CONTROL + 1);
   return setRegister(PCF8563_CONTROL + 1, (ctr & 0b11111101) | 0b00000000);
 }
 
 
-bool PCF8563::enable32kHz(void) {
+bool PCF8563::enable32kHz() {
   return setRegister(PCF8563_CLKOUT, 0b10000000);
 }
 
-bool PCF8563::disable32kHz(void) {
+bool PCF8563::disable32kHz() {
   return setRegister(PCF8563_CLKOUT, 0);
 }
 
-bool PCF8563::enable1Hz(void) {
+bool PCF8563::enable1Hz() {
   return setRegister(PCF8563_CLKOUT, 0b10000011);
 }
 
-bool PCF8563::disable1Hz(void) {
+bool PCF8563::disable1Hz() {
   return disable32kHz();
 }
 
-String PCF8563::getManufacturer(void) {
+String PCF8563::getManufacturer() {
   return F("NXP");
 }
 
-String PCF8563::getModel(void) {
+String PCF8563::getModel() {
   return F("PCF8563");
 }

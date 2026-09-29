@@ -13,7 +13,7 @@ PCF8563 rtc;
 const char *monthAbbr[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
 
-void setup(void) {
+void setup() {
 
   pinMode(PIN1HZ, INPUT_PULLUP);
   pinMode(PIN32KHZ, INPUT_PULLUP);
@@ -282,7 +282,7 @@ void printTmComponents(const tm &timeStruct, Stream &stream) {
   stream.println();
 }
 
-void unsupported(void) {
+void unsupported() {
   Serial.println(F("Command is unsupported on this RTC"));
 }
 
@@ -309,7 +309,7 @@ void help() {
                    "  RXX=YY - set register XX with hex YY"));
 }
 
-bool initRTC(void) {
+bool initRTC() {
   tm timeParts, new_tm;
   bool config = false;
   bool valid = false;
@@ -362,7 +362,7 @@ bool initRTC(void) {
   return success;
 }
 
-int parse2Hex(void) {
+int parse2Hex() {
   char c;
   int res = 0;
   while (!Serial.available());
