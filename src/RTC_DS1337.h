@@ -28,7 +28,8 @@
 /// Capabilities supported by the DS1337 implementation.
 #define DS1337_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM)
 
-
+/// The class for the [Analog Devices
+/// DS1337](https://www.analog.com/media/en/technical-documentation/data-sheets/ds1337-ds1337c.pdf)
 class DS1337 : public DSAlarm {
  public:
   DS1337(void) {

@@ -22,7 +22,8 @@
 /// Capabilities supported by the DS1307 implementation.
 #define DS1307_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ)
 
-
+/// The class for the [Analog Devices
+/// DS1307](https://www.analog.com/media/en/technical-documentation/data-sheets/ds1307.pdf)
 class DS1307 : public RTC_I2C {
  public:
   DS1307(void) {

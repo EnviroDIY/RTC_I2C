@@ -62,7 +62,7 @@ enum class OffsetMode : byte {
 };
 
 
-/* A generic RTC base class */
+/// A generic RTC base class
 class RTC_I2C {
  public:
   /**
@@ -318,6 +318,7 @@ class RTC_I2C {
   byte _bit7set;
 };
 
+/// Base class for Alarms for DS-family RTCs
 class DSAlarm : public RTC_I2C {
  public:
   /**
@@ -328,6 +329,7 @@ class DSAlarm : public RTC_I2C {
    *
    * @param minute The minute at which the alarm should match.
    * @param hour The hour at which the alarm should match.
+   * @return `true` if the alarm was successfully set; otherwise `false`.
    */
   bool setAlarm(byte minute, byte hour) override;
 
@@ -367,6 +369,7 @@ class DSAlarm : public RTC_I2C {
   bool clearAlarm(void) override;
 };
 
+/// Base class for Alarms for PCF-family RTCs
 class PCFAlarm : public RTC_I2C {
  public:
   /**

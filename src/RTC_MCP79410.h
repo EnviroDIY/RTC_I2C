@@ -29,7 +29,8 @@
 /// Capabilities supported by the MCP79410 implementation.
 #define MCP79410_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET)
 
-
+/// The class for the [Microchip
+/// MCP79410](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ProductDocuments/DataSheets/20005010H.pdf)
 class MCP79410 : public RTC_I2C {
  public:
   MCP79410(void) {

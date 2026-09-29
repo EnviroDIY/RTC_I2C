@@ -26,7 +26,8 @@
 /// Capabilities supported by the SD2405 implementation.
 #define SD2405_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET)
 
-
+/// The class for the [DFRobot
+/// SD2405](https://image.dfrobot.com/image/data/TOY0021/SD2405AL%20datasheet%20(Angelo%20v0.1).pdf)
 class SD2405 : public RTC_I2C {
  public:
   SD2405(void) {

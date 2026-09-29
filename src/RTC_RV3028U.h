@@ -12,6 +12,8 @@
 #define RV3028U_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_OFFSET)
 
 
+/// Class for the [Micro Crystal
+/// RV-3028](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-3028-C7.pdf), using the Unix clock.
 class RV3028U : public RV3028 {
  public:
   RV3028U(void) {

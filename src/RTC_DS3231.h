@@ -29,7 +29,8 @@
 /// Capabilities supported by the DS3231 implementation.
 #define DS3231_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET | RTC_CAP_TEMP)
 
-
+/// The class for the [Analog Devices
+/// DS3231](https://www.analog.com/media/en/technical-documentation/data-sheets/ds3231.pdf)
 class DS3231 : public DSAlarm {
  public:
   DS3231(void) {

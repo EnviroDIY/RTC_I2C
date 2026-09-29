@@ -32,9 +32,12 @@
 /// Capabilities supported by the RS5C372 implementation.
 #define RS5C372_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_OFFSET | RTC_CAP_SREGADDR)
 
-
-/* INTRB is used as SQW output fir 32 KHz and 1 Hz signals
- * INTRB is the alarm interrupt output */
+/**
+ * @brief The class for the [Ricoh RS5C372](http://www.ricoh.com/LSI/product_rtc/2wire/5c372/5c372a-e.pdf)
+ *
+ * INTRB is used as SQW output for 32 KHz and 1 Hz signals
+ * INTRB is the alarm interrupt output
+ */
 class RS5C372 : public RTC_I2C {
  public:
   RS5C372(void) {

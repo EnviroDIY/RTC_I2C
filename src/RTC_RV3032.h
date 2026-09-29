@@ -42,7 +42,8 @@
 /// Capabilities supported by the RV-3032 implementation.
 #define RV3032_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET | RTC_CAP_TEMP)
 
-
+/// The class for the [Micro Crystal
+/// RV-3032](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-3032-C7.pdf)
 class RV3032 : public RTC_I2C {
  public:
   RV3032(void) {
@@ -82,6 +83,12 @@ class RV3032 : public RTC_I2C {
 
 
  protected:
+  /**
+   * @brief Update a byte in the EEPROM.
+   *
+   * @param reg The EEPROM register address to update.
+   * @return `true` if the EEPROM byte was successfully updated; otherwise `false`.
+   */
   bool updateEEPROMByte(byte reg);
 };
 #endif

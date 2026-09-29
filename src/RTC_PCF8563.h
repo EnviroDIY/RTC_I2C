@@ -25,7 +25,7 @@
 /// Capabilities supported by the PCF8563 implementation.
 #define PCF8563_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM)
 
-
+/// The class for the [NXP Semiconductors PCF8563](https://www.nxp.com/docs/en/data-sheet/PCF8563.pdf)
 class PCF8563 : public PCFAlarm {
  public:
   PCF8563(void) {

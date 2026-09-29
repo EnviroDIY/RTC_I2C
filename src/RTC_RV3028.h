@@ -38,7 +38,8 @@
 /// Capabilities supported by the RV-3028 implementation.
 #define RV3028_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET)
 
-
+/// The class for the [Micro Crystal
+/// RV-3028](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-3028-C7.pdf)
 class RV3028 : public RTC_I2C {
  public:
   RV3028(void) {
@@ -77,6 +78,12 @@ class RV3028 : public RTC_I2C {
   String getModel(void) override;
 
  protected:
+  /**
+   * @brief Update a byte in the EEPROM.
+   *
+   * @param reg The EEPROM register address to update.
+   * @return `true` if the EEPROM byte was successfully updated; otherwise `false`.
+   */
   bool updateEEPROMByte(byte reg);
 };
 #endif

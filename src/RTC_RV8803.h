@@ -35,7 +35,8 @@
 /// Capabilities supported by the RV-8803 implementation.
 #define RV8803_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET)
 
-
+/// The class for the [Micro Crystal
+/// RV-8803](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-8803-C7.pdf)
 class RV8803 : public RTC_I2C {
  public:
   RV8803(void) {
