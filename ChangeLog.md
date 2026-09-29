@@ -14,7 +14,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - [ChangeLog](#changelog)
   - [Unreleased](#unreleased)
-  - [0.7.0](#070)
   - [V0.6.0 (22.3.2023)](#v060-2232023)
   - [V0.5.2 (8.3.2023)](#v052-832023)
   - [V0.5.1 (7.3.2023)](#v051-732023)
@@ -41,25 +40,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Changed
 
-### Added
-
-### Removed
-
-### Fixed
-
-***
-
-## 0.7.0
-
-### Changed
-
 - Removed dependency on Paul Stoffregen's Time library.
 
 ### Added
 
 - Added functions to get the make and model of each clock.
 
-***
+### Removed
+
+### Fixed
 
 ***
 
