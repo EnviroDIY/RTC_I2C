@@ -2,9 +2,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-[![Commits since latest](https://img.shields.io/github/commits-since/felias-fogg/RTC_I2C/latest)](https://github.com/felias-fogg/RTC_I2C/commits/master)
+[![Commits since latest](https://img.shields.io/github/commits-since/EnviroDIY/RTC_I2C/latest)](https://github.com/EnviroDIY/RTC_I2C/commits/master)
 
-![Hit Counter](https://visitor-badge.laobi.icu/badge?page_id=felias-fogg_RTC_I2C)
+![Hit Counter](https://visitor-badge.laobi.icu/badge?page_id=EnviroDIY_RTC_I2C)
 
 - [RTC\_I2C](#rtc_i2c)
   - [A universal API for I2C RTCs](#a-universal-api-for-i2c-rtcs)
@@ -13,23 +13,22 @@
   - [Example sketches](#example-sketches)
   - [RTC capabilities](#rtc-capabilities)
 
-
 ## A universal API for I2C RTCs
 
 This library provides a universal API to a number of I2C RTCs, which are described in one of my [blog articles](https://hinterm-ziel.de/index.php/2023/02/24/everything-you-wanted-to-know-about-real-time-clocks-but-were-afraid-to-ask/):
 
-* [Analog Devices DS1307](https://www.analog.com/media/en/technical-documentation/data-sheets/DS1307.pdf)
-* [Analog Devices DS1337](https://www.analog.com/media/en/technical-documentation/data-sheets/DS1337-DS1337C.pdf)
-* [Analog Devices DS3231](https://www.analog.com/media/en/technical-documentation/data-sheets/DS3231.pdf)
-* [Microchip MCP79410](https://www.microchip.com/en-us/product/mcp79410)
-* [NXP Semiconductors PCF8523](https://www.nxp.com/docs/en/data-sheet/PCF8523.pdf)
-* [NXP Semiconductors PCF8563](https://www.nxp.com/docs/en/data-sheet/PCF8563.pdf)
-* [Ricoh RS5C372](https://www.datasheetarchive.com/?q=RS5C372A)
-* [Micro Crystal RV-3028](https://www.microcrystal.com/en/news/news-detail/press-release-rv-3028-c7)
-* [Micro Crystal RV-3032](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-3032-C7.pdf)
-* [Micro Crystal RV-8523](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-8523-C3.pdf)
-* [Micro Crystal RV-8803](https://www.microcrystal.com/en/products/real-time-clock-rtc-modules/rv-8803-c7)
-* [DFRobot SD2405](https://dfimg.dfrobot.com/wiki/18543/DFR0469_sd2405al-rtc-module_datasheet_V1.0.pdf)
+- [Analog Devices DS1307](https://www.analog.com/media/en/technical-documentation/data-sheets/DS1307.pdf)
+- [Analog Devices DS1337](https://www.analog.com/media/en/technical-documentation/data-sheets/DS1337-DS1337C.pdf)
+- [Analog Devices DS3231](https://www.analog.com/media/en/technical-documentation/data-sheets/DS3231.pdf)
+- [Microchip MCP79410](https://www.microchip.com/en-us/product/mcp79410)
+- [NXP Semiconductors PCF8523](https://www.nxp.com/docs/en/data-sheet/PCF8523.pdf)
+- [NXP Semiconductors PCF8563](https://www.nxp.com/docs/en/data-sheet/PCF8563.pdf)
+- [Ricoh RS5C372](https://www.datasheetarchive.com/?q=RS5C372A)
+- [Micro Crystal RV-3028](https://www.microcrystal.com/en/news/news-detail/press-release-rv-3028-c7)
+- [Micro Crystal RV-3032](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-3032-C7.pdf)
+- [Micro Crystal RV-8523](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-8523-C3.pdf)
+- [Micro Crystal RV-8803](https://www.microcrystal.com/en/products/real-time-clock-rtc-modules/rv-8803-c7)
+- [DFRobot SD2405](https://dfimg.dfrobot.com/wiki/18543/DFR0469_sd2405al-rtc-module_datasheet_V1.0.pdf)
 
 The interface is minimal, but is just enough to get the basic functionality. And it is provided by a base class. This means you can even use many RTCs in parallel without caring about what particular model you use. I tried to identify the least common denominator of the functionality. However, I wanted to have some kind of alarm, and being able to make use of an offset register and read the temperature, if possible. Unfortunately, one RTC does not have alarms at all, one RTC does not allow recurring alarms, a few RTCs do not have an offset register, and many do not possess the ability to read out the temperature.
 
@@ -253,9 +252,9 @@ The `RV-3028U` class uses the RV-3028 Unix-time counter for timekeeping and does
 
 The alarm table distinguishes three different concepts:
 
-* **Single event** means that the hardware provides an explicit one-shot/future-event alarm mode.
-* **Periodic** means that the hardware provides an explicit periodic alarm mode.
-* **Every matching occurrence** means that an enabled calendar match can raise the alarm again when the programmed condition occurs again. This can provide recurring daily, hourly, weekly, or other calendar-based events without being a separate hardware "periodic mode".
+- **Single event** means that the hardware provides an explicit one-shot/future-event alarm mode.
+- **Periodic** means that the hardware provides an explicit periodic alarm mode.
+- **Every matching occurrence** means that an enabled calendar match can raise the alarm again when the programmed condition occurs again. This can provide recurring daily, hourly, weekly, or other calendar-based events without being a separate hardware "periodic mode".
 
 The last column therefore does not mean that the common library automatically implements every possible recurrence exposed by the hardware.
 
