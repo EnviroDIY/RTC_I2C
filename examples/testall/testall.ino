@@ -310,7 +310,7 @@ void help() {
 }
 
 bool initRTC() {
-  tm timeParts, new_tm;
+  tm new_tm;
   bool config = false;
   bool valid = false;
 
@@ -345,7 +345,7 @@ bool initRTC() {
     success = true;
   } else if (parse) {
     Serial.print("RTC Communication Error:\n\rInput=   ");
-    printTmComponents(timeParts, Serial);
+    printTmComponents(set_time, Serial);
     Serial.print(F("Response="));
     printTmComponents(new_tm, Serial);
     Serial.print(F("Valid=   "));
