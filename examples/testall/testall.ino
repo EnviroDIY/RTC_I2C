@@ -81,6 +81,7 @@ void loop() {
     timeParts.tm_mday = 28;
     timeParts.tm_mon = 1;
     timeParts.tm_year = 2100 - 1900;
+    timeParts.tm_wday = 0; // Sunday
     rtc.setTime(timeParts);
     Serial.println(F("Time has advance to 28.2.2100, 23:59:45"));
     break;
@@ -326,7 +327,7 @@ bool initRTC() {
   set_time = *localtime(&assembled_time);
   printTmComponents(set_time, Serial);
 
-  bool success = rtc.begin(&Wire, BatteryMode::DIRECT_SWITCHING);
+  bool success = rtc.init(BatteryMode::DIRECT_SWITCHING);
   if (parse) {
     rtc.setTime(set_time);
     rtc.getTime(new_tm);
