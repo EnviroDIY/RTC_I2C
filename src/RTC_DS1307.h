@@ -32,13 +32,13 @@ class DS1307 : public RTC_I2C {
     _wdayfirst = DS1307_WDAYFIRST;
     _capabilities = DS1307_CAP;
     _bit7set = DS1307_BIT7;
-  };
-  void init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
+  }
+  bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
   bool isValid(void) override;
-  void enable32kHz(void) override;
-  void disable32kHz(void) override;
-  void enable1Hz(void) override;
-  void disable1Hz(void) override;
+  bool enable32kHz(void) override;
+  bool disable32kHz(void) override;
+  bool enable1Hz(void) override;
+  bool disable1Hz(void) override;
   String getManufacturer(void) override;
   String getModel(void) override;
 };

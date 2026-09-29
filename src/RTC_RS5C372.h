@@ -45,24 +45,24 @@ class RS5C372 : public RTC_I2C {
     _capabilities = RS5C372_CAP;
     _bit7set = RS5C372_BIT7;
   }
-  void init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
+  bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
   bool isValid(void) override;
-  void setAlarm(byte minute, byte hour) override;
-  void setAlarm(__attribute__((unused)) byte minute) override {} // no-op for this RTC!
-  void enableAlarm(void) override;
-  void disableAlarm(void) override;
+  bool setAlarm(byte minute, byte hour) override;
+  bool setAlarm(__attribute__((unused)) byte minute) override { return true; } // no-op for this RTC!
+  bool enableAlarm(void) override;
+  bool disableAlarm(void) override;
   bool senseAlarm(void) override;
-  void clearAlarm(void) override;
-  void enable32kHz(void) override;
-  void disable32kHz(void) override;
-  void enable1Hz(void) override;
-  void disable1Hz(void) override;
+  bool clearAlarm(void) override;
+  bool enable32kHz(void) override;
+  bool disable32kHz(void) override;
+  bool enable1Hz(void) override;
+  bool disable1Hz(void) override;
   /**
-   * @copydocs RTC_I2C::setOffset()
+   * @copydoc RTC_I2C::setOffset()
    * This RTC has only one calibrated correction mode. Both `OffsetMode::FINE_OFFSET` and `OffsetMode::COARSE_OFFSET`
    * are treated identically.
    */
-  void setOffset(int offset, OffsetMode mode = OffsetMode::FINE_OFFSET) override;
+  bool setOffset(int offset, OffsetMode mode = OffsetMode::FINE_OFFSET) override;
   unsigned int getOffset(void) override;
   String getManufacturer(void) override;
   String getModel(void) override;

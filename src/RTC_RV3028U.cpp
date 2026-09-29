@@ -2,28 +2,37 @@
 
 // get Unix time (from a Unix time counter)
 timestamp_t RV3028U::getTime() {
+  timestamp_t t = 0;
+  readUnixTime(t);
+  return t;
+}
+
+bool RV3028U::readUnixTime(timestamp_t &timestamp) {
   timestamp_t t1 = 0, t2;
   int timeout = 0;
   do {
     t2 = t1;
     _wire->beginTransmission(_i2caddr);
     _wire->write(RV3028_UCLOCK);
-    if (_wire->endTransmission(false) != 0) return 0;
-    if (_wire->requestFrom(_i2caddr, (byte)4) != 4) return 0;
+    if (_wire->endTransmission(false) != 0) return false;
+    if (_wire->requestFrom(_i2caddr, (byte)4) != 4) return false;
     t1 = 0;
     for (byte i = 0; i < 4; i++) t1 = (t1 >> 8) | (((timestamp_t)_wire->read()) << 24);
   } while (t1 != t2 && ++timeout);
-  return t1;
+  timestamp = t1;
+  return true;
 }
 
-void RV3028U::getTime(tm &timeParts) {
-  time_t t = getTime();
+bool RV3028U::getTime(tm &timeParts) {
+  timestamp_t t;
+  if (!readUnixTime(t)) return false;
   TimeUtils::fillTimeParts(t, 0, epochStart::unix_epoch, timeParts);
+  return true;
 }
 
-void RV3028U::setTime(timestamp_t t) {
+bool RV3028U::setTime(timestamp_t t) {
   // Serial.println(static_cast<uint32_t>(t), HEX);
-  setRegister(RV3028_CONTROL + 1, getRegister(RV3028_CONTROL + 1) | 0b1); // reset counter chain in clock
+  bool success = setRegister(RV3028_CONTROL + 1, getRegister(RV3028_CONTROL + 1) | 0b1); // reset counter chain in clock
   _wire->beginTransmission(_i2caddr);
   _wire->write(RV3028_UCLOCK);
   for (byte i = 0; i < 4; i++) {
@@ -34,11 +43,12 @@ void RV3028U::setTime(timestamp_t t) {
 #endif
     t = t >> 8;
   }
-  _wire->endTransmission();
+  success &= (_wire->endTransmission() == 0);
+  return success;
 }
 
-void RV3028U::setTime(tm timeParts) {
-  setTime(TimeUtils::tmToEpochTime(timeParts).getTimestamp());
+bool RV3028U::setTime(tm timeParts) {
+  return setTime(TimeUtils::tmToEpochTime(timeParts).getTimestamp());
 }
 
 String RV3028U::getManufacturer(void) {

@@ -39,30 +39,30 @@ class MCP79410 : public RTC_I2C {
     _wdayfirst = MCP79410_WDAYFIRST;
     _capabilities = MCP79410_CAP;
     _bit7set = MCP79410_BIT7;
-  };
-  void init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
+  }
+  bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
   bool isValid(void) override;
-  void setTime(timestamp_t t) override;
-  void setTime(tm timeParts) override;
-  void setAlarm(byte minute, byte hour) override; // here we can only set the alarm til next match
-  void setAlarm(byte minute) override;
+  bool setTime(timestamp_t t) override;
+  bool setTime(tm timeParts) override;
+  bool setAlarm(byte minute, byte hour) override; // here we can only set the alarm til next match
+  bool setAlarm(byte minute) override;
   bool senseAlarm(void) override;
-  void clearAlarm(void) override;
-  void enableAlarm(void) override;
-  void disableAlarm(void) override;
-  void enable32kHz(void) override;
-  void disable32kHz(void) override;
-  void enable1Hz(void) override;
-  void disable1Hz(void) override;
+  bool clearAlarm(void) override;
+  bool enableAlarm(void) override;
+  bool disableAlarm(void) override;
+  bool enable32kHz(void) override;
+  bool disable32kHz(void) override;
+  bool enable1Hz(void) override;
+  bool disable1Hz(void) override;
   /**
-   * @copydocs RTC_I2C::setOffset()
+   * @copydoc RTC_I2C::setOffset()
    * Negative values make the clock faster by roughly 1 ppm/LSB in the normal calibrated correction modes. The range of
    * the internal parameter goes from -128 to +127, but they use apparently sign + magnitude instead of 2ers complement.
    *
    * Only raw and fine calibrations are supported, coarse calibration will screw up the SQW output and is too coarse
    * anyways.
    */
-  void setOffset(int offset, OffsetMode mode = OffsetMode::FINE_OFFSET) override;
+  bool setOffset(int offset, OffsetMode mode = OffsetMode::FINE_OFFSET) override;
   unsigned int getOffset(void) override;
   String getManufacturer(void) override;
   String getModel(void) override;

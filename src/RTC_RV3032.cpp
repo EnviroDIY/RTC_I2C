@@ -1,16 +1,17 @@
 #include <RTC_RV3032.h>
 
-void RV3032::init(BatteryMode mode) {
-  setRegister(RV3032_CONTROL, 0);     // clear control1 register
-  setRegister(RV3032_CONTROL + 1, 0); // clear control2 register
-  setRegister(RV3032_CONTROL + 2, 0); // clear control3 register
-  setRegister(RV3032_CONTROL + 3, 0); // clear time-stamp register
-  setRegister(RV3032_CONTROL + 4, 0); // clear clock interrupt mask register
-  setRegister(RV3032_CONTROL + 5, 0); // clear EVI control register
-  setRegister(RV3032_CONTROL + 6, 0); // clear temperature threshold register
-  setRegister(RV3032_STATUS, 0);      // clear all flags
-  setRegister(RV3032_CLKOUT, 0);      // Set the oscillator selector to 32 KHz crystal by default
-  byte coe_bsm_reg = 0b01000000;      // disable CLKOUT
+bool RV3032::init(BatteryMode mode) {
+  bool success = true;
+  success &= setRegister(RV3032_CONTROL, 0);     // clear control1 register
+  success &= setRegister(RV3032_CONTROL + 1, 0); // clear control2 register
+  success &= setRegister(RV3032_CONTROL + 2, 0); // clear control3 register
+  success &= setRegister(RV3032_CONTROL + 3, 0); // clear time-stamp register
+  success &= setRegister(RV3032_CONTROL + 4, 0); // clear clock interrupt mask register
+  success &= setRegister(RV3032_CONTROL + 5, 0); // clear EVI control register
+  success &= setRegister(RV3032_CONTROL + 6, 0); // clear temperature threshold register
+  success &= setRegister(RV3032_STATUS, 0);      // clear all flags
+  success &= setRegister(RV3032_CLKOUT, 0);      // Set the oscillator selector to 32 KHz crystal by default
+  byte coe_bsm_reg = 0b01000000;                 // disable CLKOUT
   switch (mode) {
   case BatteryMode::SWITCHING_DISABLED: {
     // Switchover Disabled. – Default value on delivery
@@ -30,73 +31,83 @@ void RV3032::init(BatteryMode mode) {
     break;
   }
   }
-  setRegister(RV3032_COE, coe_bsm_reg); // disable CLKOUT & set switching mode
-  updateEEPROMByte(RV3032_COE);
+  success &= setRegister(RV3032_COE, coe_bsm_reg); // disable CLKOUT & set switching mode
+  success &= updateEEPROMByte(RV3032_COE);
+  return success;
 }
 
 bool RV3032::isValid(void) {
   return ((getRegister(RV3032_STATUS) & 0b11) == 0); // both voltage low and POR flags are cleared
 }
 
-void RV3032::setAlarm(byte minute, byte hour) {
-  setRegister(RV3032_ALARM, bin2bcd(minute));   // set minute alarm
-  setRegister(RV3032_ALARM + 1, bin2bcd(hour)); // set hour alarm
-  setRegister(RV3032_ALARM + 2, 0x80);          // set weekday alarm to always
+bool RV3032::setAlarm(byte minute, byte hour) {
+  bool success = true;
+  success &= setRegister(RV3032_ALARM, bin2bcd(minute));   // set minute alarm
+  success &= setRegister(RV3032_ALARM + 1, bin2bcd(hour)); // set hour alarm
+  success &= setRegister(RV3032_ALARM + 2, 0x80);          // set weekday alarm to always
+  return success;
 }
 
-void RV3032::setAlarm(byte minute) {
-  setRegister(RV3032_ALARM, bin2bcd(minute)); // set minute alarm
-  setRegister(RV3032_ALARM + 1, 0x80);        // set hour alarm to always
-  setRegister(RV3032_ALARM + 2, 0x80);        // set weekday alarm to always
+bool RV3032::setAlarm(byte minute) {
+  bool success = true;
+  success &= setRegister(RV3032_ALARM, bin2bcd(minute)); // set minute alarm
+  success &= setRegister(RV3032_ALARM + 1, 0x80);        // set hour alarm to always
+  success &= setRegister(RV3032_ALARM + 2, 0x80);        // set weekday alarm to always
+  return success;
 }
 
 
-void RV3032::enableAlarm(void) {
+bool RV3032::enableAlarm(void) {
   byte ctr = getRegister(RV3032_CONTROL + 1);
-  setRegister(RV3032_CONTROL + 1, ctr | 0b1000); // set the AIE bit
+  return setRegister(RV3032_CONTROL + 1, ctr | 0b1000); // set the AIE bit
 }
 
-void RV3032::disableAlarm(void) {
+bool RV3032::disableAlarm(void) {
   byte ctr = getRegister(RV3032_CONTROL + 1);
-  setRegister(RV3032_CONTROL + 1, (ctr & 0b11110111)); // clear AIE bit
+  return setRegister(RV3032_CONTROL + 1, (ctr & 0b11110111)); // clear AIE bit
 }
 
 bool RV3032::senseAlarm(void) {
   return ((getRegister(RV3032_STATUS) & 0b1000) != 0);
 }
 
-void RV3032::clearAlarm(void) {
+bool RV3032::clearAlarm(void) {
   byte ctr = getRegister(RV3032_STATUS);
-  setRegister(RV3032_STATUS, (ctr & 0b11110111));
+  return setRegister(RV3032_STATUS, (ctr & 0b11110111));
 }
 
 
-void RV3032::enable32kHz(void) {
-  setRegister(RV3032_CLKOUT, 0); // set 32kHz
-  updateEEPROMByte(RV3032_CLKOUT);
-  setRegister(RV3032_COE, getRegister(RV3032_COE) & ~0b01000000); // enable CLKOUT
-  updateEEPROMByte(RV3032_COE);
+bool RV3032::enable32kHz(void) {
+  bool success = true;
+  success &= setRegister(RV3032_CLKOUT, 0); // set 32kHz
+  success &= updateEEPROMByte(RV3032_CLKOUT);
+  success &= setRegister(RV3032_COE, getRegister(RV3032_COE) & ~0b01000000); // enable CLKOUT
+  success &= updateEEPROMByte(RV3032_COE);
+  return success;
 }
 
-void RV3032::disable32kHz(void) {
-  setRegister(RV3032_COE, getRegister(RV3032_COE) | 0b01000000); // disable CLKOUT
-  updateEEPROMByte(RV3032_COE);
+bool RV3032::disable32kHz(void) {
+  return setRegister(RV3032_COE, getRegister(RV3032_COE) | 0b01000000) & // disable CLKOUT
+         updateEEPROMByte(RV3032_COE);
 }
 
-void RV3032::enable1Hz(void) {
-  setRegister(RV3032_CLKOUT, 0b01100000); // set 1Hz
-  updateEEPROMByte(RV3032_CLKOUT);
-  setRegister(RV3032_COE, getRegister(RV3032_COE) & ~0b01000000); // enable CLKOUT
-  updateEEPROMByte(RV3032_COE);
+bool RV3032::enable1Hz(void) {
+  bool success = true;
+  success &= setRegister(RV3032_CLKOUT, 0b01100000); // set 1Hz
+  success &= updateEEPROMByte(RV3032_CLKOUT);
+  success &= setRegister(RV3032_COE, getRegister(RV3032_COE) & ~0b01000000); // enable CLKOUT
+  success &= updateEEPROMByte(RV3032_COE);
+  return success;
 }
 
-void RV3032::disable1Hz(void) {
-  setRegister(RV3032_COE, getRegister(RV3032_COE) | 0b01000000); // disable CLKOUT
-  updateEEPROMByte(RV3032_COE);
+bool RV3032::disable1Hz(void) {
+  return setRegister(RV3032_COE, getRegister(RV3032_COE) | 0b01000000) & // disable CLKOUT
+         updateEEPROMByte(RV3032_COE);
 }
 
 
-void RV3032::setOffset(int offset, OffsetMode mode) {
+bool RV3032::setOffset(int offset, OffsetMode mode) {
+  bool success = true;
   if (mode != OffsetMode::RAW_OFFSET) {
     // Force the offset into range
     if (offset < 0)
@@ -110,11 +121,11 @@ void RV3032::setOffset(int offset, OffsetMode mode) {
       offset = 31;
   }
   // set the offset register
-  setRegister(RV3032_OFFSET, (offset & 0x3F));
-  // update the EEPROM with the new offset value
-  updateEEPROMByte(RV3032_OFFSET);
+  success &= setRegister(RV3032_OFFSET, (offset & 0x3F)); // update the EEPROM with the new offset value
+  success &= updateEEPROMByte(RV3032_OFFSET);
   // Serial.println(offset);
   // Serial.println(offset&0x3F);
+  return success;
 }
 
 unsigned int RV3032::getOffset(void) {
@@ -122,19 +133,21 @@ unsigned int RV3032::getOffset(void) {
 }
 
 
-void RV3032::updateEEPROMByte(byte reg) {
+bool RV3032::updateEEPROMByte(byte reg) {
+  bool success = true;
   byte cnts = getRegister(reg);
-  setRegister(RV3032_CONTROL, getRegister(RV3032_CONTROL) | 0b100); // set EERD = 1
-  setRegister(RV3032_EEADDR, reg);
-  setRegister(RV3032_EEDATA, cnts);
+  success &= setRegister(RV3032_CONTROL, getRegister(RV3032_CONTROL) | 0b100); // set EERD = 1
+  success &= setRegister(RV3032_EEADDR, reg);
+  success &= setRegister(RV3032_EEDATA, cnts);
   while (getRegister(RV3032_BUSY) & 0b100) { // busy with reading/writing EEPROM
     delay(2);                                // wait 2 ms
   }
-  setRegister(RV3032_EECMD, 0x21);           // update EEPROM at EEADDR with value stored in EEADDR
-  while (getRegister(RV3032_BUSY) & 0b100) { // busy with reading/writing EEPROM
-    delay(10);                               // wait 10 ms
+  success &= setRegister(RV3032_EECMD, 0x21); // update EEPROM at EEADDR with value stored in EEADDR
+  while (getRegister(RV3032_BUSY) & 0b100) {  // busy with reading/writing EEPROM
+    delay(10);                                // wait 10 ms
   }
-  setRegister(RV3032_CONTROL, getRegister(RV3032_CONTROL) & ~0b00000100); // set EERD = 0
+  success &= setRegister(RV3032_CONTROL, getRegister(RV3032_CONTROL) & ~0b00000100); // set EERD = 0
+  return success;
 }
 
 String RV3032::getManufacturer(void) {

@@ -1,9 +1,10 @@
 #include <RTC_PCF8523.h>
 
 // if Vbat disabled, connect to Vcc
-void PCF8523::init(BatteryMode mode) {
-  setRegister(PCF8523_CONTROL, 0b00010000); // initiate power-on reset by software
-  setRegister(PCF8523_CONTROL + 1, 0);      // disable watchdog and countdown timers
+bool PCF8523::init(BatteryMode mode) {
+  bool success = true;
+  success &= setRegister(PCF8523_CONTROL, 0b00010000); // initiate power-on reset by software
+  success &= setRegister(PCF8523_CONTROL + 1, 0);      // disable watchdog and countdown timers
   byte bsm_reg = 0;
   switch (mode) {
   case BatteryMode::SWITCHING_DISABLED: {
@@ -19,8 +20,9 @@ void PCF8523::init(BatteryMode mode) {
     break;
   }
   }
-  setRegister(PCF8523_CONTROL + 2, bsm_reg); // switch mode and battery low detection
-  setRegister(PCF8523_CLKOUT, 0b00111000);   // disable clock output
+  success &= setRegister(PCF8523_CONTROL + 2, bsm_reg); // switch mode and battery low detection
+  success &= setRegister(PCF8523_CLKOUT, 0b00111000);   // disable clock output
+  return success;
 }
 
 bool PCF8523::isValid(void) {
@@ -29,40 +31,41 @@ bool PCF8523::isValid(void) {
          ((getRegister(PCF8523_CLOCKREG) & 0b10000000) == 0);      // OS flag cleared
 }
 
-void PCF8523::enableAlarm(void) {
+bool PCF8523::enableAlarm(void) {
   byte ctr = getRegister(PCF8523_CONTROL);
-  setRegister(PCF8523_CONTROL, (ctr & 0b11111101) | 0b00000010);
+  return setRegister(PCF8523_CONTROL, (ctr & 0b11111101) | 0b00000010);
 }
 
-void PCF8523::disableAlarm(void) {
+bool PCF8523::disableAlarm(void) {
   byte ctr = getRegister(PCF8523_CONTROL);
-  setRegister(PCF8523_CONTROL, (ctr & 0b11111101) | 0b00000000);
+  return setRegister(PCF8523_CONTROL, (ctr & 0b11111101) | 0b00000000);
 }
 
 
-void PCF8523::enable32kHz(void) {
+bool PCF8523::enable32kHz(void) {
   byte clkout = getRegister(PCF8523_CLKOUT);
-  setRegister(PCF8523_CLKOUT, (clkout & 0b11000111) | 0b00000000);
+  return setRegister(PCF8523_CLKOUT, (clkout & 0b11000111) | 0b00000000);
 }
 
-void PCF8523::disable32kHz(void) {
+bool PCF8523::disable32kHz(void) {
   byte clkout = getRegister(PCF8523_CLKOUT);
-  setRegister(PCF8523_CLKOUT, (clkout & 0b11000111) | 0b00111000);
+  return setRegister(PCF8523_CLKOUT, (clkout & 0b11000111) | 0b00111000);
 }
 
-void PCF8523::enable1Hz(void) {
+bool PCF8523::enable1Hz(void) {
   byte clkout = getRegister(PCF8523_CLKOUT);
-  setRegister(PCF8523_CLKOUT, (clkout & 0b11000111) | 0b00110000);
+  return setRegister(PCF8523_CLKOUT, (clkout & 0b11000111) | 0b00110000);
 }
 
-void PCF8523::disable1Hz(void) {
-  disable32kHz();
+bool PCF8523::disable1Hz(void) {
+  return disable32kHz();
 }
 
-void PCF8523::setOffset(int offset, OffsetMode mode) {
+bool PCF8523::setOffset(int offset, OffsetMode mode) {
+  bool success = true;
   if (mode == OffsetMode::RAW_OFFSET)
     // put the raw value into the register
-    setRegister(PCF8523_OFFSET, (offset & 0xFF));
+    success &= setRegister(PCF8523_OFFSET, (offset & 0xFF));
   else {
     if (mode == OffsetMode::COARSE_OFFSET)
       // add and then divide to round the offset instead of truncating it
@@ -76,10 +79,11 @@ void PCF8523::setOffset(int offset, OffsetMode mode) {
     else if (offset > 63)
       offset = 63;
     // set the offset register with the calculated value and mode
-    setRegister(PCF8523_OFFSET, ((offset & 0x7F) | (static_cast<byte>(mode) << 7)));
-    // Serial.println(offset);
+    success &=
+      setRegister(PCF8523_OFFSET, ((offset & 0x7F) | (static_cast<byte>(mode) << 7))); // Serial.println(offset);
     // Serial.println(((offset&0x7F)|(mode<<7)));
   }
+  return success;
 }
 
 unsigned int PCF8523::getOffset(void) {
@@ -93,3 +97,5 @@ String PCF8523::getManufacturer(void) {
 String PCF8523::getModel(void) {
   return F("PCF8523");
 }
+
+// cSpell:ignore  VBat

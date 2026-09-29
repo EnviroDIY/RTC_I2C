@@ -84,8 +84,9 @@ class RTC_I2C {
    * @brief Initialize device-specific RTC settings.
    * @param mode The battery switchover mode to configure.  This only applies to RTCs that support battery switchover -
    * generally only those that support charging a rechargeable backup battery.  Ignored if unsupported.
+   * @return `true` when the required I2C communication succeeds; otherwise `false`.
    */
-  virtual void init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) = 0;
+  virtual bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) = 0;
 
   /**
    * @brief Check whether the RTC is operating normally.
@@ -96,14 +97,16 @@ class RTC_I2C {
   /**
    * @brief Set the RTC from a Unix timestamp.
    * @param unixTimestamp The Unix timestamp to write to the RTC.
+   * @return `true` when the required I2C communication succeeds; otherwise `false`.
    */
-  virtual void setTime(timestamp_t unixTimestamp);
+  virtual bool setTime(timestamp_t unixTimestamp);
 
   /**
    * @brief Set the RTC from an `epochTime` object.
    * @param eTime The time value to write to the RTC.
+   * @return `true` when the required I2C communication succeeds; otherwise `false`.
    */
-  virtual void setTime(epochTime eTime);
+  virtual bool setTime(epochTime eTime);
 
   /**
    * @brief Set the RTC from a `tm` calendar-time structure.
@@ -112,8 +115,9 @@ class RTC_I2C {
    * month, and year fields using the register layout described by the derived RTC.
    *
    * @param timeParts The calendar time to write to the RTC.
+   * @return `true` when the I2C write succeeds; otherwise `false`.
    */
-  virtual void setTime(tm timeParts);
+  virtual bool setTime(tm timeParts);
 
   /**
    * @brief Read the RTC as a Unix timestamp.
@@ -124,62 +128,72 @@ class RTC_I2C {
   /**
    * @brief Read the RTC into a `tm` calendar-time structure.
    * @param[out] timeParts The calendar-time structure to populate.
+   * @return `true` when the register-address write and requested 7-byte read succeed; otherwise `false`.
    */
-  virtual void getTime(tm &timeParts);
+  virtual bool getTime(tm &timeParts);
 
   /**
    * @brief Enable the RTC's 32 kHz output; a no-op for RTCs that do not have a 32kHz output.
+   * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
    */
-  virtual void enable32kHz(void) {};
+  virtual bool enable32kHz(void) { return true; }
 
   /**
    * @brief Disable the RTC's 32 kHz output; a no-op for RTCs that do not have a 32kHz output.
+   * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
    */
-  virtual void disable32kHz(void) {};
+  virtual bool disable32kHz(void) { return true; }
 
   /**
    * @brief Enable the RTC's 1 Hz output; a no-op for RTCs that do not have a 1Hz output.
+   * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
    */
-  virtual void enable1Hz(void) {};
+  virtual bool enable1Hz(void) { return true; }
 
   /**
    * @brief Disable the RTC's 1 Hz output; a no-op for RTCs that do not have a 1Hz output.
+   * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
    */
-  virtual void disable1Hz(void) {};
+  virtual bool disable1Hz(void) { return true; }
 
   /**
    * @brief Configure an alarm that matches a specific hour and minute; a no-op for RTCs that do not have an alarm.
    * @param minute The minute at which the alarm should match.
    * @param hour The hour at which the alarm should match.
+   * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
    */
-  virtual void setAlarm(__attribute__((unused)) byte minute, __attribute__((unused)) byte hour) {};
+  virtual bool setAlarm(__attribute__((unused)) byte minute, __attribute__((unused)) byte hour) { return true; }
 
   /**
    * @brief Configure an alarm that matches a specific minute; a no-op for RTCs that do not have an alarm.
    * @param minute The minute at which the alarm should match.
+   * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
    */
-  virtual void setAlarm(__attribute__((unused)) byte minute) {};
+  virtual bool setAlarm(__attribute__((unused)) byte minute) { return true; }
 
   /**
    * @brief Enable the RTC alarm interrupt or alarm function; a no-op for RTCs that do not have an alarm.
+   * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
    */
-  virtual void enableAlarm(void) {};
+  virtual bool enableAlarm(void) { return true; }
 
   /**
    * @brief Disable the RTC alarm interrupt or alarm function; a no-op for RTCs that do not have an alarm.
+   * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
    */
-  virtual void disableAlarm(void) {};
+  virtual bool disableAlarm(void) { return true; }
 
   /**
    * @brief Check whether the RTC alarm condition is asserted.
    * @return `true` if the RTC reports an asserted alarm; otherwise `false`.
    */
-  virtual bool senseAlarm(void) { return false; };
+  virtual bool senseAlarm(void) { return false; }
 
   /**
    * @brief Clear the RTC alarm condition; a no-op for RTCs that do not have an alarm.
+   * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
    */
-  virtual void clearAlarm(void) {};
+  virtual bool clearAlarm(void) { return true; }
 
   /**
    * @brief Apply a calibration offset to the RTC.
@@ -189,21 +203,24 @@ class RTC_I2C {
    *
    * @param offset The calibration correction to apply.
    * @param mode Selects whether the correction is interpreted as a coarse, fine, or raw offset.
+   * @return `true` when the I2C write succeeds or the operation is a no-op; otherwise `false`.
    */
-  virtual void setOffset(__attribute__((unused)) int offset,
-                         __attribute__((unused)) OffsetMode mode = OffsetMode::FINE_OFFSET) {};
+  virtual bool setOffset(__attribute__((unused)) int offset,
+                         __attribute__((unused)) OffsetMode mode = OffsetMode::FINE_OFFSET) {
+    return true;
+  }
 
   /**
    * @brief Read the RTC calibration offset or zero for RTCs without a calibration register.
    * @return The calibration offset in the RTC-specific library representation.
    */
-  virtual unsigned int getOffset(void) { return 0; };
+  virtual unsigned int getOffset(void) { return 0; }
 
   /**
    * @brief Read the RTC's temperature measurement or `-128` for RTCs without a temperature sensor.
    * @return The RTC temperature, or `-128` when no temperature sensor is available.
    */
-  virtual int getTemp(void) { return -128; };
+  virtual int getTemp(void) { return -128; }
 
   /**
    * @brief Get the RTC manufacturer name.
@@ -231,8 +248,9 @@ class RTC_I2C {
    *
    * @param reg The RTC register address.
    * @param val The byte value to write.
+   * @return `true` when the I2C transmission succeeds; otherwise `false`.
    */
-  virtual void setRegister(byte reg, byte val);
+  virtual bool setRegister(byte reg, byte val);
 
   /**
    * @brief Read one RTC register.
@@ -252,7 +270,7 @@ class RTC_I2C {
    *
    * @return The RTC capability bitmask.
    */
-  virtual byte getCapabilities(void) { return _capabilities; };
+  virtual byte getCapabilities(void) { return _capabilities; }
 
   /**
    * @brief Get the RTC's I2C address.
@@ -311,7 +329,7 @@ class DSAlarm : public RTC_I2C {
    * @param minute The minute at which the alarm should match.
    * @param hour The hour at which the alarm should match.
    */
-  void setAlarm(byte minute, byte hour) override;
+  bool setAlarm(byte minute, byte hour) override;
 
   /**
    * @brief Configure a DS-family alarm for a specific minute of every hour.
@@ -319,18 +337,21 @@ class DSAlarm : public RTC_I2C {
    * The hour and day fields are configured as always-match fields.
    *
    * @param minute The minute at which the alarm should match.
+   * @return `true` if the alarm was successfully set; otherwise `false`.
    */
-  void setAlarm(byte minute) override;
+  bool setAlarm(byte minute) override;
 
   /**
    * @brief Enable the DS-family alarm.
+   * @return `true` if the alarm was successfully enabled; otherwise `false`.
    */
-  void enableAlarm(void) override;
+  bool enableAlarm(void) override;
 
   /**
    * @brief Disable the DS-family alarm.
+   * @return `true` if the alarm was successfully disabled; otherwise `false`.
    */
-  void disableAlarm(void) override;
+  bool disableAlarm(void) override;
 
   /**
    * @brief Check the DS-family alarm status flag.
@@ -341,8 +362,9 @@ class DSAlarm : public RTC_I2C {
 
   /**
    * @brief Clear the DS-family alarm status flag.
+   * @return `true` if the alarm status flag was successfully cleared; otherwise `false`.
    */
-  void clearAlarm(void) override;
+  bool clearAlarm(void) override;
 };
 
 class PCFAlarm : public RTC_I2C {
@@ -354,8 +376,9 @@ class PCFAlarm : public RTC_I2C {
    *
    * @param minute The minute at which the alarm should match.
    * @param hour The hour at which the alarm should match.
+   * @return `true` if the alarm was successfully set; otherwise `false`.
    */
-  void setAlarm(byte minute, byte hour) override;
+  bool setAlarm(byte minute, byte hour) override;
 
   /**
    * @brief Configure a PCF-family alarm for a specific minute of every hour.
@@ -363,8 +386,9 @@ class PCFAlarm : public RTC_I2C {
    * The hour, day, and weekday fields are configured as always-match fields.
    *
    * @param minute The minute at which the alarm should match.
+   * @return `true` if the alarm was successfully set; otherwise `false`.
    */
-  void setAlarm(byte minute) override;
+  bool setAlarm(byte minute) override;
 
   /**
    * @brief Check the PCF-family alarm status flag.
@@ -375,7 +399,8 @@ class PCFAlarm : public RTC_I2C {
 
   /**
    * @brief Clear the PCF-family alarm status flag.
+   * @return `true` if the alarm status flag was successfully cleared; otherwise `false`.
    */
-  void clearAlarm(void) override;
+  bool clearAlarm(void) override;
 };
 #endif

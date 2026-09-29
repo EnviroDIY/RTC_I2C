@@ -9,25 +9,24 @@ bool RTC_I2C::begin(TwoWire *wi, BatteryMode mode) {
   _wire->begin();
   _wire->beginTransmission(_i2caddr);
   if (_wire->endTransmission() != 0) return false;
-  _started = true;
-  init(mode);
-  return true;
+  _started = init(mode);
+  return _started;
 }
 
 // set time from epochTime object
-void RTC_I2C::setTime(epochTime eTime) {
-  setTime(eTime.getTimestamp());
+bool RTC_I2C::setTime(epochTime eTime) {
+  return setTime(eTime.getTimestamp());
 }
 
 // set time from Unix time
-void RTC_I2C::setTime(timestamp_t t) {
+bool RTC_I2C::setTime(timestamp_t t) {
   tm timeParts;
   TimeUtils::fillTimeParts(t, 0, epochStart::unix_epoch, timeParts);
-  setTime(timeParts);
+  return setTime(timeParts);
 }
 
 // set time from a time record
-void RTC_I2C::setTime(tm timeParts) {
+bool RTC_I2C::setTime(tm timeParts) {
   _wire->beginTransmission(_i2caddr);
   _wire->write((_capabilities & RTC_CAP_SREGADDR) ? (_clockreg << 4) : _clockreg);
   _wire->write(bin2bcd(timeParts.tm_sec) | ((_bit7set & 1) ? 0x80 : 0));         // seconds after the minute
@@ -44,7 +43,7 @@ void RTC_I2C::setTime(tm timeParts) {
   // ^^ month of the year, shifted from 0-indexed to 1-indexed
   _wire->write(bin2bcd(timeParts.tm_year - 100));
   // ^^ years since 1900 (as in tm structure) converted to years since 2000 used by supported RTCs
-  _wire->endTransmission();
+  return _wire->endTransmission() == 0;
 }
 
 // get Unix time
@@ -55,13 +54,13 @@ timestamp_t RTC_I2C::getTime() {
 }
 
 // get time as time record
-void RTC_I2C::getTime(tm &timeParts) {
+bool RTC_I2C::getTime(tm &timeParts) {
   timeParts = tm{0, 0, 0, 0, 0, 0, 0, 0, 0};
 
   _wire->beginTransmission(_i2caddr);
   _wire->write((_capabilities & RTC_CAP_SREGADDR) ? (_clockreg << 4) : _clockreg);
-  if (_wire->endTransmission(false) != 0) return;
-  if (_wire->requestFrom(_i2caddr, (byte)7) != 7) return;
+  if (_wire->endTransmission(false) != 0) return false;
+  if (_wire->requestFrom(_i2caddr, (byte)7) != 7) return false;
   timeParts.tm_sec = bcd2bin(_wire->read() & 0x7F);  // seconds after the minute
   timeParts.tm_min = bcd2bin(_wire->read() & 0x7F);  // minutes after the hour
   timeParts.tm_hour = bcd2bin(_wire->read() & 0x3F); // hours since midnight
@@ -75,6 +74,7 @@ void RTC_I2C::getTime(tm &timeParts) {
   // ^^ month of the year, shifted from 1-indexed to 0-indexed
   timeParts.tm_year = bcd2bin(_wire->read()) + 100;
   // ^^ years since 2000 used by supported RTCs converted to years since 1900 (as in tm structure)
+  return true;
 }
 
 byte RTC_I2C::decodewday(byte bits) {
@@ -86,13 +86,14 @@ byte RTC_I2C::decodewday(byte bits) {
 }
 
 // set one RTC register
-void RTC_I2C::setRegister(byte reg, byte val) {
+bool RTC_I2C::setRegister(byte reg, byte val) {
   // Serial.print(F("setReg(0x")); Serial.print(reg,HEX); Serial.print(F(")=0b")); Serial.println(val,BIN);
   _wire->beginTransmission(_i2caddr);
   _wire->write((_capabilities & RTC_CAP_SREGADDR) ? (reg << 4) : reg);
   _wire->write(val);
-  _wire->endTransmission();
+  bool success = _wire->endTransmission() == 0;
   // Serial.println(F("Verify:")); Serial.println(getRegister(reg),BIN);
+  return success;
 }
 
 // get one RTC register
@@ -111,70 +112,82 @@ byte RTC_I2C::getRegister(byte reg) {
 // Alarm functions for all the Analog Devices RTCs with DS prefix
 
 // Common registers
-#define DSALARM_ALARM1 0x07  // start of alarm 1 register (seconds)
-#define DSALARM_CONTROL 0x0E // Control register
-#define DSALARM_STATUS 0x0F  // Status register
+/// Start of Alarm 1 registers for the shared DS-family alarm implementation; Alarm 1 begins at address 0x07.
+#define DSALARM_ALARM1 0x07
+/// DS-family Control Register; referred to as Control Register in the DS1337/DS3231 documentation (ADDRESS 0x0E).
+#define DSALARM_CONTROL 0x0E
+/// DS-family Status Register; referred to as Status Register in the DS1337/DS3231 documentation (ADDRESS 0x0F).
+#define DSALARM_STATUS 0x0F
 
-void DSAlarm::setAlarm(byte minute, byte hour) {
-  setRegister(DSALARM_ALARM1, 0x00);                // clear seconds alarm
-  setRegister(DSALARM_ALARM1 + 1, bin2bcd(minute)); // set minute alarm
-  setRegister(DSALARM_ALARM1 + 2, bin2bcd(hour));   // set hour alarm
-  setRegister(DSALARM_ALARM1 + 3, 0x80);            // set day alarm to always
+bool DSAlarm::setAlarm(byte minute, byte hour) {
+  bool success = true;
+  success &= setRegister(DSALARM_ALARM1, 0x00);                // clear seconds alarm
+  success &= setRegister(DSALARM_ALARM1 + 1, bin2bcd(minute)); // set minute alarm
+  success &= setRegister(DSALARM_ALARM1 + 2, bin2bcd(hour));   // set hour alarm
+  success &= setRegister(DSALARM_ALARM1 + 3, 0x80);            // set day alarm to always
+  return success;
 }
 
-void DSAlarm::setAlarm(byte minute) {
-  setRegister(DSALARM_ALARM1, 0x00);                // clear seconds alarm
-  setRegister(DSALARM_ALARM1 + 1, bin2bcd(minute)); // set minute alarm
-  setRegister(DSALARM_ALARM1 + 2, 0x80);            // set hour alarm to always
-  setRegister(DSALARM_ALARM1 + 3, 0x80);            // set day alarm to always
+bool DSAlarm::setAlarm(byte minute) {
+  bool success = true;
+  success &= setRegister(DSALARM_ALARM1, 0x00);                // clear seconds alarm
+  success &= setRegister(DSALARM_ALARM1 + 1, bin2bcd(minute)); // set minute alarm
+  success &= setRegister(DSALARM_ALARM1 + 2, 0x80);            // set hour alarm to always
+  success &= setRegister(DSALARM_ALARM1 + 3, 0x80);            // set day alarm to always
+  return success;
 }
 
-void DSAlarm::enableAlarm(void) {
+bool DSAlarm::enableAlarm(void) {
   byte ctr = getRegister(DSALARM_CONTROL);
-  setRegister(DSALARM_CONTROL, (ctr & 0b11111110) | 0b00000001);
+  return setRegister(DSALARM_CONTROL, (ctr & 0b11111110) | 0b00000001);
 }
 
-void DSAlarm::disableAlarm(void) {
+bool DSAlarm::disableAlarm(void) {
   byte ctr = getRegister(DSALARM_CONTROL);
-  setRegister(DSALARM_CONTROL, (ctr & 0b11111110) | 0b00000000);
+  return setRegister(DSALARM_CONTROL, (ctr & 0b11111110) | 0b00000000);
 }
 
 bool DSAlarm::senseAlarm(void) {
   return getRegister(DSALARM_STATUS) & 0x01;
 }
 
-void DSAlarm::clearAlarm(void) {
+bool DSAlarm::clearAlarm(void) {
   byte ctr = getRegister(DSALARM_STATUS);
-  setRegister(DSALARM_STATUS, (ctr & 0b11111110) | 0b00000000);
+  return setRegister(DSALARM_STATUS, (ctr & 0b11111110) | 0b00000000);
 }
 
 
 // Alarm functions for all the NXP RTCs with PCF prefix
 
 // Common registers
-#define PCFALARM_STATUS 0x01 // Control register
+/// PCF-family Control/status register 2; the shared alarm flag is in the register at address 0x01.
+#define PCFALARM_STATUS 0x01
 
-void PCFAlarm::setAlarm(byte minute, byte hour) {
-  setRegister(_clockreg + 7, bin2bcd(minute)); // set minute alarm
-  setRegister(_clockreg + 8, bin2bcd(hour));   // set hour alarm
-  setRegister(_clockreg + 9, 0x80);            // set day alarm to always
-  setRegister(_clockreg + 10, 0x80);           // set weekday alarm to always
+bool PCFAlarm::setAlarm(byte minute, byte hour) {
+  bool success = true;
+  success &= setRegister(_clockreg + 7, bin2bcd(minute)); // set minute alarm
+  success &= setRegister(_clockreg + 8, bin2bcd(hour));   // set hour alarm
+  success &= setRegister(_clockreg + 9, 0x80);            // set day alarm to always
+  success &= setRegister(_clockreg + 10, 0x80);           // set weekday alarm to always
+  return success;
 }
 
-void PCFAlarm::setAlarm(byte minute) {
-  setRegister(_clockreg + 7, bin2bcd(minute)); // set minute alarm
-  setRegister(_clockreg + 8, 0x80);            // set hour alarm to always
-  setRegister(_clockreg + 9, 0x80);            // set day alarm to always
-  setRegister(_clockreg + 10, 0x80);           // set weekday alarm to always
+bool PCFAlarm::setAlarm(byte minute) {
+  bool success = true;
+  success &= setRegister(_clockreg + 7, bin2bcd(minute)); // set minute alarm
+  success &= setRegister(_clockreg + 8, 0x80);            // set hour alarm to always
+  success &= setRegister(_clockreg + 9, 0x80);            // set day alarm to always
+  success &= setRegister(_clockreg + 10, 0x80);           // set weekday alarm to always
+  return success;
 }
 
 bool PCFAlarm::senseAlarm(void) {
   return ((getRegister(PCFALARM_STATUS) & 0b1000) != 0);
 }
 
-void PCFAlarm::clearAlarm(void) {
+bool PCFAlarm::clearAlarm(void) {
   byte ctr = getRegister(PCFALARM_STATUS);
-  setRegister(PCFALARM_STATUS, (ctr & 0b11110111) | 0b00000000);
+  return setRegister(PCFALARM_STATUS, (ctr & 0b11110111) | 0b00000000);
 }
 
 // Manufacturer and model information functions

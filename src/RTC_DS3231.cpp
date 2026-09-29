@@ -1,33 +1,35 @@
 #include <RTC_DS3231.h>
 
-void DS3231::init(__attribute__((unused)) BatteryMode mode) {
-  setRegister(DS3231_CONTROL,
-              0b00000100);                // typical value after power-on, except for bit 2 (disables SQW), starts clock
-  setRegister(DS3231_STATUS, 0b00000000); // clear OSF flag, clear alarm flags, disable 32 kHz output
+bool DS3231::init(__attribute__((unused)) BatteryMode mode) {
+  bool success = true;
+  success &= setRegister(DS3231_CONTROL,
+                         0b00000100); // typical value after power-on, except for bit 2 (disables SQW), starts clock
+  success &= setRegister(DS3231_STATUS, 0b00000000); // clear OSF flag, clear alarm flags, disable 32 kHz output
+  return success;
 }
 
 bool DS3231::isValid(void) {
   return ((getRegister(DS3231_STATUS) & 0x80) == 0); // OSF bit cleared = oscillator enabled
 }
 
-void DS3231::enable32kHz(void) {
+bool DS3231::enable32kHz(void) {
   byte stat = getRegister(DS3231_STATUS);
-  setRegister(DS3231_STATUS, (stat & 0b11110111) | 0b00001000); // EN32kHz = 1
+  return setRegister(DS3231_STATUS, (stat & 0b11110111) | 0b00001000); // EN32kHz = 1
 }
 
-void DS3231::disable32kHz(void) {
+bool DS3231::disable32kHz(void) {
   byte stat = getRegister(DS3231_STATUS);
-  setRegister(DS3231_STATUS, (stat & 0b11110111) | 0b00000000); //  EN32kHz = 0
+  return setRegister(DS3231_STATUS, (stat & 0b11110111) | 0b00000000); //  EN32kHz = 0
 }
 
-void DS3231::enable1Hz(void) {
+bool DS3231::enable1Hz(void) {
   byte ctr = getRegister(DS3231_CONTROL);
-  setRegister(DS3231_CONTROL, (ctr & 0b11100011) | 0b00000000); // RS1=0 RS=0 INTCN=0
+  return setRegister(DS3231_CONTROL, (ctr & 0b11100011) | 0b00000000); // RS1=0 RS=0 INTCN=0
 }
 
-void DS3231::disable1Hz(void) {
+bool DS3231::disable1Hz(void) {
   byte ctr = getRegister(DS3231_CONTROL);
-  setRegister(DS3231_CONTROL, (ctr & 0b11100011) | 0b00000100); // RS1=0 RS=0 INTCN=1 disables 1 Hz
+  return setRegister(DS3231_CONTROL, (ctr & 0b11100011) | 0b00000100); // RS1=0 RS=0 INTCN=1 disables 1 Hz
 }
 
 int DS3231::getTemp(void) {
@@ -35,7 +37,8 @@ int DS3231::getTemp(void) {
   return (int8_t)temp;
 }
 
-void DS3231::setOffset(int offset, OffsetMode mode) {
+bool DS3231::setOffset(int offset, OffsetMode mode) {
+  bool success = true;
   int timeout = 0;
   if (mode != OffsetMode::RAW_OFFSET) {
     //  If the user didn't specify that this is a raw offset, assume they gave an offset in the more common format of
@@ -50,9 +53,10 @@ void DS3231::setOffset(int offset, OffsetMode mode) {
     else if (offset > 127)
       offset = 127;
   }
-  setRegister(DS3231_OFFSET, offset & 0xFF);
+  success &= setRegister(DS3231_OFFSET, offset & 0xFF);
   while (timeout++ && getRegister(DS3231_STATUS) & 0b100); // wait for non-busy period
-  setRegister(DS3231_CONTROL, getRegister(DS3231_CONTROL) | 0b100000);
+  success &= setRegister(DS3231_CONTROL, getRegister(DS3231_CONTROL) | 0b100000);
+  return success;
 }
 
 unsigned int DS3231::getOffset(void) {

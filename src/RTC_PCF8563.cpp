@@ -1,10 +1,12 @@
 #include <RTC_PCF8563.h>
 
 
-void PCF8563::init(__attribute__((unused)) BatteryMode mode) {
-  setRegister(PCF8563_CONTROL, 0);
-  setRegister(PCF8563_CONTROL + 1, 0);
-  setRegister(PCF8563_CLKOUT, 0);
+bool PCF8563::init(__attribute__((unused)) BatteryMode mode) {
+  bool success = true;
+  success &= setRegister(PCF8563_CONTROL, 0);
+  success &= setRegister(PCF8563_CONTROL + 1, 0);
+  success &= setRegister(PCF8563_CLKOUT, 0);
+  return success;
 }
 
 bool PCF8563::isValid(void) {
@@ -12,31 +14,31 @@ bool PCF8563::isValid(void) {
          ((getRegister(PCF8563_CONTROL) & 0b10000000) == 0);   // VL bit not asserted
 }
 
-void PCF8563::enableAlarm(void) {
+bool PCF8563::enableAlarm(void) {
   byte ctr = getRegister(PCF8563_CONTROL + 1);
-  setRegister(PCF8563_CONTROL + 1, (ctr & 0b11111101) | 0b00000010);
+  return setRegister(PCF8563_CONTROL + 1, (ctr & 0b11111101) | 0b00000010);
 }
 
-void PCF8563::disableAlarm(void) {
+bool PCF8563::disableAlarm(void) {
   byte ctr = getRegister(PCF8563_CONTROL + 1);
-  setRegister(PCF8563_CONTROL + 1, (ctr & 0b11111101) | 0b00000000);
+  return setRegister(PCF8563_CONTROL + 1, (ctr & 0b11111101) | 0b00000000);
 }
 
 
-void PCF8563::enable32kHz(void) {
-  setRegister(PCF8563_CLKOUT, 0b10000000);
+bool PCF8563::enable32kHz(void) {
+  return setRegister(PCF8563_CLKOUT, 0b10000000);
 }
 
-void PCF8563::disable32kHz(void) {
-  setRegister(PCF8563_CLKOUT, 0);
+bool PCF8563::disable32kHz(void) {
+  return setRegister(PCF8563_CLKOUT, 0);
 }
 
-void PCF8563::enable1Hz(void) {
-  setRegister(PCF8563_CLKOUT, 0b10000011);
+bool PCF8563::enable1Hz(void) {
+  return setRegister(PCF8563_CLKOUT, 0b10000011);
 }
 
-void PCF8563::disable1Hz(void) {
-  disable32kHz();
+bool PCF8563::disable1Hz(void) {
+  return disable32kHz();
 }
 
 String PCF8563::getManufacturer(void) {

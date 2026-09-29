@@ -1,17 +1,19 @@
 #include <RTC_MCP79410.h>
 
-void MCP79410::init(__attribute__((unused)) BatteryMode mode) {
-  setRegister(MCP79410_CONTROL, 0x80);
+bool MCP79410::init(__attribute__((unused)) BatteryMode mode) {
+  return setRegister(MCP79410_CONTROL, 0x80); // 0b10000000
 }
 
 bool MCP79410::isValid(void) {
   return ((getRegister(MCP79410_STATUS) & 0b100000) != 0); // oscillator is running
 }
 
-void MCP79410::setTime(tm timeParts) {
+bool MCP79410::setTime(tm timeParts) {
+  bool success = setRegister(MCP79410_CLOCKREG, 0x00); // disable oscillator
   int timeout = 0;
-  setRegister(MCP79410_CLOCKREG, 0x00);                               // disable oscillator
-  while (++timeout && getRegister(MCP79410_CLOCKREG + 3) & 0b100000); // wait for OSCON to become zero
+  while (++timeout && getRegister(MCP79410_CLOCKREG + 3) & 0b100000) {
+    // wait for OSCON to become zero
+  }
   _wire->beginTransmission(_i2caddr);
   _wire->write(MCP79410_CLOCKREG);
   _wire->write(bin2bcd(timeParts.tm_sec));  // seconds after the minute
@@ -23,74 +25,78 @@ void MCP79410::setTime(tm timeParts) {
   _wire->write(bin2bcd(timeParts.tm_mday));       // day of the month
   _wire->write(bin2bcd(timeParts.tm_mon + 1));    // month of the year, zero to 1 indexed
   _wire->write(bin2bcd(timeParts.tm_year - 100)); // years since 1900 (as in tm structure) converted to years since 2000
-  _wire->endTransmission();
-  setRegister(MCP79410_CLOCKREG, bin2bcd(timeParts.tm_sec) | 0x80); // now enable oscillator!
+  success &= (_wire->endTransmission() == 0);
+  success &= setRegister(MCP79410_CLOCKREG, bin2bcd(timeParts.tm_sec) | 0x80); // now enable oscillator!
+  return success;
 }
 
 // set time from Unix time
-void MCP79410::setTime(timestamp_t t) {
+bool MCP79410::setTime(timestamp_t t) {
   tm timeParts;
   TimeUtils::fillTimeParts(t, 0, epochStart::unix_epoch, timeParts);
-  setTime(timeParts);
+  return setTime(timeParts);
 }
 
 
-void MCP79410::setAlarm(byte minute, byte hour) {
+bool MCP79410::setAlarm(byte minute, byte hour) {
+  bool success = true;
   tm timeParts;
   time_t t;
-  getTime(timeParts); // current time
+  if (!getTime(timeParts)) return false; // current time
   if (!((timeParts.tm_min < minute && timeParts.tm_hour == hour) ||
         (timeParts.tm_hour < hour))) { // alarm should be next day
     t = TimeUtils::tmToEpochTime(timeParts).getTimestamp() + SECONDS_IN_DAY;
     TimeUtils::fillTimeParts(t, 0, epochStart::unix_epoch, timeParts);
   }
-  setRegister(MCP79410_ALARM, bin2bcd(0));                            // set second alarm
-  setRegister(MCP79410_ALARM + 1, bin2bcd(minute));                   // set minute alarm
-  setRegister(MCP79410_ALARM + 2, bin2bcd(hour));                     // set hour alarm
-  setRegister(MCP79410_ALARM + 3, 0x70 | bin2bcd(timeParts.tm_wday)); // set weekday alarm and set match condition
-  setRegister(MCP79410_ALARM + 4, bin2bcd(timeParts.tm_mday));        // set day of month
-  setRegister(MCP79410_ALARM + 5, bin2bcd(timeParts.tm_mon + 1));     // set day of month
+  success &= setRegister(MCP79410_ALARM, bin2bcd(0));          // set second alarm
+  success &= setRegister(MCP79410_ALARM + 1, bin2bcd(minute)); // set minute alarm
+  success &= setRegister(MCP79410_ALARM + 2, bin2bcd(hour));   // set hour alarm
+  success &=
+    setRegister(MCP79410_ALARM + 3, 0x70 | bin2bcd(timeParts.tm_wday));   // set weekday alarm and set match condition
+  success &= setRegister(MCP79410_ALARM + 4, bin2bcd(timeParts.tm_mday)); // set day of month
+  success &= setRegister(MCP79410_ALARM + 5, bin2bcd(timeParts.tm_mon + 1)); // set day of month
+  return success;
 }
 
-void MCP79410::setAlarm(byte minute) {
-  setRegister(MCP79410_ALARM + 1, bin2bcd(minute)); // set minute alarm
-  setRegister(MCP79410_ALARM + 3, 0x10);            // set match condition to minutes must match
+bool MCP79410::setAlarm(byte minute) {
+  return setRegister(MCP79410_ALARM + 1, bin2bcd(minute)) & // set minute alarm
+         setRegister(MCP79410_ALARM + 3, 0x10);             // set match condition to minutes must match
 }
 
-void MCP79410::enableAlarm(void) {
+bool MCP79410::enableAlarm(void) {
   byte ctr = getRegister(MCP79410_CONTROL);
-  setRegister(MCP79410_CONTROL, ctr | 0b10000); // set the ALM0 bit
+  return setRegister(MCP79410_CONTROL, ctr | 0b10000); // set the ALM0 bit
 }
 
-void MCP79410::disableAlarm(void) {
+bool MCP79410::disableAlarm(void) {
   byte ctr = getRegister(MCP79410_CONTROL + 1);
-  setRegister(MCP79410_CONTROL, (ctr & 0b11101111)); // clear ALM0 bit
+  return setRegister(MCP79410_CONTROL, (ctr & 0b11101111)); // clear ALM0 bit
 }
 
 bool MCP79410::senseAlarm(void) {
   return ((getRegister(MCP79410_ALARM + 3) & 0b1000) != 0);
 }
 
-void MCP79410::clearAlarm(void) {
+bool MCP79410::clearAlarm(void) {
   byte ctr = getRegister(MCP79410_ALARM + 3);
-  setRegister(MCP79410_ALARM + 3, (ctr & 0b11110111));
+  return setRegister(MCP79410_ALARM + 3, (ctr & 0b11110111));
 }
 
 
-void MCP79410::enable32kHz(void) {
-  setRegister(MCP79410_CONTROL, (getRegister(MCP79410_CONTROL) & 0b10111100) | 0b1000011); // enable SQW 32 kHz
+bool MCP79410::enable32kHz(void) {
+  return setRegister(MCP79410_CONTROL, (getRegister(MCP79410_CONTROL) & 0b10111100) | 0b1000011); // enable SQW 32 kHz
 }
 
-void MCP79410::disable32kHz(void) {
-  setRegister(MCP79410_CONTROL, getRegister(MCP79410_CONTROL) & ~0b01000000); // disable SQW
+bool MCP79410::disable32kHz(void) {
+  return setRegister(MCP79410_CONTROL, getRegister(MCP79410_CONTROL) & ~0b01000000); // disable SQW
 }
 
-void MCP79410::enable1Hz(void) {
-  setRegister(MCP79410_CONTROL, (getRegister(MCP79410_CONTROL) & 0b10111000) | 0b1000000); // set 1Hz
+bool MCP79410::enable1Hz(void) {
+  return setRegister(MCP79410_CONTROL, (getRegister(MCP79410_CONTROL) & 0b10111000) | 0b1000000); // set 1Hz
 }
 
-void MCP79410::disable1Hz(void) {
-  disable32kHz();
+bool MCP79410::disable1Hz(void) {
+  return disable32kHz();
 }
 
 String MCP79410::getManufacturer(void) {
@@ -102,12 +108,13 @@ String MCP79410::getModel(void) {
 }
 
 
-void MCP79410::setOffset(int offset, OffsetMode mode) {
+bool MCP79410::setOffset(int offset, OffsetMode mode) {
+  bool success = true;
   bool sign = false;
   switch (mode) {
   case OffsetMode::RAW_OFFSET: {
     // with a raw offset, directly write the given value to the offset register
-    setRegister(MCP79410_OFFSET, offset & 0xFF);
+    success &= setRegister(MCP79410_OFFSET, offset & 0xFF);
     break;
   }
   case OffsetMode::FINE_OFFSET: {
@@ -124,13 +131,14 @@ void MCP79410::setOffset(int offset, OffsetMode mode) {
     offset = (offset + 50) / 100;
     // Serial.println(sign);
     // Serial.println(offset);
-    setRegister(MCP79410_OFFSET, (sign << 7) | offset);
+    success &= setRegister(MCP79410_OFFSET, (sign << 7) | offset);
     break;
   }
   default:
     break;
   }
-  setRegister(MCP79410_CONTROL, getRegister(MCP79410_CONTROL) & 0b11111011); // clear RS2 to use fine trim
+  success &= setRegister(MCP79410_CONTROL, getRegister(MCP79410_CONTROL) & 0b11111011); // clear RS2 to use fine trim
+  return success;
 }
 
 unsigned int MCP79410::getOffset(void) {
