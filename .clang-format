@@ -61,7 +61,7 @@ SortIncludes: Never
 IndentPPDirectives: None
 
 # Comments
-ReflowComments: false
+ReflowComments: true
 FixNamespaceComments: false
 
 # Namespaces

@@ -32,10 +32,13 @@
 #define SECONDS_IN_DAY 86400L
 #endif
 
+/// The mode for switchover of the backup battery.
 enum class BatteryMode : int8_t {
-  DISABLED,        ///< Battery switch-over function is disabled, only VDD is used
-  LEVEL_SWITCHING, ///< Level Switching Mode (LSM). Switchover when VDD < threshold AND VBACKUP > threshold.  Use with a standard coin cell battery.
-  DIRECT_SWITCHING ///< Direct Switching Mode (DSM). Switchover when VDD < VBACKUP.  Use when charging a rechargeable battery.
+  SWITCHING_DISABLED, ///< Battery switch-over function is disabled, only VDD is used
+  LEVEL_SWITCHING, ///< Level Switching Mode (LSM). Switchover when VDD < threshold AND VBACKUP > threshold.  Use with a
+                   ///< standard coin cell battery.
+  DIRECT_SWITCHING ///< Direct Switching Mode (DSM). Switchover when VDD < VBACKUP.  Use when charging a rechargeable
+                   ///< battery.
 };
 
 /// @brief Selects how a clock calibration offset is interpreted.
@@ -57,14 +60,17 @@ class RTC_I2C {
    * function is called.
    *
    * @param wi The I2C interface to use.
-   * @param mode The battery switchover mode to configure during initialization.  This only applies to RTCs that support battery switchover - generally only those that support charging a rechargeable backup battery.  Ignored if unsupported.
+   * @param mode The battery switchover mode to configure during initialization.  This only applies to RTCs that support
+   * battery switchover - generally only those that support charging a rechargeable backup battery.  Ignored if
+   * unsupported.
    * @return `true` if the RTC address is valid and the device responds on I2C; otherwise `false`.
    */
   bool begin(TwoWire *wi = &Wire, BatteryMode mode = BatteryMode::LEVEL_SWITCHING);
 
   /**
    * @brief Initialize device-specific RTC settings.
-   * @param mode The battery switchover mode to configure.  This only applies to RTCs that support battery switchover - generally only those that support charging a rechargeable backup battery.  Ignored if unsupported.
+   * @param mode The battery switchover mode to configure.  This only applies to RTCs that support battery switchover -
+   * generally only those that support charging a rechargeable backup battery.  Ignored if unsupported.
    */
   virtual void init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) = 0;
 

@@ -6,7 +6,7 @@ void PCF8523::init(BatteryMode mode) {
   setRegister(PCF8523_CONTROL + 1, 0);      // disable watchdog and countdown timers
   byte bsm_reg = 0;
   switch (mode) {
-  case BatteryMode::DISABLED: {
+  case BatteryMode::SWITCHING_DISABLED: {
     bsm_reg = 0b01100000;
     break;
   }

@@ -8,18 +8,20 @@ void RV3028::init(BatteryMode mode) {
   byte bsm_reg =
     getRegister(RV3028_BSM) & 0b11110011; // get the current BSM register and zero only the switching mode bits
   switch (mode) {
-  case BatteryMode::DISABLED: {
+  case BatteryMode::SWITCHING_DISABLED: {
     // Switchover Disabled. – Default value on delivery
     bsm_reg |= 0;
     break;
   }
   case BatteryMode::LEVEL_SWITCHING: {
-    // Enables the Level Switching Mode (LSM).  Switchover when VDD < VTH:LSM (2.0 V) AND VBACKUP > VTH:LSM (2.0 V).  Use this with a standard coin cell battery.
+    // Enables the Level Switching Mode (LSM).  Switchover when VDD < VTH:LSM (2.0 V) AND VBACKUP > VTH:LSM (2.0 V). Use
+    // this with a standard coin cell battery.
     bsm_reg |= 0b1100;
     break;
   }
   case BatteryMode::DIRECT_SWITCHING: {
-    // Enables the Direct Switching Mode (DSM).  Switchover when VDD < VBACKUP.  Slightly lower power consumption than LSM.  Use this when charging a rechargeable battery.
+    // Enables the Direct Switching Mode (DSM).  Switchover when VDD < VBACKUP.  Slightly lower power consumption than
+    // LSM.  Use this when charging a rechargeable battery.
     bsm_reg |= 0b0100;
     break;
   }
