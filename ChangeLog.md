@@ -65,7 +65,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## V0.6.0 (22.3.2023)
 
-- added: new method getOffset(void): returns contents of offset
+- added: new method getOffset(): returns contents of offset
   register verbatim (i.e., no interpretation as a ppm value)
 
 ***
@@ -204,7 +204,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - first stub with an idea for the API
 
-[Unreleased]: https://github.com/EnviroDIY/RTC_I2C/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/EnviroDIY/RTC_I2C/compare/v0.7.0...HEAD
 
 <!--! @tableofcontents{HTML:1} -->
 

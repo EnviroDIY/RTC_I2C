@@ -6,6 +6,14 @@
 
 ![Hit Counter](https://visitor-badge.laobi.icu/badge?page_id=felias-fogg_RTC_I2C)
 
+- [RTC\_I2C](#rtc_i2c)
+  - [A universal API for I2C RTCs](#a-universal-api-for-i2c-rtcs)
+  - [Methods of the RTC class](#methods-of-the-rtc-class)
+  - [Caveats](#caveats)
+  - [Example sketches](#example-sketches)
+  - [RTC capabilities](#rtc-capabilities)
+
+
 ## A universal API for I2C RTCs
 
 This library provides a universal API to a number of I2C RTCs, which are described in one of my [blog articles](https://hinterm-ziel.de/index.php/2023/02/24/everything-you-wanted-to-know-about-real-time-clocks-but-were-afraid-to-ask/):
@@ -25,7 +33,7 @@ This library provides a universal API to a number of I2C RTCs, which are describ
 
 The interface is minimal, but is just enough to get the basic functionality. And it is provided by a base class. This means you can even use many RTCs in parallel without caring about what particular model you use. I tried to identify the least common denominator of the functionality. However, I wanted to have some kind of alarm, and being able to make use of an offset register and read the temperature, if possible. Unfortunately, one RTC does not have alarms at all, one RTC does not allow recurring alarms, a few RTCs do not have an offset register, and many do not possess the ability to read out the temperature.
 
-In order to check at runtime what capabilities an RTC has, the method `getCapabilities()` will be useful (see table entry below). The list of capabilities and at which pins you can sense the different signals appears in the [RTC capabilities section](#capa).
+In order to check at runtime what capabilities an RTC has, the method `getCapabilities()` will be useful (see table entry below). The list of capabilities and at which pins you can sense the different signals appears in the [RTC capabilities section](#rtc-capabilities).
 
 In addition, one can, of course, extend each particular RTC class with methods catering for the particular RTC model, if one wishes to do so.
 
@@ -74,7 +82,7 @@ There are the following example sketches:
 
 `iterate.ino`: It defines an array of RTCs that can all be treated in the same way. This is demonstrated by iterating over them and printing out the time from each RTC. The current version is not executable because of I2C address clashes. In order to make that executable, you need also two I2C multiplexers that would need to be integrated into the code.
 
-## <a name="capa"></a>RTC capabilities
+## RTC capabilities
 
 Most RTCs supported by this library maintain time as separate calendar fields (seconds, minutes, hours, date, month, and year). The RV-3028 also provides a Unix-time counter that represents time as seconds since 1970-01-01 00:00:00 UTC.
 
