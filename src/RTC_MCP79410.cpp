@@ -12,10 +12,11 @@ bool MCP79410::isValid() {
 
 bool MCP79410::setTime(tm timeParts) {
   bool success = setRegister(MCP79410_CLOCKREG, 0x00); // disable oscillator
-  int timeout = 0;
-  while (++timeout && getRegister(MCP79410_CLOCKREG + 3) & 0b100000) {
+  byte timeout = 0;
+  while (++timeout && (getRegister(MCP79410_CLOCKREG + 3) & 0b100000)) {
     // wait for OSCON to become zero
   }
+  if (!timeout) return false;
   _wire->beginTransmission(_i2caddr);
   _wire->write(MCP79410_CLOCKREG);
   _wire->write(bin2bcd(timeParts.tm_sec));  // seconds after the minute
@@ -23,7 +24,7 @@ bool MCP79410::setTime(tm timeParts) {
   _wire->write(bin2bcd(timeParts.tm_hour)); // hours since midnight
   _wire->write((bin2bcd(timeParts.tm_wday + _wdaybase)) | 0b1000);
   // ^^ day of the week, adjusted from tm's 0-6 numbering to whatever the RTC uses as its _wdaybase
-  // XOR with 0b1000 to set the VBATEN enable bit so that the thing can run on batteries
+  // OR with 0b1000 to set the VBATEN bit so the RTC can run from the backup battery
   _wire->write(bin2bcd(timeParts.tm_mday));       // day of the month
   _wire->write(bin2bcd(timeParts.tm_mon + 1));    // month of the year, zero to 1 indexed
   _wire->write(bin2bcd(timeParts.tm_year - 100)); // years since 1900 (as in tm structure) converted to years since 2000
@@ -56,7 +57,7 @@ bool MCP79410::setAlarm(byte minute, byte hour) {
   success &= setRegister(MCP79410_ALARM + 3,
                          0x70 | bin2bcd(timeParts.tm_wday + _wdaybase));     // set weekday alarm and match condition
   success &= setRegister(MCP79410_ALARM + 4, bin2bcd(timeParts.tm_mday));    // set day of month
-  success &= setRegister(MCP79410_ALARM + 5, bin2bcd(timeParts.tm_mon + 1)); // set day of month
+  success &= setRegister(MCP79410_ALARM + 5, bin2bcd(timeParts.tm_mon + 1)); // set month
   return success;
 }
 
