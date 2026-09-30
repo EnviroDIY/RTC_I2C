@@ -3,7 +3,7 @@
 // if Vbat disabled, connect to Vcc
 bool PCF8523::init(BatteryMode mode) {
   bool success = true;
-  success &= setRegister(PCF8523_CONTROL, 0b00010000); // initiate power-on reset by software
+  success &= setRegister(PCF8523_CONTROL, 0b01011000); // initiate software reset with the documented 0x58 command
   success &= setRegister(PCF8523_CONTROL + 1, 0);      // disable watchdog and countdown timers
   byte bsm_reg = 0;
   switch (mode) {
