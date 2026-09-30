@@ -39,7 +39,7 @@ int DS3231::getTemp() {
 
 bool DS3231::setOffset(int offset, OffsetMode mode) {
   bool success = true;
-  int timeout = 0;
+  byte timeout = 0;
   if (mode != OffsetMode::RAW_OFFSET) {
     //  If the user didn't specify that this is a raw offset, assume they gave an offset in the more common format of
     //  0.01 ppm steps.
@@ -54,7 +54,8 @@ bool DS3231::setOffset(int offset, OffsetMode mode) {
       offset = 127;
   }
   success &= setRegister(DS3231_OFFSET, offset & 0xFF);
-  while (timeout++ && getRegister(DS3231_STATUS) & 0b100); // wait for non-busy period
+  while (++timeout && (getRegister(DS3231_STATUS) & 0b100)); // wait for non-busy period
+  if (!timeout) return false;
   success &= setRegister(DS3231_CONTROL, getRegister(DS3231_CONTROL) | 0b100000);
   return success;
 }
