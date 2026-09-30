@@ -10,8 +10,14 @@ bool PCF8563::init(__attribute__((unused)) BatteryMode mode) {
 }
 
 bool PCF8563::isValid() {
-  return ((getRegister(PCF8563_CONTROL) & 0b00010000) == 0) && // STOP not asserted
-         ((getRegister(PCF8563_CONTROL) & 0b10000000) == 0);   // VL bit not asserted
+  byte control;
+  byte seconds;
+  bool success = true;
+  success &= readRegister(PCF8563_CONTROL, control) && ((control & 0b00100000) == 0);
+  //^ STOP not asserted
+  success &= readRegister(PCF8563_CLOCKREG, seconds) && ((seconds & 0b10000000) == 0);
+  //^ VL (low voltage) bit not asserted
+  return success;
 }
 
 bool PCF8563::enableAlarm() {
