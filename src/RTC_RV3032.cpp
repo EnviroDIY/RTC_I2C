@@ -37,7 +37,10 @@ bool RV3032::init(BatteryMode mode) {
 }
 
 bool RV3032::isValid() {
-  return ((getRegister(RV3032_STATUS) & 0b11) == 0); // both voltage low and POR flags are cleared
+  byte status;
+  bool success = readRegister(RV3032_STATUS, status);
+  success &= ((status & 0b11) == 0); // voltage low and POR flags are cleared
+  return success;
 }
 
 bool RV3032::setAlarm(byte minute, byte hour) {
@@ -144,32 +147,49 @@ unsigned int RV3032::getOffset() {
 }
 
 
+bool RV3032::setEEPROMRefresh(byte control, bool enable) {
+  return setRegister(RV3032_CONTROL, enable ? (control & ~0b00000100) : (control | 0b00000100));
+}
+
 bool RV3032::updateEEPROMByte(byte reg) {
   bool success = true;
   byte timeout = 0;
-  byte cnts = getRegister(reg);
-  success &= setRegister(RV3032_CONTROL, getRegister(RV3032_CONTROL) | 0b100); // set EERD = 1
-  success &= setRegister(RV3032_EEADDR, reg);
-  success &= setRegister(RV3032_EEDATA, cnts);
+  byte cnts;
+  byte control;
+  // make sure the register to set to EEPROM and the control register are read successfully
+  if (!readRegister(reg, cnts) || !readRegister(RV3032_CONTROL, control)) return false;
+  // disable automatic EEPROM refresh before writing
+  if (!setEEPROMRefresh(control, false)) return false; // set EERD = 1
+  // Write the address and data to the EEPROM
+  if (!setRegister(RV3032_EEADDR, reg) || !setRegister(RV3032_EEDATA, cnts)) {
+    // restore automatic EEPROM refresh before returning after failure
+    setEEPROMRefresh(control, true);
+    return false;
+  }
+  // wait for operation to complete
   while (++timeout && (getRegister(RV3032_BUSY) & 0b100)) { // busy with reading/writing EEPROM
     delay(2);                                               // wait 2 ms
   }
   if (!timeout) {
-    setRegister(RV3032_CONTROL, getRegister(RV3032_CONTROL) & ~0b00000100);
-    //^ set EERD = 0 (EEPROM Memory Refresh Disable, disables auto-refresh)
+    // restore automatic EEPROM refresh before returning after failure
+    setEEPROMRefresh(control, true);
     return false;
   }
   timeout = 0;
-  success &= setRegister(RV3032_EECMD, 0x21);               // update EEPROM at EEADDR with value stored in EEADDR
+  if (!setRegister(RV3032_EECMD, 0x21)) { // write EEDATA to the EEPROM byte selected by EEADDR
+    setEEPROMRefresh(control, true);
+    return false;
+  }
   while (++timeout && (getRegister(RV3032_BUSY) & 0b100)) { // busy with reading/writing EEPROM
     delay(10);                                              // wait 10 ms
   }
   if (!timeout) {
-    setRegister(RV3032_CONTROL, getRegister(RV3032_CONTROL) & ~0b00000100);
-    //^ set EERD = 0 (re-enables auto refresh)
+    // restore automatic EEPROM refresh before returning after failure
+    setEEPROMRefresh(control, true);
     return false;
   }
-  success &= setRegister(RV3032_CONTROL, getRegister(RV3032_CONTROL) & ~0b00000100); // set EERD = 0
+  // restore automatic EEPROM refresh
+  success &= setEEPROMRefresh(control, true); // set EERD = 0
   return success;
 }
 
