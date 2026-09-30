@@ -9,8 +9,7 @@ timestamp_t RV3028U::getTime() {
 
 bool RV3028U::readUnixTime(timestamp_t &timestamp) {
   timestamp_t t1 = 0, t2;
-  int timeout = 0;
-  do {
+  for (uint16_t attempts = 0; attempts < 256; ++attempts) {
     t2 = t1;
     _wire->beginTransmission(_i2caddr);
     _wire->write(RV3028_UCLOCK);
@@ -18,9 +17,12 @@ bool RV3028U::readUnixTime(timestamp_t &timestamp) {
     if (_wire->requestFrom(_i2caddr, (byte)4) != 4) return false;
     t1 = 0;
     for (byte i = 0; i < 4; i++) t1 = (t1 >> 8) | (((timestamp_t)_wire->read()) << 24);
-  } while (t1 != t2 && ++timeout);
-  timestamp = t1;
-  return true;
+    if (t1 == t2) {
+      timestamp = t1;
+      return true;
+    }
+  }
+  return false;
 }
 
 bool RV3028U::getTime(tm &timeParts) {
