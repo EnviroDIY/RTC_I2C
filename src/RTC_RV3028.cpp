@@ -55,21 +55,25 @@ bool RV3028::setAlarm(byte minute) {
 
 
 bool RV3028::enableAlarm() {
-  byte ctr = getRegister(RV3028_CONTROL + 1);
+  byte ctr;
+  if (!readRegister(RV3028_CONTROL + 1, ctr)) return false;
   return setRegister(RV3028_CONTROL + 1, ctr | 0b1000); // set the AIE bit
 }
 
 bool RV3028::disableAlarm() {
-  byte ctr = getRegister(RV3028_CONTROL + 1);
+  byte ctr;
+  if (!readRegister(RV3028_CONTROL + 1, ctr)) return false;
   return setRegister(RV3028_CONTROL + 1, (ctr & 0b11110111)); // clear AIE bit
 }
 
 bool RV3028::senseAlarm() {
-  return ((getRegister(RV3028_STATUS) & 0b100) != 0);
+  byte status;
+  return readRegister(RV3028_STATUS, status) && ((status & 0b100) != 0);
 }
 
 bool RV3028::clearAlarm() {
-  byte ctr = getRegister(RV3028_STATUS);
+  byte ctr;
+  if (!readRegister(RV3028_STATUS, ctr)) return false;
   return setRegister(RV3028_STATUS, (ctr & 0b11111011));
 }
 
@@ -100,7 +104,9 @@ bool RV3028::enable1Hz() {
 }
 
 bool RV3028::disable1Hz() {
-  return setRegister(RV3028_CONTROL + 1, getRegister(RV3028_CONTROL + 1) & ~0b00100000); // UIE = 0
+  byte control;
+  if (!readRegister(RV3028_CONTROL + 1, control)) return false;
+  return setRegister(RV3028_CONTROL + 1, control & ~0b00100000); // UIE = 0
 }
 
 

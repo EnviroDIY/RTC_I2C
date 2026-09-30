@@ -10,16 +10,20 @@ bool RS5C372::init(__attribute__((unused)) BatteryMode mode) {
 }
 
 bool RS5C372::isValid() {
-  return ((getRegister(RS5C372_CONTROL2) & 0b00010000) == 0); // XSTP=0, otherwise clock is/was halted
+  byte control;
+  return readRegister(RS5C372_CONTROL2, control) &&
+         ((control & 0b00010000) == 0); // XSTP=0, otherwise clock is/was halted
 }
 
 bool RS5C372::enableAlarm() {
-  byte ctr = getRegister(RS5C372_CONTROL1);
+  byte ctr;
+  if (!readRegister(RS5C372_CONTROL1, ctr)) return false;
   return setRegister(RS5C372_CONTROL1, (ctr | 0b10000000)); // set AALE bit
 }
 
 bool RS5C372::disableAlarm() {
-  byte ctr = getRegister(RS5C372_CONTROL1);
+  byte ctr;
+  if (!readRegister(RS5C372_CONTROL1, ctr)) return false;
   return setRegister(RS5C372_CONTROL1, (ctr & ~0b10000000)); // reset AALE bit
 }
 
@@ -32,32 +36,38 @@ bool RS5C372::setAlarm(byte minute, byte hour) {
 }
 
 bool RS5C372::senseAlarm() {
-  return ((getRegister(RS5C372_CONTROL2) & 0b10) != 0);
+  byte control;
+  return readRegister(RS5C372_CONTROL2, control) && ((control & 0b10) != 0);
 }
 
 bool RS5C372::clearAlarm() {
-  byte ctr = getRegister(RS5C372_CONTROL2);
+  byte ctr;
+  if (!readRegister(RS5C372_CONTROL2, ctr)) return false;
   return setRegister(RS5C372_CONTROL2, (ctr & 0b11111101));
 }
 
 
 bool RS5C372::enable32kHz() {
-  byte clkout = getRegister(RS5C372_CONTROL2);
+  byte clkout;
+  if (!readRegister(RS5C372_CONTROL2, clkout)) return false;
   return setRegister(RS5C372_CONTROL2, (clkout & ~0b00001000)); // set CLEN to 0
 }
 
 bool RS5C372::disable32kHz() {
-  byte clkout = getRegister(RS5C372_CONTROL2);
+  byte clkout;
+  if (!readRegister(RS5C372_CONTROL2, clkout)) return false;
   return setRegister(RS5C372_CONTROL2, (clkout | 0b00001000)); // set CLEN to 1
 }
 
 bool RS5C372::enable1Hz() {
-  byte clkout = getRegister(RS5C372_CONTROL1);
+  byte clkout;
+  if (!readRegister(RS5C372_CONTROL1, clkout)) return false;
   return setRegister(RS5C372_CONTROL1, (clkout & 0b11111000) | 0b00000011);
 }
 
 bool RS5C372::disable1Hz() {
-  byte clkout = getRegister(RS5C372_CONTROL1);
+  byte clkout;
+  if (!readRegister(RS5C372_CONTROL1, clkout)) return false;
   return setRegister(RS5C372_CONTROL1, (clkout & 0b11111000));
 }
 

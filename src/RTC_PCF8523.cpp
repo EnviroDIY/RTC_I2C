@@ -26,34 +26,44 @@ bool PCF8523::init(BatteryMode mode) {
 }
 
 bool PCF8523::isValid() {
-  return ((getRegister(PCF8523_CONTROL + 2) & 0b00000100) == 0) && // no battery low flag and
-         ((getRegister(PCF8523_CONTROL) & 0b00100000) == 0) &&     // oscillator is running
-         ((getRegister(PCF8523_CLOCKREG) & 0b10000000) == 0);      // OS flag cleared
+  byte control1;
+  byte control3;
+  byte seconds;
+  bool success = true;
+  success &= readRegister(PCF8523_CONTROL + 2, control3) && ((control3 & 0b00000100) == 0); // battery OK
+  success &= readRegister(PCF8523_CONTROL, control1) && ((control1 & 0b00100000) == 0);     // oscillator running
+  success &= readRegister(PCF8523_CLOCKREG, seconds) && ((seconds & 0b10000000) == 0);      // OS flag cleared
+  return success;
 }
 
 bool PCF8523::enableAlarm() {
-  byte ctr = getRegister(PCF8523_CONTROL);
+  byte ctr;
+  if (!readRegister(PCF8523_CONTROL, ctr)) return false;
   return setRegister(PCF8523_CONTROL, (ctr & 0b11111101) | 0b00000010);
 }
 
 bool PCF8523::disableAlarm() {
-  byte ctr = getRegister(PCF8523_CONTROL);
+  byte ctr;
+  if (!readRegister(PCF8523_CONTROL, ctr)) return false;
   return setRegister(PCF8523_CONTROL, (ctr & 0b11111101) | 0b00000000);
 }
 
 
 bool PCF8523::enable32kHz() {
-  byte clkout = getRegister(PCF8523_CLKOUT);
+  byte clkout;
+  if (!readRegister(PCF8523_CLKOUT, clkout)) return false;
   return setRegister(PCF8523_CLKOUT, (clkout & 0b11000111) | 0b00000000);
 }
 
 bool PCF8523::disable32kHz() {
-  byte clkout = getRegister(PCF8523_CLKOUT);
+  byte clkout;
+  if (!readRegister(PCF8523_CLKOUT, clkout)) return false;
   return setRegister(PCF8523_CLKOUT, (clkout & 0b11000111) | 0b00111000);
 }
 
 bool PCF8523::enable1Hz() {
-  byte clkout = getRegister(PCF8523_CLKOUT);
+  byte clkout;
+  if (!readRegister(PCF8523_CLKOUT, clkout)) return false;
   return setRegister(PCF8523_CLKOUT, (clkout & 0b11000111) | 0b00110000);
 }
 

@@ -64,32 +64,38 @@ bool RV8803::setAlarm(byte minute) {
 
 
 bool RV8803::enableAlarm() {
-  byte ctr = getRegister(RV8803_CONTROL);
+  byte ctr;
+  if (!readRegister(RV8803_CONTROL, ctr)) return false;
   return setRegister(RV8803_CONTROL, ctr | 0b1000); // set the AIE bit
 }
 
 bool RV8803::disableAlarm() {
-  byte ctr = getRegister(RV8803_CONTROL);
+  byte ctr;
+  if (!readRegister(RV8803_CONTROL, ctr)) return false;
   return setRegister(RV8803_CONTROL, (ctr & 0b11110111)); // clear AIE bit
 }
 
 bool RV8803::senseAlarm() {
-  return ((getRegister(RV8803_STATUS) & 0b1000) != 0);
+  byte status;
+  return readRegister(RV8803_STATUS, status) && ((status & 0b1000) != 0);
 }
 
 bool RV8803::clearAlarm() {
-  byte ctr = getRegister(RV8803_STATUS);
+  byte ctr;
+  if (!readRegister(RV8803_STATUS, ctr)) return false;
   return setRegister(RV8803_STATUS, (ctr & 0b11110111));
 }
 
 
 bool RV8803::enable32kHz() {
-  byte clkout = getRegister(RV8803_CLKOUT);
+  byte clkout;
+  if (!readRegister(RV8803_CLKOUT, clkout)) return false;
   return setRegister(RV8803_CLKOUT, (clkout | 0b1100));
 }
 
 bool RV8803::enable1Hz() {
-  byte clkout = getRegister(RV8803_CLKOUT);
+  byte clkout;
+  if (!readRegister(RV8803_CLKOUT, clkout)) return false;
   return setRegister(RV8803_CLKOUT, (clkout & 0b11110011) | 0b00001000);
 }
 

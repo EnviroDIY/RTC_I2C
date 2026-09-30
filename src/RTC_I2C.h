@@ -34,6 +34,8 @@
 #define RTC_CAP_TEMP 0x20
 /// Capability flag: the RTC uses the library's special upper-nibble register-address format.
 #define RTC_CAP_SREGADDR 0x40
+/// Capability flag: the RTC requires a STOP between the register-address write and subsequent read.
+#define RTC_CAP_STOP_BEFORE_READ 0x80
 
 #ifndef SECONDS_IN_DAY
 /// Number of seconds in a day.
@@ -279,6 +281,17 @@ class RTC_I2C {
   virtual uint8_t getAddress() { return _i2caddr; }
 
  protected:
+  /**
+   * @brief Read one RTC register and report I2C failures separately from the byte value.
+   * @param reg The RTC register address.
+   * @param[out] val The value read from the register when the transaction succeeds.
+   * @return `true` when the complete I2C transaction succeeds; otherwise `false`.
+   *
+   * This differs from `getRegister()` in that it returns a bool based on success and requires a reference to store the
+   * read value.
+   */
+  bool readRegister(byte reg, byte &val);
+
   /**
    * @brief Convert a packed BCD byte to a binary value.
    * @param val The packed BCD value.

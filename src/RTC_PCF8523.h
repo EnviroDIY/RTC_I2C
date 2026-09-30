@@ -27,7 +27,8 @@
 /// No clock-register bit 7 must be forced when writing time.
 #define PCF8523_BIT7 0
 /// Capabilities supported by the PCF8523 implementation.
-#define PCF8523_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET)
+#define PCF8523_CAP                                                                                                    \
+  (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET | RTC_CAP_STOP_BEFORE_READ)
 
 /// The class for the [NXP Semiconductors PCF8523](https://www.nxp.com/docs/en/data-sheet/PCF8523.pdf)
 class PCF8523 : public PCFAlarm {

@@ -32,7 +32,9 @@ bool RV3028U::getTime(tm &timeParts) {
 
 bool RV3028U::setTime(timestamp_t t) {
   // Serial.println(static_cast<uint32_t>(t), HEX);
-  bool success = setRegister(RV3028_CONTROL + 1, getRegister(RV3028_CONTROL + 1) | 0b1); // reset counter chain in clock
+  byte control;
+  if (!readRegister(RV3028_CONTROL + 1, control)) return false;
+  bool success = setRegister(RV3028_CONTROL + 1, control | 0b1); // reset counter chain in clock
   _wire->beginTransmission(_i2caddr);
   _wire->write(RV3028_UCLOCK);
   for (byte i = 0; i < 4; i++) {

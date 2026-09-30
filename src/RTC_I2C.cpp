@@ -59,7 +59,7 @@ bool RTC_I2C::getTime(tm &timeParts) {
 
   _wire->beginTransmission(_i2caddr);
   _wire->write((_capabilities & RTC_CAP_SREGADDR) ? (_clockreg << 4) : _clockreg);
-  if (_wire->endTransmission(false) != 0) return false;
+  if (_wire->endTransmission((_capabilities & RTC_CAP_STOP_BEFORE_READ) != 0) != 0) return false;
   if (_wire->requestFrom(_i2caddr, (byte)7) != 7) return false;
   timeParts.tm_sec = bcd2bin(_wire->read() & 0x7F);  // seconds after the minute
   timeParts.tm_min = bcd2bin(_wire->read() & 0x7F);  // minutes after the hour
@@ -98,15 +98,20 @@ bool RTC_I2C::setRegister(byte reg, byte val) {
 
 // get one RTC register
 byte RTC_I2C::getRegister(byte reg) {
-  byte res;
+  byte res = 0xFF;
+  readRegister(reg, res);
+  return res;
+}
+
+bool RTC_I2C::readRegister(byte reg, byte &res) {
   // Serial.print(F("getReg(0x")); Serial.print(reg,HEX); Serial.print(F(")=0b"));
   _wire->beginTransmission(_i2caddr);
   _wire->write((_capabilities & RTC_CAP_SREGADDR) ? (reg << 4) : reg);
-  if (_wire->endTransmission(false) != 0) return 0xFF;
-  if (_wire->requestFrom(_i2caddr, (byte)1) != 1) return 0xFF;
+  if (_wire->endTransmission((_capabilities & RTC_CAP_STOP_BEFORE_READ) != 0) != 0) return false;
+  if (_wire->requestFrom(_i2caddr, (byte)1) != 1) return false;
   res = _wire->read();
   // Serial.println(res,BIN);
-  return res;
+  return true;
 }
 
 // Alarm functions for all the Analog Devices RTCs with DS prefix
@@ -138,21 +143,25 @@ bool DSAlarm::setAlarm(byte minute) {
 }
 
 bool DSAlarm::enableAlarm() {
-  byte ctr = getRegister(DSALARM_CONTROL);
+  byte ctr;
+  if (!readRegister(DSALARM_CONTROL, ctr)) return false;
   return setRegister(DSALARM_CONTROL, (ctr & 0b11111110) | 0b00000001);
 }
 
 bool DSAlarm::disableAlarm() {
-  byte ctr = getRegister(DSALARM_CONTROL);
+  byte ctr;
+  if (!readRegister(DSALARM_CONTROL, ctr)) return false;
   return setRegister(DSALARM_CONTROL, (ctr & 0b11111110) | 0b00000000);
 }
 
 bool DSAlarm::senseAlarm() {
-  return getRegister(DSALARM_STATUS) & 0x01;
+  byte status;
+  return readRegister(DSALARM_STATUS, status) && (status & 0x01);
 }
 
 bool DSAlarm::clearAlarm() {
-  byte ctr = getRegister(DSALARM_STATUS);
+  byte ctr;
+  if (!readRegister(DSALARM_STATUS, ctr)) return false;
   return setRegister(DSALARM_STATUS, (ctr & 0b11111110) | 0b00000000);
 }
 
@@ -182,11 +191,13 @@ bool PCFAlarm::setAlarm(byte minute) {
 }
 
 bool PCFAlarm::senseAlarm() {
-  return ((getRegister(PCFALARM_STATUS) & 0b1000) != 0);
+  byte status;
+  return readRegister(PCFALARM_STATUS, status) && ((status & 0b1000) != 0);
 }
 
 bool PCFAlarm::clearAlarm() {
-  byte ctr = getRegister(PCFALARM_STATUS);
+  byte ctr;
+  if (!readRegister(PCFALARM_STATUS, ctr)) return false;
   return setRegister(PCFALARM_STATUS, (ctr & 0b11110111) | 0b00000000);
 }
 

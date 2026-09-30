@@ -3,13 +3,16 @@
 bool DS1307::init(__attribute__((unused)) BatteryMode mode) {
   bool success = true;
   success &= setRegister(DS1307_CONTROL, 0b00000011); // typical value after power-on
-  byte secs = getRegister(DS1307_CLOCKREG);           // seconds register; high bit is the osc enabled bit
+  byte secs;
+  if (!readRegister(DS1307_CLOCKREG, secs)) return false; // seconds register; high bit is the oscillator halt bit
   if (secs & 0x80) success &= setRegister(DS1307_CLOCKREG, secs & 0x7F); // enable oscillator
   return success;
 }
 
 bool DS1307::isValid() {
-  return ((getRegister(DS1307_CLOCKREG) & 0x80) == 0); // oscillator enabled
+  byte seconds;
+  bool success = readRegister(DS1307_CLOCKREG, seconds);
+  return success && ((seconds & 0x80) == 0); // oscillator enabled
 }
 
 bool DS1307::enable32kHz() {

@@ -58,46 +58,56 @@ bool RV3032::setAlarm(byte minute) {
 
 
 bool RV3032::enableAlarm() {
-  byte ctr = getRegister(RV3032_CONTROL + 1);
+  byte ctr;
+  if (!readRegister(RV3032_CONTROL + 1, ctr)) return false;
   return setRegister(RV3032_CONTROL + 1, ctr | 0b1000); // set the AIE bit
 }
 
 bool RV3032::disableAlarm() {
-  byte ctr = getRegister(RV3032_CONTROL + 1);
+  byte ctr;
+  if (!readRegister(RV3032_CONTROL + 1, ctr)) return false;
   return setRegister(RV3032_CONTROL + 1, (ctr & 0b11110111)); // clear AIE bit
 }
 
 bool RV3032::senseAlarm() {
-  return ((getRegister(RV3032_STATUS) & 0b1000) != 0);
+  byte status;
+  return readRegister(RV3032_STATUS, status) && ((status & 0b1000) != 0);
 }
 
 bool RV3032::clearAlarm() {
-  byte ctr = getRegister(RV3032_STATUS);
+  byte ctr;
+  if (!readRegister(RV3032_STATUS, ctr)) return false;
   return setRegister(RV3032_STATUS, (ctr & 0b11110111));
 }
 
 
 bool RV3032::enable32kHz() {
   bool success = true;
+  byte coe;
+  if (!readRegister(RV3032_COE, coe)) return false;
   success &= setRegister(RV3032_CLKOUT, 0); // set 32kHz
   success &= updateEEPROMByte(RV3032_CLKOUT);
-  success &= setRegister(RV3032_COE, getRegister(RV3032_COE) & ~0b01000000); // enable CLKOUT
+  success &= setRegister(RV3032_COE, coe & ~0b01000000); // enable CLKOUT
   success &= updateEEPROMByte(RV3032_COE);
   return success;
 }
 
 bool RV3032::disable32kHz() {
   bool success = true;
-  success &= setRegister(RV3032_COE, getRegister(RV3032_COE) | 0b01000000); // disable CLKOUT
+  byte coe;
+  if (!readRegister(RV3032_COE, coe)) return false;
+  success &= setRegister(RV3032_COE, coe | 0b01000000); // disable CLKOUT
   success &= updateEEPROMByte(RV3032_COE);
   return success;
 }
 
 bool RV3032::enable1Hz() {
   bool success = true;
+  byte coe;
+  if (!readRegister(RV3032_COE, coe)) return false;
   success &= setRegister(RV3032_CLKOUT, 0b01100000); // set 1Hz
   success &= updateEEPROMByte(RV3032_CLKOUT);
-  success &= setRegister(RV3032_COE, getRegister(RV3032_COE) & ~0b01000000); // enable CLKOUT
+  success &= setRegister(RV3032_COE, coe & ~0b01000000); // enable CLKOUT
   success &= updateEEPROMByte(RV3032_COE);
   return success;
 }

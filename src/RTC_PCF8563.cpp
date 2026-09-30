@@ -15,12 +15,14 @@ bool PCF8563::isValid() {
 }
 
 bool PCF8563::enableAlarm() {
-  byte ctr = getRegister(PCF8563_CONTROL + 1);
+  byte ctr;
+  if (!readRegister(PCF8563_CONTROL + 1, ctr)) return false;
   return setRegister(PCF8563_CONTROL + 1, (ctr & 0b11111101) | 0b00000010);
 }
 
 bool PCF8563::disableAlarm() {
-  byte ctr = getRegister(PCF8563_CONTROL + 1);
+  byte ctr;
+  if (!readRegister(PCF8563_CONTROL + 1, ctr)) return false;
   return setRegister(PCF8563_CONTROL + 1, (ctr & 0b11111101) | 0b00000000);
 }
 

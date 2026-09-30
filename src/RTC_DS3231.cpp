@@ -9,31 +9,37 @@ bool DS3231::init(__attribute__((unused)) BatteryMode mode) {
 }
 
 bool DS3231::isValid() {
-  return ((getRegister(DS3231_STATUS) & 0x80) == 0); // OSF bit cleared = oscillator enabled
+  byte status;
+  return readRegister(DS3231_STATUS, status) && ((status & 0x80) == 0); // OSF bit cleared = oscillator enabled
 }
 
 bool DS3231::enable32kHz() {
-  byte stat = getRegister(DS3231_STATUS);
+  byte stat;
+  if (!readRegister(DS3231_STATUS, stat)) return false;
   return setRegister(DS3231_STATUS, (stat & 0b11110111) | 0b00001000); // EN32kHz = 1
 }
 
 bool DS3231::disable32kHz() {
-  byte stat = getRegister(DS3231_STATUS);
+  byte stat;
+  if (!readRegister(DS3231_STATUS, stat)) return false;
   return setRegister(DS3231_STATUS, (stat & 0b11110111) | 0b00000000); //  EN32kHz = 0
 }
 
 bool DS3231::enable1Hz() {
-  byte ctr = getRegister(DS3231_CONTROL);
+  byte ctr;
+  if (!readRegister(DS3231_CONTROL, ctr)) return false;
   return setRegister(DS3231_CONTROL, (ctr & 0b11100011) | 0b00000000); // RS1=0 RS=0 INTCN=0
 }
 
 bool DS3231::disable1Hz() {
-  byte ctr = getRegister(DS3231_CONTROL);
+  byte ctr;
+  if (!readRegister(DS3231_CONTROL, ctr)) return false;
   return setRegister(DS3231_CONTROL, (ctr & 0b11100011) | 0b00000100); // RS1=0 RS=0 INTCN=1 disables 1 Hz
 }
 
 int DS3231::getTemp() {
-  byte temp = getRegister(DS3231_TEMPMSB);
+  byte temp;
+  if (!readRegister(DS3231_TEMPMSB, temp)) return -128;
   return (int8_t)temp;
 }
 
@@ -56,7 +62,9 @@ bool DS3231::setOffset(int offset, OffsetMode mode) {
   success &= setRegister(DS3231_OFFSET, offset & 0xFF);
   while (++timeout && (getRegister(DS3231_STATUS) & 0b100)); // wait for non-busy period
   if (!timeout) return false;
-  success &= setRegister(DS3231_CONTROL, getRegister(DS3231_CONTROL) | 0b100000);
+  byte control;
+  if (!readRegister(DS3231_CONTROL, control)) return false;
+  success &= setRegister(DS3231_CONTROL, control | 0b100000);
   return success;
 }
 

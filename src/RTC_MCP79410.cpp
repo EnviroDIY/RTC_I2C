@@ -5,7 +5,9 @@ bool MCP79410::init(__attribute__((unused)) BatteryMode mode) {
 }
 
 bool MCP79410::isValid() {
-  return ((getRegister(MCP79410_STATUS) & 0b100000) != 0); // oscillator is running
+  byte status;
+  bool success = readRegister(MCP79410_STATUS, status);
+  return success && ((status & 0b100000) != 0); // oscillator is running
 }
 
 bool MCP79410::setTime(tm timeParts) {
@@ -59,40 +61,51 @@ bool MCP79410::setAlarm(byte minute, byte hour) {
 }
 
 bool MCP79410::setAlarm(byte minute) {
-  return setRegister(MCP79410_ALARM + 1, bin2bcd(minute)) & // set minute alarm
-         setRegister(MCP79410_ALARM + 3, 0x10);             // set match condition to minutes must match
+  bool success = setRegister(MCP79410_ALARM + 1, bin2bcd(minute)); // set minute alarm
+  success &= setRegister(MCP79410_ALARM + 3, 0x10);                // set match condition to minutes must match
+  return success;
 }
 
 bool MCP79410::enableAlarm() {
-  byte ctr = getRegister(MCP79410_CONTROL);
+  byte ctr;
+  if (!readRegister(MCP79410_CONTROL, ctr)) return false;
   return setRegister(MCP79410_CONTROL, ctr | 0b10000); // set the ALM0 bit
 }
 
 bool MCP79410::disableAlarm() {
-  byte ctr = getRegister(MCP79410_CONTROL);
+  byte ctr;
+  if (!readRegister(MCP79410_CONTROL, ctr)) return false;
   return setRegister(MCP79410_CONTROL, (ctr & 0b11101111)); // clear ALM0 bit
 }
 
 bool MCP79410::senseAlarm() {
-  return ((getRegister(MCP79410_ALARM + 3) & 0b1000) != 0);
+  byte status;
+  return readRegister(MCP79410_ALARM + 3, status) && ((status & 0b1000) != 0);
 }
 
 bool MCP79410::clearAlarm() {
-  byte ctr = getRegister(MCP79410_ALARM + 3);
+  byte ctr;
+  if (!readRegister(MCP79410_ALARM + 3, ctr)) return false;
   return setRegister(MCP79410_ALARM + 3, (ctr & 0b11110111));
 }
 
 
 bool MCP79410::enable32kHz() {
-  return setRegister(MCP79410_CONTROL, (getRegister(MCP79410_CONTROL) & 0b10111100) | 0b1000011); // enable SQW 32 kHz
+  byte control;
+  if (!readRegister(MCP79410_CONTROL, control)) return false;
+  return setRegister(MCP79410_CONTROL, (control & 0b10111100) | 0b1000011); // enable SQW 32 kHz
 }
 
 bool MCP79410::disable32kHz() {
-  return setRegister(MCP79410_CONTROL, getRegister(MCP79410_CONTROL) & ~0b01000000); // disable SQW
+  byte control;
+  if (!readRegister(MCP79410_CONTROL, control)) return false;
+  return setRegister(MCP79410_CONTROL, control & ~0b01000000); // disable SQW
 }
 
 bool MCP79410::enable1Hz() {
-  return setRegister(MCP79410_CONTROL, (getRegister(MCP79410_CONTROL) & 0b10111000) | 0b1000000); // set 1Hz
+  byte control;
+  if (!readRegister(MCP79410_CONTROL, control)) return false;
+  return setRegister(MCP79410_CONTROL, (control & 0b10111000) | 0b1000000); // set 1Hz
 }
 
 bool MCP79410::disable1Hz() {
@@ -134,7 +147,9 @@ bool MCP79410::setOffset(int offset, OffsetMode mode) {
   default:
     break;
   }
-  success &= setRegister(MCP79410_CONTROL, getRegister(MCP79410_CONTROL) & 0b11111011); // clear RS2 to use fine trim
+  byte control;
+  if (!readRegister(MCP79410_CONTROL, control)) return false;
+  success &= setRegister(MCP79410_CONTROL, control & 0b11111011); // clear RS2 to use fine trim
   return success;
 }
 

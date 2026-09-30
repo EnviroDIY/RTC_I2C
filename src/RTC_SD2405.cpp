@@ -27,39 +27,51 @@ bool SD2405::setAlarm(byte minute) {
 
 
 bool SD2405::enableAlarm() {
-  byte ctr = getRegister(SD2405_CONTROL + 1);
+  byte ctr;
+  if (!readRegister(SD2405_CONTROL + 1, ctr)) return false;
   return setRegister(SD2405_CONTROL + 1, (ctr & 0b11001101) | 0b00010010); // set the INTAE bit and INTS1/INTS=01
 }
 
 bool SD2405::disableAlarm() {
-  byte ctr = getRegister(SD2405_CONTROL + 1);
+  byte ctr;
+  if (!readRegister(SD2405_CONTROL + 1, ctr)) return false;
   return setRegister(SD2405_CONTROL + 1, (ctr & 0b11111101)); // clear INTAE bit
 }
 
 bool SD2405::senseAlarm() {
-  return ((getRegister(SD2405_CONTROL) & 0b00100000) != 0);
+  byte control;
+  return readRegister(SD2405_CONTROL, control) && ((control & 0b00100000) != 0);
 }
 
 bool SD2405::clearAlarm() {
-  byte ctr = getRegister(SD2405_ALARM + 3);
-  return setRegister(SD2405_ALARM + 3, (ctr & 0b11011111));
+  byte ctr;
+  if (!readRegister(SD2405_CONTROL, ctr)) return false;
+  return setRegister(SD2405_CONTROL, (ctr & 0b11011111)); // clear INTAF
 }
 
 
 bool SD2405::enable32kHz() {
-  return setRegister(SD2405_CONTROL + 1,
-                     (getRegister(SD2405_CONTROL + 1) & 0b11001110) | 0b00100001) &                // enable SQW output
-         setRegister(SD2405_CONTROL + 2, (getRegister(SD2405_CONTROL + 2) & 0b11110000) | 0b0001); // 32kHz
+  byte control2;
+  byte control3;
+  if (!readRegister(SD2405_CONTROL + 1, control2) || !readRegister(SD2405_CONTROL + 2, control3)) return false;
+  bool success = setRegister(SD2405_CONTROL + 1, (control2 & 0b11001110) | 0b00100001); // enable SQW output
+  success &= setRegister(SD2405_CONTROL + 2, (control3 & 0b11110000) | 0b0001);         // 32kHz
+  return success;
 }
 
 bool SD2405::disable32kHz() {
-  return setRegister(SD2405_CONTROL + 1, getRegister(SD2405_CONTROL + 1) & ~0b00110001); // disable SQW and alarm INT
+  byte control;
+  if (!readRegister(SD2405_CONTROL + 1, control)) return false;
+  return setRegister(SD2405_CONTROL + 1, control & ~0b00110001); // disable frequency output and INT selection
 }
 
 bool SD2405::enable1Hz() {
-  return setRegister(SD2405_CONTROL + 1,
-                     (getRegister(SD2405_CONTROL + 1) & 0b11001110) | 0b00100001) &                // enable SQW output
-         setRegister(SD2405_CONTROL + 2, (getRegister(SD2405_CONTROL + 2) & 0b11110000) | 0b1010); // 1 Hz
+  byte control2;
+  byte control3;
+  if (!readRegister(SD2405_CONTROL + 1, control2) || !readRegister(SD2405_CONTROL + 2, control3)) return false;
+  bool success = setRegister(SD2405_CONTROL + 1, (control2 & 0b11001110) | 0b00100001); // enable SQW output
+  success &= setRegister(SD2405_CONTROL + 2, (control3 & 0b11110000) | 0b1010);         // 1 Hz
+  return success;
 }
 
 
