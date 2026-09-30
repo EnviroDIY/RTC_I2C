@@ -44,6 +44,7 @@ class MCP79410 : public RTC_I2C {
   }
   bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
   bool isValid() override;
+  using RTC_I2C::setTime;
   bool setTime(timestamp_t t) override;
   bool setTime(tm timeParts) override;
   bool setAlarm(byte minute, byte hour) override; // here we can only set the alarm til next match

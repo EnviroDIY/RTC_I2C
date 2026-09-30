@@ -50,6 +50,7 @@ class RV8803 : public RTC_I2C {
   }
   bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
   bool isValid() override;
+  using RTC_I2C::setTime;
   bool setTime(timestamp_t t) override;
   bool setTime(tm timeParts) override;
   timestamp_t getTime() override;

@@ -26,10 +26,12 @@ class RV3028U : public RV3028 {
     _bit7set = RV3028_BIT7;
   }
   bool setAlarm(__attribute__((unused)) byte minute, __attribute__((unused)) byte hour) override { return true; }
+  bool setAlarm(__attribute__((unused)) byte minute) override { return true; }
   bool senseAlarm() override { return false; }  // no-op for this RTC
   bool clearAlarm() override { return true; }   // no-op for this RTC
   bool enableAlarm() override { return true; }  // no-op for this RTC
   bool disableAlarm() override { return true; } // no-op for this RTC
+  using RTC_I2C::setTime;
   bool setTime(timestamp_t t) override;
   bool setTime(tm timeParts) override;
   timestamp_t getTime() override;
