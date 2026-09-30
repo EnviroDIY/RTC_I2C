@@ -77,5 +77,10 @@ class RV8803 : public RTC_I2C {
   unsigned int getOffset() override;
   String getManufacturer() override;
   String getModel() override;
+  bool setRegister(byte reg, byte val) override;
+
+ private:
+  bool finishWriteAccess(byte reg);
+  bool writeTimeRegisters(tm timeParts);
 };
 #endif

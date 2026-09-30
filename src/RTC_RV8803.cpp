@@ -9,22 +9,55 @@ bool RV8803::init(__attribute__((unused)) BatteryMode mode) {
 }
 
 bool RV8803::isValid() {
-  return ((getRegister(RV8803_STATUS) & 0b11) == 0); // both voltage low flags are cleared
+  byte status;
+  return readRegister(RV8803_STATUS, status) && ((status & 0b11) == 0); // both voltage low flags are cleared
 }
 
 // set & clear reset bit when setting time/date
 bool RV8803::setTime(timestamp_t t) {
-  bool success = setRegister(RV8803_CONTROL, getRegister(RV8803_CONTROL) | 1); // set RESET bit
-  if (success) success = RTC_I2C::setTime(t);
-  success &= setRegister(RV8803_CONTROL, getRegister(RV8803_CONTROL) & 0b11111110); // clear RESET bit
-  return success;
+  tm timeParts;
+  TimeUtils::fillTimeParts(t, 0, epochStart::unix_epoch, timeParts);
+  return setTime(timeParts);
 }
 
 bool RV8803::setTime(tm timeParts) {
-  bool success = setRegister(RV8803_CONTROL, getRegister(RV8803_CONTROL) | 1); // set RESET bit
-  if (success) success = RTC_I2C::setTime(timeParts);
-  success &= setRegister(RV8803_CONTROL, getRegister(RV8803_CONTROL) & 0b11111110); // clear RESET bit
+  byte control;
+  if (!readRegister(RV8803_CONTROL, control)) return false;
+  bool success = setRegister(RV8803_CONTROL, control | 1); // set RESET bit
+  if (success) success = writeTimeRegisters(timeParts);
+  success &= setRegister(RV8803_CONTROL, control & 0b11111110); // clear RESET bit
   return success;
+}
+
+bool RV8803::writeTimeRegisters(tm timeParts) {
+  for (byte attempts = 0; attempts < 4; ++attempts) {
+    _wire->beginTransmission(_i2caddr);
+    _wire->write(RV8803_CLOCKREG);
+    _wire->write(bin2bcd(timeParts.tm_sec));
+    _wire->write(bin2bcd(timeParts.tm_min));
+    _wire->write(bin2bcd(timeParts.tm_hour));
+    _wire->write(1 << timeParts.tm_wday);
+    _wire->write(bin2bcd(timeParts.tm_mday));
+    _wire->write(bin2bcd(timeParts.tm_mon + 1));
+    _wire->write(bin2bcd(timeParts.tm_year - 100));
+    if (_wire->endTransmission() == 0 && finishWriteAccess(RV8803_CLOCKREG)) return true;
+  }
+  return false;
+}
+
+bool RV8803::setRegister(byte reg, byte val) {
+  for (byte attempts = 0; attempts < 4; ++attempts) {
+    _wire->beginTransmission(_i2caddr);
+    _wire->write(reg);
+    _wire->write(val);
+    if (_wire->endTransmission() == 0 && finishWriteAccess(reg)) return true;
+  }
+  return false;
+}
+
+bool RV8803::finishWriteAccess(byte reg) {
+  byte value;
+  return readRegister(reg, value); // finish with a read operation and STOP, as required by affected silicon
 }
 
 timestamp_t RV8803::getTime() {
