@@ -87,8 +87,10 @@ bool RV3032::enable32kHz() {
 }
 
 bool RV3032::disable32kHz() {
-  return setRegister(RV3032_COE, getRegister(RV3032_COE) | 0b01000000) & // disable CLKOUT
-         updateEEPROMByte(RV3032_COE);
+  bool success = true;
+  success &= setRegister(RV3032_COE, getRegister(RV3032_COE) | 0b01000000); // disable CLKOUT
+  success &= updateEEPROMByte(RV3032_COE);
+  return success;
 }
 
 bool RV3032::enable1Hz() {
@@ -101,8 +103,7 @@ bool RV3032::enable1Hz() {
 }
 
 bool RV3032::disable1Hz() {
-  return setRegister(RV3032_COE, getRegister(RV3032_COE) | 0b01000000) & // disable CLKOUT
-         updateEEPROMByte(RV3032_COE);
+  return disable32kHz();
 }
 
 
@@ -135,17 +136,21 @@ unsigned int RV3032::getOffset() {
 
 bool RV3032::updateEEPROMByte(byte reg) {
   bool success = true;
+  byte timeout = 0;
   byte cnts = getRegister(reg);
   success &= setRegister(RV3032_CONTROL, getRegister(RV3032_CONTROL) | 0b100); // set EERD = 1
   success &= setRegister(RV3032_EEADDR, reg);
   success &= setRegister(RV3032_EEDATA, cnts);
-  while (getRegister(RV3032_BUSY) & 0b100) { // busy with reading/writing EEPROM
-    delay(2);                                // wait 2 ms
+  while (++timeout && (getRegister(RV3032_BUSY) & 0b100)) { // busy with reading/writing EEPROM
+    delay(2);                                               // wait 2 ms
   }
-  success &= setRegister(RV3032_EECMD, 0x21); // update EEPROM at EEADDR with value stored in EEADDR
-  while (getRegister(RV3032_BUSY) & 0b100) {  // busy with reading/writing EEPROM
-    delay(10);                                // wait 10 ms
+  if (!timeout) return false;
+  timeout = 0;
+  success &= setRegister(RV3032_EECMD, 0x21);               // update EEPROM at EEADDR with value stored in EEADDR
+  while (++timeout && (getRegister(RV3032_BUSY) & 0b100)) { // busy with reading/writing EEPROM
+    delay(10);                                              // wait 10 ms
   }
+  if (!timeout) return false;
   success &= setRegister(RV3032_CONTROL, getRegister(RV3032_CONTROL) & ~0b00000100); // set EERD = 0
   return success;
 }

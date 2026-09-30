@@ -52,8 +52,8 @@ bool MCP79410::setAlarm(byte minute, byte hour) {
   success &= setRegister(MCP79410_ALARM + 1, bin2bcd(minute)); // set minute alarm
   success &= setRegister(MCP79410_ALARM + 2, bin2bcd(hour));   // set hour alarm
   success &= setRegister(MCP79410_ALARM + 3,
-                         0x70 | bin2bcd(timeParts.tm_wday + _wdaybase)); // set weekday alarm and match condition
-  success &= setRegister(MCP79410_ALARM + 4, bin2bcd(timeParts.tm_mday)); // set day of month
+                         0x70 | bin2bcd(timeParts.tm_wday + _wdaybase));     // set weekday alarm and match condition
+  success &= setRegister(MCP79410_ALARM + 4, bin2bcd(timeParts.tm_mday));    // set day of month
   success &= setRegister(MCP79410_ALARM + 5, bin2bcd(timeParts.tm_mon + 1)); // set day of month
   return success;
 }
