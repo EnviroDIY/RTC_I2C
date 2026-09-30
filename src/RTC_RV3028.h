@@ -86,6 +86,14 @@ class RV3028 : public RTC_I2C {
    * @return `true` if the EEPROM byte was successfully updated; otherwise `false`.
    */
   bool updateEEPROMByte(byte reg);
+  /**
+   * @brief Enable or disable automatic EEPROM refresh (the EERD bit of the control register).
+   *
+   * @param control The current value of the control register.
+   * @param enable `true` to enable automatic EEPROM refresh (clear EERD); `false` to disable it (set EERD).
+   * @return `true` if the control register was successfully updated; otherwise `false`.
+   */
+  bool setEEPROMRefresh(byte control, bool enable);
 };
 #endif
 

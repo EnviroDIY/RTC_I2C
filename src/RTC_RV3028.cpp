@@ -6,8 +6,9 @@ bool RV3028::init(BatteryMode mode) {
   success &= setRegister(RV3028_CONTROL + 1, 0);     // clear control2 register
   success &= setRegister(RV3028_STATUS, 0);          // clear all flags
   success &= setRegister(RV3028_CLKOUT, 0b01000000); // 32 KHz output by default, CLKOUT is off
-  byte bsm_reg =
-    getRegister(RV3028_BSM) & 0b11110011; // get the current BSM register and zero only the switching mode bits
+  byte bsm_reg;
+  if (!readRegister(RV3028_BSM, bsm_reg)) return false;
+  bsm_reg &= 0b11110011; // zero only the switching mode bits
   switch (mode) {
   case BatteryMode::SWITCHING_DISABLED: {
     // Switchover Disabled. – Default value on delivery
@@ -34,7 +35,10 @@ bool RV3028::init(BatteryMode mode) {
 }
 
 bool RV3028::isValid() {
-  return ((getRegister(RV3028_STATUS) & 0b1) == 0); // POR flag is cleared
+  byte status;
+  bool success = readRegister(RV3028_STATUS, status);
+  success &= ((status & 0b1) == 0); // POR flag is cleared
+  return success;
 }
 
 bool RV3028::setAlarm(byte minute, byte hour) {
@@ -96,9 +100,12 @@ bool RV3028::disable32kHz() {
 // support the output of CLKOUT
 bool RV3028::enable1Hz() {
   bool success = true;
-  success &= setRegister(RV3028_CONTROL, getRegister(RV3028_CONTROL) & ~0b00010000);
+  byte control1;
+  byte control2;
+  if (!readRegister(RV3028_CONTROL, control1) || !readRegister(RV3028_CONTROL + 1, control2)) return false;
+  success &= setRegister(RV3028_CONTROL, control1 & ~0b00010000);
   //^ Clear USEL (Update Interrupt Select) bit to select 1 Hz output
-  success &= setRegister(RV3028_CONTROL + 1, getRegister(RV3028_CONTROL + 1) | 0b00100000);
+  success &= setRegister(RV3028_CONTROL + 1, control2 | 0b00100000);
   // Set UIE (Periodic Time Update Interrupt Enable) bit so the interrupt is generated
   return success;
 }
@@ -130,8 +137,10 @@ bool RV3028::setOffset(int offset, OffsetMode mode) {
   }
   // set the offset registers
   success &= setRegister(RV3028_OFFSET, (offset >> 1));
-  success &= setRegister(RV3028_OFFSET + 1, (getRegister(RV3028_OFFSET + 1) & 0b01111111) |
-                                              ((offset & 1) << 7)); // update the EEPROM with the new offset values
+  byte offsetLow;
+  if (!readRegister(RV3028_OFFSET + 1, offsetLow)) return false;
+  success &= setRegister(RV3028_OFFSET + 1,
+                         (offsetLow & 0b01111111) | ((offset & 1) << 7)); // set low offset bit in the RAM mirror
   success &= updateEEPROMByte(RV3028_OFFSET);
   success &= updateEEPROMByte(RV3028_OFFSET + 1);
   return success;
@@ -142,30 +151,52 @@ unsigned int RV3028::getOffset() {
 }
 
 
+bool RV3028::setEEPROMRefresh(byte control, bool enable) {
+  return setRegister(RV3028_CONTROL, enable ? (control & ~0b00001000) : (control | 0b00001000));
+}
+
 bool RV3028::updateEEPROMByte(byte reg) {
   bool success = true;
   byte timeout = 0;
-  byte cnts = getRegister(reg);
-  success &= setRegister(RV3028_CONTROL, getRegister(RV3028_CONTROL) | 0b1000); // set EERD = 1
-  success &= setRegister(RV3028_EEADDR, reg);
-  success &= setRegister(RV3028_EEDATA, cnts);
+  byte cnts;
+  byte control;
+  // make sure the register to set to EEPROM and the control register are read successfully
+  if (!readRegister(reg, cnts) || !readRegister(RV3028_CONTROL, control)) return false;
+  // disable automatic EEPROM refresh before writing
+  if (!setEEPROMRefresh(control, false)) return false; // set EERD = 1
+  // Write the address and data to the EEPROM
+  if (!setRegister(RV3028_EEADDR, reg) || !setRegister(RV3028_EEDATA, cnts)) {
+    // restore automatic EEPROM refresh before returning after failure
+    setEEPROMRefresh(control, true);
+    return false;
+  }
+  // wait for operation to complete
   while (++timeout && (getRegister(RV3028_STATUS) & 0b10000000)) { // busy with reading/writing EEPROM
     delay(20);                                                     // wait 20 ms
   }
   if (!timeout) {
     // Serial.println(F("Timeout in EEPROM wait"));
+    // restore automatic EEPROM refresh before returning after failure
+    setEEPROMRefresh(control, true);
     return false;
   }
   timeout = 0;
-  success &= setRegister(RV3028_EECMD, 0x21); // update EEPROM at EEADDR with value stored in EEADDR
+  if (!setRegister(RV3028_EECMD, 0x00) || // required first command
+      !setRegister(RV3028_EECMD, 0x21)) { // write EEDATA to the byte selected by EEADDR
+    setEEPROMRefresh(control, true);
+    return false;
+  }
   while (++timeout && (getRegister(RV3028_STATUS) & 0b10000000)) { // busy with reading/writing EEPROM
     delay(10);                                                     // wait 10 ms
   }
   if (!timeout) {
     // Serial.println(F("Timeout in EEPROM write"));
+    // restore automatic EEPROM refresh before returning after failure
+    setEEPROMRefresh(control, true);
     return false;
   }
-  success &= setRegister(RV3028_CONTROL, getRegister(RV3028_CONTROL) & ~0b00001000); // set EERD = 0
+  // restore automatic EEPROM refresh
+  success &= setEEPROMRefresh(control, true); // set EERD = 0
   return success;
 }
 
