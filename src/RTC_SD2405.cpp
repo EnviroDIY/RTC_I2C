@@ -23,8 +23,10 @@ bool SD2405::setAlarm(byte minute, byte hour) {
 }
 
 bool SD2405::setAlarm(byte minute) {
-  return setRegister(SD2405_ALARM + 1, bin2bcd(minute)) & // set minute alarm
-         setRegister(SD2405_ALARM + 7, 0b010);            // minute needs to match
+  bool success = true;
+  success &= setRegister(SD2405_ALARM + 1, bin2bcd(minute)); // set minute alarm
+  success &= setRegister(SD2405_ALARM + 7, 0b010);           // minute needs to match
+  return success;
 }
 
 
