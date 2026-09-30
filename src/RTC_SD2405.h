@@ -58,7 +58,7 @@ class SD2405 : public RTC_I2C {
    * are treated identically.
    *
    * Negative values make the clock faster by roughly 3.051 ppm/LSB.
-   * The range of the internal parameter goes from -64 to +63.
+   * The documented adjustment range goes from -62 to +63.
    */
   bool setOffset(int offset, OffsetMode mode = OffsetMode::FINE_OFFSET) override;
   unsigned int getOffset() override;

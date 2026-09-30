@@ -26,7 +26,7 @@
 #define RV8803_CONTROL 0x0F
 /// Offset register; referred to as the Digital Offset register in documentation (ADDRESS 0x2C).
 #define RV8803_OFFSET 0x2C
-/// Weekday encoding used by the RTC implementation; the weekday bit starts at bit position 2.
+/// Sentinel selecting the RTC's one-hot weekday encoding (Sunday is bit 0 through Saturday at bit 6).
 #define RV8803_WDAYBASE 2
 /// The weekday register comes before the day-of-month register in the clock register sequence.
 #define RV8803_WDAYFIRST true

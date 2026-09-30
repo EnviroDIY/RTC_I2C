@@ -9,19 +9,21 @@ bool SD2405::init(__attribute__((unused)) BatteryMode mode) {
 }
 
 bool SD2405::isValid() {
-  return ((getRegister(SD2405_CONTROL) & 0b1) == 0); // power on bit (not sure, but believe that = 0 means valid)
+  byte control;
+  return readRegister(SD2405_CONTROL, control) &&
+         ((control & 0b1) == 0); // RTCF=0 means no oscillator failure has been detected
 }
 
 bool SD2405::setAlarm(byte minute, byte hour) {
   bool success = true;
-  success &= setRegister(SD2405_ALARM + 1, bin2bcd(minute)); // set second alarm
+  success &= setRegister(SD2405_ALARM + 1, bin2bcd(minute)); // set minute alarm
   success &= setRegister(SD2405_ALARM + 2, bin2bcd(hour));   // set hour alarm
   success &= setRegister(SD2405_ALARM + 7, 0b110);           // hours and minute need to match
   return success;
 }
 
 bool SD2405::setAlarm(byte minute) {
-  return setRegister(SD2405_ALARM + 1, bin2bcd(minute)) & // set second alarm
+  return setRegister(SD2405_ALARM + 1, bin2bcd(minute)) & // set minute alarm
          setRegister(SD2405_ALARM + 7, 0b010);            // minute needs to match
 }
 

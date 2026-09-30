@@ -44,7 +44,7 @@ bool RV3032::setAlarm(byte minute, byte hour) {
   bool success = true;
   success &= setRegister(RV3032_ALARM, bin2bcd(minute));   // set minute alarm
   success &= setRegister(RV3032_ALARM + 1, bin2bcd(hour)); // set hour alarm
-  success &= setRegister(RV3032_ALARM + 2, 0x80);          // set weekday alarm to always
+  success &= setRegister(RV3032_ALARM + 2, 0x80);          // set date alarm to always
   return success;
 }
 
@@ -52,7 +52,7 @@ bool RV3032::setAlarm(byte minute) {
   bool success = true;
   success &= setRegister(RV3032_ALARM, bin2bcd(minute)); // set minute alarm
   success &= setRegister(RV3032_ALARM + 1, 0x80);        // set hour alarm to always
-  success &= setRegister(RV3032_ALARM + 2, 0x80);        // set weekday alarm to always
+  success &= setRegister(RV3032_ALARM + 2, 0x80);        // set date alarm to always
   return success;
 }
 
@@ -132,7 +132,7 @@ bool RV3032::setOffset(int offset, OffsetMode mode) {
       offset = 31;
   }
   // set the offset register
-  success &= setRegister(RV3032_OFFSET, (offset & 0x3F)); // update the EEPROM with the new offset value
+  success &= setRegister(RV3032_OFFSET, (offset & 0x3F)); // set the offset in the RAM mirror
   success &= updateEEPROMByte(RV3032_OFFSET);
   // Serial.println(offset);
   // Serial.println(offset&0x3F);
