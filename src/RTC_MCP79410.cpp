@@ -51,8 +51,8 @@ bool MCP79410::setAlarm(byte minute, byte hour) {
   success &= setRegister(MCP79410_ALARM, bin2bcd(0));          // set second alarm
   success &= setRegister(MCP79410_ALARM + 1, bin2bcd(minute)); // set minute alarm
   success &= setRegister(MCP79410_ALARM + 2, bin2bcd(hour));   // set hour alarm
-  success &=
-    setRegister(MCP79410_ALARM + 3, 0x70 | bin2bcd(timeParts.tm_wday));   // set weekday alarm and set match condition
+  success &= setRegister(MCP79410_ALARM + 3,
+                         0x70 | bin2bcd(timeParts.tm_wday + _wdaybase)); // set weekday alarm and match condition
   success &= setRegister(MCP79410_ALARM + 4, bin2bcd(timeParts.tm_mday)); // set day of month
   success &= setRegister(MCP79410_ALARM + 5, bin2bcd(timeParts.tm_mon + 1)); // set day of month
   return success;
@@ -69,7 +69,7 @@ bool MCP79410::enableAlarm() {
 }
 
 bool MCP79410::disableAlarm() {
-  byte ctr = getRegister(MCP79410_CONTROL + 1);
+  byte ctr = getRegister(MCP79410_CONTROL);
   return setRegister(MCP79410_CONTROL, (ctr & 0b11101111)); // clear ALM0 bit
 }
 
@@ -118,20 +118,17 @@ bool MCP79410::setOffset(int offset, OffsetMode mode) {
     break;
   }
   case OffsetMode::FINE_OFFSET: {
-    // force the offset into supported range
-    if (offset < -127)
-      offset = -127;
-    else if (offset > 127)
-      offset = 127;
     // split the offset into sign and magnitude
-    if (offset < 0) {
+    long offsetMagnitude = offset;
+    if (offsetMagnitude < 0) {
       sign = true;
-      offset = -offset;
+      offsetMagnitude = -offsetMagnitude;
     }
-    offset = (offset + 50) / 100;
+    offsetMagnitude = (offsetMagnitude + 50) / 100;
+    if (offsetMagnitude > 127) offsetMagnitude = 127;
     // Serial.println(sign);
-    // Serial.println(offset);
-    success &= setRegister(MCP79410_OFFSET, (sign << 7) | offset);
+    // Serial.println(offsetMagnitude);
+    success &= setRegister(MCP79410_OFFSET, (sign << 7) | offsetMagnitude);
     break;
   }
   default:
