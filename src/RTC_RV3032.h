@@ -37,7 +37,7 @@
 #define RV3032_BIT7 0
 /// Weekday numbering used by the RTC: 0 through 6.
 #define RV3032_WDAYBASE 0
-/// The weekday register comes after the day-of-month register in the clock register sequence.
+/// The weekday register comes before the day-of-month register in the clock register sequence.
 #define RV3032_WDAYFIRST true
 /// Capabilities supported by the RV-3032 implementation.
 #define RV3032_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET | RTC_CAP_TEMP)

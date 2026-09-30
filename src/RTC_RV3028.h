@@ -31,7 +31,7 @@
 
 /// Weekday numbering used by the RTC: 0 through 6.
 #define RV3028_WDAYBASE 0
-/// The weekday register comes after the day-of-month register in the clock register sequence.
+/// The weekday register comes before the day-of-month register in the clock register sequence.
 #define RV3028_WDAYFIRST true
 /// No clock-register bit 7 must be forced when writing time.
 #define RV3028_BIT7 0

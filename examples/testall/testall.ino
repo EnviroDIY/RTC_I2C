@@ -75,7 +75,8 @@ void loop() {
     showTime(timeParts);
     break;
   case 'y':
-    timeParts.tm_sec = 45;
+    timeParts = {};
+    timeParts.tm_sec = 0;
     timeParts.tm_min = 59;
     timeParts.tm_hour = 23;
     timeParts.tm_mday = 28;
@@ -83,7 +84,7 @@ void loop() {
     timeParts.tm_year = 2100 - 1900;
     timeParts.tm_wday = 0; // Sunday
     rtc.setTime(timeParts);
-    Serial.println(F("Time has advance to 28.2.2100, 23:59:45"));
+    Serial.println(F("Time has advanced to 28.2.2100, 23:59:00"));
     break;
   case '1':
     if ((rtc.getCapabilities() & RTC_CAP_1HZ) == 0) {

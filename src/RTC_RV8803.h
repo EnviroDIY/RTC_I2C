@@ -28,7 +28,7 @@
 #define RV8803_OFFSET 0x2C
 /// Weekday encoding used by the RTC implementation; the weekday bit starts at bit position 2.
 #define RV8803_WDAYBASE 2
-/// The weekday register comes after the day-of-month register in the clock register sequence.
+/// The weekday register comes before the day-of-month register in the clock register sequence.
 #define RV8803_WDAYFIRST true
 /// No clock-register bit 7 must be forced when writing time.
 #define RV8803_BIT7 0

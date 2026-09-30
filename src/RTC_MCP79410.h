@@ -22,7 +22,7 @@
 #define MCP79410_OFFSET 0x08
 /// Weekday numbering used by the RTC: 1 through 7.
 #define MCP79410_WDAYBASE 1
-/// The weekday register comes after the day-of-month register in the clock register sequence.
+/// The weekday register comes before the day-of-month register in the clock register sequence.
 #define MCP79410_WDAYFIRST true
 /// No clock-register bit 7 must be forced when writing time.
 #define MCP79410_BIT7 0
