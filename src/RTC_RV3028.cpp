@@ -75,20 +75,28 @@ bool RV3028::clearAlarm() {
 
 
 bool RV3028::enable32kHz() {
-  return setRegister(RV3028_CLKOUT, 0b11000000) & // enable CLKOUT 32kHz
-         updateEEPROMByte(RV3028_CLKOUT);
+  bool success = true;
+  success &= setRegister(RV3028_CLKOUT, 0b11000000); // enable CLKOUT 32kHz
+  success &= updateEEPROMByte(RV3028_CLKOUT);
+  return success;
 }
 
 bool RV3028::disable32kHz() {
-  return setRegister(RV3028_CLKOUT, 0b01000000) & // disable CLKOUT
-         updateEEPROMByte(RV3028_CLKOUT);
+  bool success = true;
+  success &= setRegister(RV3028_CLKOUT, 0b01000000); // disable CLKOUT
+  success &= updateEEPROMByte(RV3028_CLKOUT);
+  return success;
 }
 
 // use nINT as output since the CLICK board does not
 // support the output of CLKOUT
 bool RV3028::enable1Hz() {
-  return setRegister(RV3028_CONTROL + 1, getRegister(RV3028_CONTROL) & ~0b00010000) &   // USEL = 0
-         setRegister(RV3028_CONTROL + 1, getRegister(RV3028_CONTROL + 1) | 0b00100000); // UIE = 1
+  bool success = true;
+  success &= setRegister(RV3028_CONTROL, getRegister(RV3028_CONTROL) & ~0b00010000);
+  //^ Clear USEL (Update Interrupt Select) bit to select 1 Hz output
+  success &= setRegister(RV3028_CONTROL + 1, getRegister(RV3028_CONTROL + 1) | 0b00100000);
+  // Set UIE (Periodic Time Update Interrupt Enable) bit so the interrupt is generated
+  return success;
 }
 
 bool RV3028::disable1Hz() {
