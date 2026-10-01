@@ -16,6 +16,7 @@ words:
   - ALARMWDAYS
   - CLKOE
   - CLKOUT
+  - CodeRabbit
   - decodewday
   - doxyfile
   - DSALARM
@@ -27,6 +28,7 @@ words:
   - MAXRTC
   - MBED
   - mcss
+  - Nebel
   - PCFALARM
   - PINALARM
   - RTClib
@@ -37,4 +39,3 @@ words:
   - VBATEN
   - wdaybase
   - wdayfirst
-  - CodeRabbit

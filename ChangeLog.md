@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - [ChangeLog](#changelog)
   - [Unreleased](#unreleased)
+  - [0.7.0](#070)
   - [V0.6.0 (22.3.2023)](#v060-2232023)
   - [V0.5.2 (8.3.2023)](#v052-832023)
   - [V0.5.1 (7.3.2023)](#v051-732023)
@@ -37,6 +38,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ***
 
 ## [Unreleased]
+
+### Changed
+
+### Added
+
+### Removed
+
+### Fixed
+
+***
+
+## [0.7.0]
 
 ### Changed
 
@@ -215,6 +228,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - first stub with an idea for the API
 
 [Unreleased]: https://github.com/EnviroDIY/RTC_I2C/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/EnviroDIY/RTC_I2C/releases/tag/v0.7.0
 
 <!--! @tableofcontents{HTML:1} -->
 
