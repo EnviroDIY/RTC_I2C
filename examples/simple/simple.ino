@@ -1,4 +1,7 @@
-// Simple sketch for testing basic set/get methods
+/** =========================================================================
+ * @example{lineno} simple.ino
+ * @brief Simple sketch for testing basic set/get methods
+ * ======================================================================= */
 
 #include <RTC_DS3231.h>
 

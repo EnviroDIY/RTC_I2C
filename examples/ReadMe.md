@@ -8,6 +8,7 @@ ___
 
 - [RTC I2C Examples](#rtc-i2c-examples)
   - [Simple](#simple)
+  - [Alarm](#alarm)
   - [Iterate](#iterate)
   - [Test All](#test-all)
 
@@ -19,19 +20,26 @@ ___
 
 ## Simple<!--! {#examples_simple} -->
 
+This example demonstrates receiving alarm interrupts from a DS3231 real-time clock.
+<!--
+- [Simple](\ref example_simple) -->
+- [The simple example on GitHub](https://github.com/EnviroDIY/RTC_I2C/tree/master/examples/simple)
+
+## Alarm<!--! {#examples_alarm} -->
+
 This example demonstrates using the basic set and get methods of an RTC device.
 It shows how to initialize an RTC, set the time, and read back the time to verify the values were stored correctly.
 <!--
-- [Simple](\ref examples/simple) -->
-- [The simple example on GitHub](https://github.com/EnviroDIY/RTC_I2C/tree/master/examples/simple)
+- [Alarm](\ref example_alarm) -->
+- [The alarm example on GitHub](https://github.com/EnviroDIY/RTC_I2C/tree/master/examples/alarm)
 
 ## Iterate<!--! {#examples_iterate} -->
 
 This example demonstrates testing multiple RTC modules simultaneously.
 It includes a large array of different RTC device types and iterates through them, printing the time from each connected device.
 This is useful for testing hardware compatibility and verifying that multiple RTC modules can be used on the same I2C bus.
-<!--!
-- [Iterate](\ref examples/iterate) -->
+-<!--!
+- [Iterate](\ref example_iterate) -->
 - [The iterate example on GitHub](https://github.com/EnviroDIY/RTC_I2C/tree/master/examples/iterate)
 
 ## Test All<!--! {#examples_testall} -->
@@ -40,5 +48,5 @@ This example provides an interactive test of all implemented RTC methods.
 It includes a menu-driven interface for testing various functions such as reading and writing time, configuring alarms, and accessing interrupt pins.
 This example is useful for comprehensive testing and development of RTC functionality.
 <!--!
-- [Test All](\ref examples/testall) -->
+- [Test All](\ref example_testall) -->
 - [The testall example on GitHub](https://github.com/EnviroDIY/RTC_I2C/tree/master/examples/testall)

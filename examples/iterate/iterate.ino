@@ -1,4 +1,7 @@
-// Test sketch that iterates over a large set of RTCs and prints the time.
+/** =========================================================================
+ * @example{lineno} iterate.ino
+ * @brief Test sketch that iterates over a large set of RTCs and prints the time.
+ * ======================================================================= */
 
 #include <RTC_I2C.h>
 #include <RTC_DS1307.h>

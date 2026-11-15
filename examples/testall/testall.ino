@@ -1,5 +1,9 @@
-// Simple test for RTC_I2C
-// Just include one RTC class and try out all implemented methods
+/** =========================================================================
+ * @example{lineno} testall.ino
+ * @brief Simple test for RTC_I2C
+ *
+ * Just include one RTC class and try out all implemented methods
+ * ======================================================================= */
 
 #include <RTC_PCF8563.h>
 #include <Wire.h>

@@ -1,4 +1,7 @@
-DOXYFILE = "mcss-doxyfile"
+DOXYFILE = "doxyfile"
+HTML_OUTPUT = "../RTC_I2C_Doxygen/m.css"
+PROJECT_REPOSITORY = "https://github.com/EnviroDIY/RTC_I2C"
+
 THEME_COLOR = "#cb4b16"
 FAVICON = "enviroDIY_Favicon.png"
 LINKS_NAVBAR1 = [
@@ -13,11 +16,6 @@ LINKS_NAVBAR1 = [
     (
         "Examples",
         "page_the_examples",
-        [],
-    ),
-    (
-        "Source Files",
-        "files",
         [],
     ),
 ]
@@ -37,3 +35,5 @@ EXTRA_FILES = [
 DESKTOP_LOGO = "gp-desktop-logo.png"
 MOBILE_LOGO = "gp-mobile-logo.png"
 SCROLLING_LOGO = "gp-scrolling-logo.png"
+
+USE_FOLDERS = False

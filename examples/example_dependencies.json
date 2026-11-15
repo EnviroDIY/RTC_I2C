@@ -1,0 +1,16 @@
+{
+  "action_cache_version": 1,
+  "dependencies": [
+    {
+      "name": "EnableInterrupt",
+      "owner": "greygnome",
+      "library id": "311",
+      "url": "https://github.com/GreyGnome/EnableInterrupt",
+      "version": "~1.1.0",
+      "note": "GreyGnome's EnableInterrupt - Assign an interrupt to any supported pin on all Arduinos",
+      "authors": ["Mike 'GreyGnome' Schwager"],
+      "frameworks": "arduino",
+      "platforms": ["atmelavr"]
+    }
+  ]
+}
