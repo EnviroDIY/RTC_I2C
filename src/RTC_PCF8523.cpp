@@ -1,10 +1,19 @@
 #include <RTC_PCF8523.h>
 
-// if Vbat disabled, connect to Vcc
-bool PCF8523::init(BatteryMode mode) {
+bool PCF8523::init(bool reset_configuration, bool clear_flags) {
   bool success = true;
   success &= setRegister(PCF8523_CONTROL, 0b01011000); // initiate software reset with the documented 0x58 command
-  success &= setRegister(PCF8523_CONTROL + 1, 0);      // disable watchdog and countdown timers
+  if (reset_configuration) {
+    success &= setRegister(PCF8523_CONTROL, 0);         // enable the clock and disable correction interrupts
+    success &= setRegister(PCF8523_CONTROL + 1, 0);     // disable watchdog and countdown timers
+    success &= setRegister(PCF8523_CLKOUT, 0b00111000); // disable clock output
+  }
+  if (clear_flags) success &= clearErrorFlags();
+  return success;
+}
+
+// if Vbat disabled, connect to Vcc
+bool PCF8523::setBatteryMode(BatteryMode mode) {
   byte bsm_reg = 0;
   switch (mode) {
   case BatteryMode::SWITCHING_DISABLED: {
@@ -20,9 +29,11 @@ bool PCF8523::init(BatteryMode mode) {
     break;
   }
   }
-  success &= setRegister(PCF8523_CONTROL + 2, bsm_reg); // switch mode and battery low detection
-  success &= setRegister(PCF8523_CLKOUT, 0b00111000);   // disable clock output
-  return success;
+  byte control3;
+  if (!readRegister(PCF8523_CONTROL + 2, control3)) return false;
+  byte requestedControl3 = (control3 & 0b00011111) | bsm_reg;
+  if (requestedControl3 == control3) return true;
+  return setRegister(PCF8523_CONTROL + 2, requestedControl3); // update battery mode without clearing status flags
 }
 
 bool PCF8523::isValid() {

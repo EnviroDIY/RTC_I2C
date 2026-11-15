@@ -160,8 +160,10 @@ The library exposes frequency correction through `setOffset()` and `getOffset()`
 
 ### Temperature measurement
 
-`getTemp()` is implemented as a capability-dependent operation.
+`getTemperature(float&)` reports I2C success separately from the measured value and preserves the hardware's fractional Celsius resolution.
+`getTemp()` remains available as an integer compatibility wrapper.
 A value is available only for RTCs with the `RTC_CAP_TEMP` capability.
+The DS3231 also provides `startTemperatureConversion()` to start a forced conversion without blocking.
 
 | RTC               | `getTemp()` | Temperature accuracy |
 | ----------------- | :---------: | -------------------: |
@@ -212,6 +214,9 @@ The <!--!%-->RS5C372 is additionally marked with `RTC_CAP_SREGADDR` because its 
 The common API converts RTC calendar fields to and from Unix `time_t` and `tm` representations.
 The RV-3028 is unusual because the device also provides a hardware Unix-time counter.
 
+Use `getTime(timestamp_t&)` when read failures must be distinguished from a valid timestamp.
+The no-argument `getTime()` remains available for compatibility and returns zero when the read fails.
+
 | RTC               | Calendar time registers | Hardware Unix-time counter |
 | ----------------- | :---------------------: | :------------------------: |
 | <!--!%-->DS1307   |           Yes           |             —              |
@@ -260,6 +265,18 @@ On the SparkFun breakout board, this input is pulled to GND by a 100 kΩ resisto
 
 ### Alarm
 
+`setAlarm(AlarmMatch, const AlarmTime&)` is the only virtual alarm-setting function.
+`setExactAlarm()`, `setYearlyAlarm()`, `setMonthlyAlarm()`, `setWeeklyAlarm()`, `setDailyAlarm()`, `setHourlyAlarm()`, `setMinuteAlarm()`, and `setSecondAlarm()` are non-virtual convenience functions that construct an `AlarmTime` and defer to `setAlarm()`.
+
+`getSupportedAlarmMatches()` returns a bitmask of the `AlarmMatch` values supported by the selected RTC.
+Unsupported match modes return `false`; the library does not replace them with a less-specific mode.
+
+RTC_I2C does not validate alarm date or time fields.
+The caller must supply values accepted by the selected hardware.
+For a supported match mode, when an RTC alarm has only minute resolution, the driver ignores the requested seconds rather than performing calendar arithmetic.
+For example, 12:34:56 is configured as 12:34:00 and can trigger up to 59 seconds early.
+Alarm configuration remains separate from `enableAlarm()`, `disableAlarm()`, and `clearAlarm()`.
+
 The alarm table distinguishes three different concepts:
 
 - **Single event** means that the hardware provides an explicit one-shot/future-event alarm mode.
@@ -275,7 +292,7 @@ The last column therefore does not mean that the common library automatically im
 | <!--!%-->DS1337   | `SQW/nINTB`    | Active low  |                2 | Alarm 1: seconds, minutes, hours, day/date; Alarm 2: minutes, hours, day/date<sup><a href="#f6">6</a></sup> |                 No                  |  Yes<sup><a href="#f6">6</a></sup>  |                 Yes                 |        —        |
 | DS3231S(N)        | `nINT/SQW`     | Active low  |                2 | Alarm 1: seconds, minutes, hours, day/date; Alarm 2: minutes, hours, day/date<sup><a href="#f7">7</a></sup> |                 No                  |  Yes<sup><a href="#f7">7</a></sup>  |                 Yes                 |        —        |
 | DS3231M           | `nINT/SQW`     | Active low  |                2 | Alarm 1: seconds, minutes, hours, day/date; Alarm 2: minutes, hours, day/date<sup><a href="#f7">7</a></sup> |                 No                  |  Yes<sup><a href="#f7">7</a></sup>  |                 Yes                 |        —        |
-| <!--!%-->MCP79410 | `MFP`          | Active low  |                2 | Minute, hour, day, weekday, month<sup><a href="#f8">8</a></sup>                                             |  Yes<sup><a href="#f8">8</a></sup>  |  Yes<sup><a href="#f8">8</a></sup>  |                 Yes                 |        —        |
+| <!--!%-->MCP79410 | `MFP`          | Active low  |                2 | Second, minute, hour, day, weekday, month<sup><a href="#f8">8</a></sup>                                     |  Yes<sup><a href="#f8">8</a></sup>  |  Yes<sup><a href="#f8">8</a></sup>  |                 Yes                 |        —        |
 | <!--!%-->PCF8523  | `nINT1/CLKOUT` | Active low  |                1 | Minute, hour, day, weekday<sup><a href="#f9">9</a></sup>                                                    |                 No                  |                 No                  |  Yes<sup><a href="#f9">9</a></sup>  |     **Yes**     |
 | <!--!%-->PCF8563  | `nINT`         | Active low  |                1 | Minute, hour, day, weekday<sup><a href="#f10">10</a></sup>                                                  |                 No                  |                 No                  | Yes<sup><a href="#f10">10</a></sup> |     **Yes**     |
 | <!--!%-->RS5C372  | `nINTRA`       | Active low  |                2 | Minute, hour, weekday<sup><a href="#f11">11</a></sup>                                                       |                 No                  |                 No                  | Yes<sup><a href="#f11">11</a></sup> |        —        |
@@ -299,7 +316,7 @@ The hardware does not provide a separate one-shot mode; software can disable or 
 
 <a name="f8"></a><sup>8)</sup> The <!--!%-->MCP79410 provides two independent alarms.
 Each alarm can either generate an interrupt at a specific time in the future or generate a periodic interrupt every minute, hour, day, day of week, or month.
-The library's `setAlarm(minute, hour)` implementation uses the specific-future-time behavior and selects the next applicable date; `setAlarm(minute)` configures a recurring minute match.
+The common library interface exposes the verified recurring matches from seconds through day of month; the hardware's all-fields mode also requires weekday and is not advertised as a simple yearly match.
 
 <a name="f9"></a><sup>9)</sup> The <!--!%-->PCF8523 provides one alarm function with independently selectable minute, hour, day, and weekday comparisons.
 When the alarm flag is cleared, it is set again when the time subsequently increments into another matching condition.
@@ -315,7 +332,7 @@ An enabled alarm generates an interrupt whenever the programmed calendar conditi
 The separate periodic interrupt function is not part of the alarm function, and the library therefore does not advertise `RTC_CAP_HOURLY_ALARM` for this RTC.
 
 <a name="f12"></a><sup>12)</sup> The RV-3028 provides one alarm function with independently selectable minute, hour, and weekday/date comparisons.
-The available combinations produce recurring events such as every minute, hourly, daily, or on selected weekdays/dates.
+The available combinations produce recurring hourly, daily, or selected weekday/date events.
 There is no separate one-shot alarm mode.
 The `RV-3028U` library variant uses the Unix-time counter for timekeeping and does not support alarms.
 

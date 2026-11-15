@@ -40,9 +40,13 @@ class PCF8523 : public PCFAlarm {
     _wdaybase = PCF8523_WDAYBASE;
     _wdayfirst = PCF8523_WDAYFIRST;
     _capabilities = PCF8523_CAP;
+    _supportedAlarmMatches = static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |
+                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) |
+                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH);
     _bit7set = PCF8523_BIT7;
   }
-  bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
+  bool init(bool reset_configuration = true, bool clear_flags = true) override;
+  bool setBatteryMode(BatteryMode mode) override;
   bool isValid() override;
   bool enableAlarm() override;
   bool disableAlarm() override;

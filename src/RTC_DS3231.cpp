@@ -1,10 +1,11 @@
 #include <RTC_DS3231.h>
 
-bool DS3231::init(__attribute__((unused)) BatteryMode mode) {
+bool DS3231::init(bool reset_configuration, bool clear_flags) {
   bool success = true;
-  success &= setRegister(DS3231_CONTROL,
-                         0b00000100); // typical value after power-on, except for bit 2 (disables SQW), starts clock
-  success &= setRegister(DS3231_STATUS, 0b00000000); // clear OSF flag, clear alarm flags, disable 32 kHz output
+  if (reset_configuration)
+    success &= setRegister(DS3231_CONTROL,
+                           0b00000100); // typical value after power-on, except bit 2 disables SQW and starts clock
+  if (clear_flags) success &= clearErrorFlags();
   return success;
 }
 
@@ -37,10 +38,23 @@ bool DS3231::disable1Hz() {
   return setRegister(DS3231_CONTROL, (ctr & 0b11100011) | 0b00000100); // RS1=0 RS=0 INTCN=1 disables 1 Hz
 }
 
-int DS3231::getTemp() {
-  byte temp;
-  if (!readRegister(DS3231_TEMPMSB, temp)) return -128;
-  return (int8_t)temp;
+bool DS3231::getTemperature(float &temperatureC) {
+  byte tempMSB;
+  byte tempLSB;
+  if (!readRegister(DS3231_TEMPMSB, tempMSB)) return false;
+  if (!readRegister(DS3231_TEMPMSB + 1, tempLSB)) return false;
+  temperatureC = (float)(int8_t)tempMSB + (float)((tempLSB >> 6) & 0x03) * 0.25f;
+  return true;
+}
+
+bool DS3231::startTemperatureConversion() {
+  byte status;
+  if (!readRegister(DS3231_STATUS, status)) return false;
+  if (status & 0b00000100) return true; // conversion is already in progress
+
+  byte control;
+  if (!readRegister(DS3231_CONTROL, control)) return false;
+  return setRegister(DS3231_CONTROL, control | 0b00100000); // set CONV bit
 }
 
 bool DS3231::setOffset(int offset, OffsetMode mode) {

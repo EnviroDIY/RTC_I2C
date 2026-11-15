@@ -40,15 +40,20 @@ class DS3231 : public DSAlarm {
     _wdaybase = DS3231_WDAYBASE;
     _wdayfirst = DS3231_WDAYFIRST;
     _capabilities = DS3231_CAP;
+    _supportedAlarmMatches =
+      static_cast<byte>(AlarmMatch::EVERY_SECOND) | static_cast<byte>(AlarmMatch::MATCH_SECONDS) |
+      static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |
+      static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH);
     _bit7set = DS3231_BIT7;
   }
-  bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
+  bool init(bool reset_configuration = true, bool clear_flags = true) override;
   bool isValid() override;
   bool enable32kHz() override;
   bool disable32kHz() override;
   bool enable1Hz() override;
   bool disable1Hz() override;
-  int getTemp() override;
+  bool getTemperature(float &temperatureC) override;
+  bool startTemperatureConversion() override;
   /**
    * @copydoc RTC_I2C::setOffset()
    * This RTC has only one calibrated correction mode - an aging offset that is added to or subtracted from the

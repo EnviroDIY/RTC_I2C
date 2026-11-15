@@ -1,11 +1,17 @@
 #include <RTC_RS5C372.h>
 
-bool RS5C372::init(__attribute__((unused)) BatteryMode mode) {
+bool RS5C372::init(bool reset_configuration, bool clear_flags) {
   bool success = true;
-  success &=
-    setRegister(RS5C372_CONTROL1, 0b00100000); // INT(1Hz) and 32K to INTRB output, Alarm_A and Alarm_B to INTRA
-  success &= setRegister(RS5C372_CONTROL2, 0b00101000); // 24h format and 32K output disabled
-  success &= setRegister(RS5C372_OFFSET, 0);            // 32.768 crystal and no trimming
+  if (reset_configuration) {
+    success &= setRegister(RS5C372_CONTROL1, 0b00100000); // INT(1Hz) and 32K to INTRB output, alarms to INTRA
+    byte control2;
+    if (!readRegister(RS5C372_CONTROL2, control2))
+      success = false;
+    else
+      success &= setRegister(RS5C372_CONTROL2,
+                             (control2 & 0b00010000) | 0b00101000); // preserve XSTP; use 24h and disable 32K
+  }
+  if (clear_flags) success &= clearErrorFlags();
   return success;
 }
 
@@ -13,6 +19,13 @@ bool RS5C372::isValid() {
   byte control;
   return readRegister(RS5C372_CONTROL2, control) &&
          ((control & 0b00010000) == 0); // XSTP=0, otherwise clock is/was halted
+}
+
+bool RS5C372::clearErrorFlags() {
+  byte control;
+  if (!readRegister(RS5C372_CONTROL2, control)) return false;
+  if ((control & 0b00010000) == 0) return true;
+  return setRegister(RS5C372_CONTROL2, control & 0b11101111); // clear XSTP
 }
 
 bool RS5C372::enableAlarm() {
@@ -27,11 +40,23 @@ bool RS5C372::disableAlarm() {
   return setRegister(RS5C372_CONTROL1, (ctr & ~0b10000000)); // reset AALE bit
 }
 
-bool RS5C372::setAlarm(byte minute, byte hour) {
+bool RS5C372::setAlarm(AlarmMatch match, const AlarmTime &alarm) {
+  byte weekdays;
+  switch (match) {
+  case AlarmMatch::MATCH_HOURS:
+    weekdays = 0x7F;
+    break;
+  case AlarmMatch::MATCH_DAY_OF_WEEK:
+    weekdays = (byte)(1u << alarm.weekday);
+    break;
+  default:
+    return false;
+  }
+
   bool success = true;
-  success &= setRegister(RS5C372_ALARMMIN, bin2bcd(minute)); // set minute alarm
-  success &= setRegister(RS5C372_ALARMHR, bin2bcd(hour));    // set hour alarm
-  success &= setRegister(RS5C372_ALARMWDAYS, 0x7F);          // set day alarm to always
+  success &= setRegister(RS5C372_ALARMMIN, bin2bcd(alarm.minute));
+  success &= setRegister(RS5C372_ALARMHR, bin2bcd(alarm.hour));
+  success &= setRegister(RS5C372_ALARMWDAYS, weekdays);
   return success;
 }
 

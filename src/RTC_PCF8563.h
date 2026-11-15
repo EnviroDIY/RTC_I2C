@@ -35,9 +35,12 @@ class PCF8563 : public PCFAlarm {
     _wdaybase = PCF8563_WDAYBASE;
     _wdayfirst = PCF8563_WDAYFIRST;
     _capabilities = PCF8563_CAP;
+    _supportedAlarmMatches = static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |
+                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) |
+                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH);
     _bit7set = PCF8563_BIT7;
   }
-  bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
+  bool init(bool reset_configuration = true, bool clear_flags = true) override;
   bool isValid() override;
   bool enableAlarm() override;
   bool disableAlarm() override;

@@ -23,10 +23,12 @@ class RV3028U : public RV3028 {
     _wdaybase = 0;
     _wdayfirst = 0;
     _capabilities = RV3028U_CAP;
+    _supportedAlarmMatches = 0;
     _bit7set = RV3028_BIT7;
   }
-  bool setAlarm(__attribute__((unused)) byte minute, __attribute__((unused)) byte hour) override { return true; }
-  bool setAlarm(__attribute__((unused)) byte minute) override { return true; }
+  bool setAlarm(__attribute__((unused)) AlarmMatch match, __attribute__((unused)) const AlarmTime &alarm) override {
+    return false;
+  }
   bool senseAlarm() override { return false; }  // no-op for this RTC
   bool clearAlarm() override { return true; }   // no-op for this RTC
   bool enableAlarm() override { return true; }  // no-op for this RTC

@@ -1,10 +1,12 @@
 #include <RTC_SD2405.h>
 
-bool SD2405::init(__attribute__((unused)) BatteryMode mode) {
-  bool success = true;
-  success &= setRegister(SD2405_CONTROL + 1, 0x80); // unlock RTC
-  success &= setRegister(SD2405_CONTROL, 0x84);     // unlock RTC
-  success &= setRegister(SD2405_CONTROL + 2, 0x00);
+bool SD2405::init(bool reset_configuration, bool clear_flags) {
+  byte control;
+  if (!readRegister(SD2405_CONTROL, control)) return false;
+  bool success = setRegister(SD2405_CONTROL + 1, 0x80);   // unlock RTC
+  success &= setRegister(SD2405_CONTROL, control | 0x84); // unlock RTC without clearing status flags
+  if (clear_flags) success &= clearErrorFlags();
+  if (reset_configuration) success &= setRegister(SD2405_CONTROL + 2, 0x00);
   return success;
 }
 
@@ -14,18 +16,50 @@ bool SD2405::isValid() {
          ((control & 0b1) == 0); // RTCF=0 means no oscillator failure has been detected
 }
 
-bool SD2405::setAlarm(byte minute, byte hour) {
-  bool success = true;
-  success &= setRegister(SD2405_ALARM + 1, bin2bcd(minute)); // set minute alarm
-  success &= setRegister(SD2405_ALARM + 2, bin2bcd(hour));   // set hour alarm
-  success &= setRegister(SD2405_ALARM + 7, 0b110);           // hours and minute need to match
-  return success;
+bool SD2405::clearErrorFlags() {
+  byte control;
+  if (!readRegister(SD2405_CONTROL, control)) return false;
+  if ((control & 0b1) == 0) return true;
+  return setRegister(SD2405_CONTROL, control & 0b11111110); // clear RTCF
 }
 
-bool SD2405::setAlarm(byte minute) {
+bool SD2405::setAlarm(AlarmMatch match, const AlarmTime &alarm) {
+  byte matchBits;
+  switch (match) {
+  case AlarmMatch::MATCH_SECONDS:
+    matchBits = 0x01;
+    break;
+  case AlarmMatch::MATCH_MINUTES:
+    matchBits = 0x03;
+    break;
+  case AlarmMatch::MATCH_HOURS:
+    matchBits = 0x07;
+    break;
+  case AlarmMatch::MATCH_DAY_OF_WEEK:
+    matchBits = 0x0F;
+    break;
+  case AlarmMatch::MATCH_DAY_OF_MONTH:
+    matchBits = 0x17;
+    break;
+  case AlarmMatch::MATCH_DAY_OF_YEAR:
+    matchBits = 0x37;
+    break;
+  case AlarmMatch::MATCH_EXACT:
+    matchBits = 0x77;
+    break;
+  default:
+    return false;
+  }
+
   bool success = true;
-  success &= setRegister(SD2405_ALARM + 1, bin2bcd(minute)); // set minute alarm
-  success &= setRegister(SD2405_ALARM + 7, 0b010);           // minute needs to match
+  success &= setRegister(SD2405_ALARM, bin2bcd(alarm.second));
+  success &= setRegister(SD2405_ALARM + 1, bin2bcd(alarm.minute));
+  success &= setRegister(SD2405_ALARM + 2, bin2bcd(alarm.hour));
+  success &= setRegister(SD2405_ALARM + 3, bin2bcd(alarm.weekday + _wdaybase));
+  success &= setRegister(SD2405_ALARM + 4, bin2bcd(alarm.day));
+  success &= setRegister(SD2405_ALARM + 5, bin2bcd(alarm.month));
+  success &= setRegister(SD2405_ALARM + 6, bin2bcd((byte)(alarm.year - 2000)));
+  success &= setRegister(SD2405_ALARM + 7, matchBits);
   return success;
 }
 

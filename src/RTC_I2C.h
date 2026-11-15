@@ -63,6 +63,40 @@ enum class OffsetMode : byte {
   RAW_OFFSET = 2     ///< Treat the given offset as the exact value to write to the RTC's offset/calibration-register.
 };
 
+/**
+ * @brief Selects the clock fields that must match for an alarm.
+ *
+ * The values are bit flags so `getSupportedAlarmMatches()` can return any supported combination as a byte mask.
+ */
+enum class AlarmMatch : byte {
+  EVERY_SECOND = 0x01,       ///< Trigger every second.
+  MATCH_SECONDS = 0x02,      ///< Match seconds, triggering every minute.
+  MATCH_MINUTES = 0x04,      ///< Match minutes and seconds, triggering every hour.
+  MATCH_HOURS = 0x08,        ///< Match hours, minutes, and seconds, triggering every day.
+  MATCH_DAY_OF_WEEK = 0x10,  ///< Match weekday and time, triggering every week.
+  MATCH_DAY_OF_MONTH = 0x20, ///< Match day of month and time, triggering every month.
+  MATCH_DAY_OF_YEAR = 0x40,  ///< Match month, day of month, and time, triggering every year.
+  MATCH_EXACT = 0x80,        ///< Match the full year, month, day, and time.
+};
+
+/**
+ * @brief Calendar and time fields used to configure an alarm.
+ *
+ * RTC_I2C does not validate these values. The caller is responsible for supplying values accepted by the selected RTC.
+ * When the requested match mode is supported, fields finer than an RTC's alarm resolution are truncated by the device
+ * implementation. For example, a minute-resolution RTC ignores `second`, so 12:34:56 is configured as 12:34:00 and
+ * may trigger up to 59 seconds early.
+ */
+struct AlarmTime {
+  uint16_t year = 2000; ///< Full calendar year.
+  byte month = 1;       ///< Calendar month, normally 1 through 12.
+  byte day = 1;         ///< Day of the month, normally 1 through 31.
+  byte weekday = 0;     ///< Day of the week, normally 0 through 6.
+  byte hour = 0;        ///< Hour after midnight, normally 0 through 23.
+  byte minute = 0;      ///< Minute after the hour, normally 0 through 59.
+  byte second = 0;      ///< Second after the minute, normally 0 through 59.
+};
+
 
 /// A generic RTC base class
 class RTC_I2C {
@@ -75,26 +109,47 @@ class RTC_I2C {
    * function is called.
    *
    * @param wi The I2C interface to use.
-   * @param mode The battery switchover mode to configure during initialization.  This only applies to RTCs that support
-   * battery switchover - generally only those that support charging a rechargeable backup battery.  Ignored if
-   * unsupported.
+   * @param reset_configuration Whether to reset the RTC's operational configuration to the library defaults.
+   * @param clear_flags Whether to clear any previously set error flags during initialization.  Optional with a default
+   * of true.  In versions prior to 0.8.0, this was always true.
    * @return `true` if the RTC address is valid and the device responds on I2C; otherwise `false`.
    */
-  bool begin(TwoWire *wi = &Wire, BatteryMode mode = BatteryMode::LEVEL_SWITCHING);
+  bool begin(TwoWire *wi = &Wire, bool reset_configuration = true, bool clear_flags = true);
 
   /**
    * @brief Initialize device-specific RTC settings.
-   * @param mode The battery switchover mode to configure.  This only applies to RTCs that support battery switchover -
-   * generally only those that support charging a rechargeable backup battery.  Ignored if unsupported.
+   * @param reset_configuration Whether to reset the RTC's operational configuration to the library defaults.  This
+   * does not change the time, battery mode, calibration, or error flags.  In versions prior to 0.8.0, this was always
+   * true.
+   * @param clear_flags Whether to clear any previously set error flags during initialization.  Optional with a default
+   * of true.  In versions prior to 0.8.0, this was always true.
    * @return `true` when the required I2C communication succeeds; otherwise `false`.
    */
-  virtual bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) = 0;
+  virtual bool init(bool reset_configuration = true, bool clear_flags = true) = 0;
+
+  /**
+   * @brief Set the backup-battery switchover mode.
+   *
+   * RTCs that do not support configurable battery switchover leave their configuration unchanged and return `true`.
+   *
+   * @param mode The battery switchover mode to configure.
+   * @return `true` when the requested mode is supported and configured or no configuration is needed; otherwise
+   * `false`.
+   */
+  virtual bool setBatteryMode(BatteryMode mode);
 
   /**
    * @brief Check whether the RTC is operating normally.
    * @return `true` when the RTC reports a valid operating state; otherwise `false`.
    */
   virtual bool isValid() = 0;
+
+  /**
+   * @brief Clear any set error or warning flags in the clock registers.
+   *
+   * @return `true` when the acknowledge operation succeeds or is a no-op; otherwise `false`.
+   */
+  virtual bool clearErrorFlags() { return true; }
 
   /**
    * @brief Set the RTC from a Unix timestamp.
@@ -128,6 +183,17 @@ class RTC_I2C {
   virtual timestamp_t getTime();
 
   /**
+   * @brief Read the RTC and return a Unix timestamp when the complete operation succeeds.
+   *
+   * The default implementation reads `tm` calendar fields with `getTime(tm&)` and converts
+   * them only after a successful I2C read.
+   *
+   * @param[out] unixTimestamp The Unix timestamp read from the RTC.
+   * @return `true` when both the I2C read and conversion succeed; otherwise `false`.
+   */
+  virtual bool getTime(timestamp_t &unixTimestamp);
+
+  /**
    * @brief Read the RTC into a `tm` calendar-time structure.
    * @param[out] timeParts The calendar-time structure to populate.
    * @return `true` when the register-address write and requested 7-byte read succeed; otherwise `false`.
@@ -159,19 +225,85 @@ class RTC_I2C {
   virtual bool disable1Hz() { return true; }
 
   /**
-   * @brief Configure an alarm that matches a specific hour and minute; a no-op for RTCs that do not have an alarm.
-   * @param minute The minute at which the alarm should match.
-   * @param hour The hour at which the alarm should match.
-   * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
+   * @brief Configure an alarm using the fields selected by `match`.
+   *
+   * This function performs no date or time validation. The caller is responsible for supplying values accepted by the
+   * selected RTC. For supported match modes, implementations truncate fields finer than the hardware alarm resolution;
+   * they do not round upward. Unsupported match modes return `false` and are not replaced by a less-specific mode.
+   *
+   * @param match The fields that must match.
+   * @param alarm The requested alarm fields.
+   * @return `true` when the alarm registers are configured; `false` when the match mode is unsupported or communication
+   * fails.
    */
-  virtual bool setAlarm(__attribute__((unused)) byte minute, __attribute__((unused)) byte hour) { return true; }
+  virtual bool setAlarm(AlarmMatch match, const AlarmTime &alarm);
 
   /**
-   * @brief Configure an alarm that matches a specific minute; a no-op for RTCs that do not have an alarm.
-   * @param minute The minute at which the alarm should match.
-   * @return `true` when the operation succeeds or is a no-op; otherwise `false`.
+   * @brief Configure an exact date-and-time alarm.
+   * @param year The full calendar year.
+   * @param month The calendar month.
+   * @param day The day of the month.
+   * @param hour The hour after midnight.
+   * @param minute The minute after the hour.
+   * @param second The second after the minute.
+   * @return The result of `setAlarm(AlarmMatch::MATCH_EXACT, alarm)`.
    */
-  virtual bool setAlarm(__attribute__((unused)) byte minute) { return true; }
+  bool setExactAlarm(uint16_t year = 2000, byte month = 1, byte day = 1, byte hour = 0, byte minute = 0,
+                     byte second = 0);
+  /**
+   * @brief Configure a yearly alarm matching month, day, and time.
+   * @param month The calendar month.
+   * @param day The day of the month.
+   * @param hour The hour after midnight.
+   * @param minute The minute after the hour.
+   * @param second The second after the minute.
+   * @return The result of `setAlarm(AlarmMatch::MATCH_DAY_OF_YEAR, alarm)`.
+   */
+  bool setYearlyAlarm(byte month = 1, byte day = 1, byte hour = 0, byte minute = 0, byte second = 0);
+  /**
+   * @brief Configure a monthly alarm matching day and time.
+   * @param day The day of the month.
+   * @param hour The hour after midnight.
+   * @param minute The minute after the hour.
+   * @param second The second after the minute.
+   * @return The result of `setAlarm(AlarmMatch::MATCH_DAY_OF_MONTH, alarm)`.
+   */
+  bool setMonthlyAlarm(byte day = 1, byte hour = 0, byte minute = 0, byte second = 0);
+  /**
+   * @brief Configure a weekly alarm matching weekday and time.
+   * @param weekday The day of the week.
+   * @param hour The hour after midnight.
+   * @param minute The minute after the hour.
+   * @param second The second after the minute.
+   * @return The result of `setAlarm(AlarmMatch::MATCH_DAY_OF_WEEK, alarm)`.
+   */
+  bool setWeeklyAlarm(byte weekday = 0, byte hour = 0, byte minute = 0, byte second = 0);
+  /**
+   * @brief Configure a daily alarm matching time.
+   * @param hour The hour after midnight.
+   * @param minute The minute after the hour.
+   * @param second The second after the minute.
+   * @return The result of `setAlarm(AlarmMatch::MATCH_HOURS, alarm)`.
+   */
+  bool setDailyAlarm(byte hour = 0, byte minute = 0, byte second = 0);
+  /**
+   * @brief Configure an hourly alarm matching minute and second.
+   * @param minute The minute after the hour.
+   * @param second The second after the minute.
+   * @return The result of `setAlarm(AlarmMatch::MATCH_MINUTES, alarm)`.
+   */
+  bool setHourlyAlarm(byte minute = 0, byte second = 0);
+  /**
+   * @brief Configure an alarm every minute matching the requested second.
+   * @param second The second after the minute.
+   * @return The result of `setAlarm(AlarmMatch::MATCH_SECONDS, alarm)`.
+   */
+  bool setMinuteAlarm(byte second = 0);
+  /**
+   * @brief Configure an alarm every second.
+   * @return The result of `setAlarm(AlarmMatch::EVERY_SECOND, alarm)`.
+   */
+  bool setSecondAlarm();
 
   /**
    * @brief Enable the RTC alarm interrupt or alarm function; a no-op for RTCs that do not have an alarm.
@@ -222,7 +354,29 @@ class RTC_I2C {
    * @brief Read the RTC's temperature measurement or `-128` for RTCs without a temperature sensor.
    * @return The RTC temperature, or `-128` when no temperature sensor is available.
    */
-  virtual int getTemp() { return -128; }
+  virtual int getTemp() {
+    float temperatureC;
+    if (!getTemperature(temperatureC)) return -128;
+    int integerTemperature = (int)temperatureC;
+    if (temperatureC < (float)integerTemperature) --integerTemperature;
+    return integerTemperature;
+  }
+
+  /**
+   * @brief Read the RTC's temperature in degrees Celsius.
+   *
+   * This API separates communication success from valid negative temperatures.
+   *
+   * @param[out] temperatureC The measured temperature in degrees Celsius.
+   * @return `true` when the temperature register read succeeds; otherwise `false`.
+   */
+  virtual bool getTemperature(__attribute__((unused)) float &temperatureC) { return false; }
+
+  /**
+   * @brief Start a nonblocking RTC temperature conversion when supported.
+   * @return `true` when the conversion command succeeds or a conversion is already in progress; otherwise `false`.
+   */
+  virtual bool startTemperatureConversion() { return false; }
 
   /**
    * @brief Get the RTC manufacturer name.
@@ -273,6 +427,12 @@ class RTC_I2C {
    * @return The RTC capability bitmask.
    */
   virtual byte getCapabilities() { return _capabilities; }
+
+  /**
+   * @brief Get the alarm match modes supported by this RTC.
+   * @return A bitmask composed of `AlarmMatch` values.
+   */
+  byte getSupportedAlarmMatches() { return _supportedAlarmMatches; }
 
   /**
    * @brief Get the RTC's I2C address.
@@ -327,6 +487,8 @@ class RTC_I2C {
   bool _wdayfirst;
   /// lists all capabilities of this RTC
   byte _capabilities;
+  /// bitmask of supported AlarmMatch values
+  byte _supportedAlarmMatches = 0;
   /// if the 7th bit in a byte of the clock register must be set (bit 0=sec, bit 1=min, ...)
   byte _bit7set;
 };
@@ -334,27 +496,8 @@ class RTC_I2C {
 /// Base class for Alarms for DS-family RTCs
 class DSAlarm : public RTC_I2C {
  public:
-  /**
-   * @brief Configure a DS-family alarm for a specific hour and minute.
-   *
-   * The alarm matches the requested hour and minute and ignores the day by using
-   * the alarm's always-match day setting.
-   *
-   * @param minute The minute at which the alarm should match.
-   * @param hour The hour at which the alarm should match.
-   * @return `true` if the alarm was successfully set; otherwise `false`.
-   */
-  bool setAlarm(byte minute, byte hour) override;
-
-  /**
-   * @brief Configure a DS-family alarm for a specific minute of every hour.
-   *
-   * The hour and day fields are configured as always-match fields.
-   *
-   * @param minute The minute at which the alarm should match.
-   * @return `true` if the alarm was successfully set; otherwise `false`.
-   */
-  bool setAlarm(byte minute) override;
+  bool clearErrorFlags() override;
+  bool setAlarm(AlarmMatch match, const AlarmTime &alarm) override;
 
   /**
    * @brief Enable the DS-family alarm.
@@ -385,26 +528,8 @@ class DSAlarm : public RTC_I2C {
 /// Base class for Alarms for PCF-family RTCs
 class PCFAlarm : public RTC_I2C {
  public:
-  /**
-   * @brief Configure a PCF-family alarm for a specific hour and minute.
-   *
-   * The day and weekday fields are configured as always-match fields.
-   *
-   * @param minute The minute at which the alarm should match.
-   * @param hour The hour at which the alarm should match.
-   * @return `true` if the alarm was successfully set; otherwise `false`.
-   */
-  bool setAlarm(byte minute, byte hour) override;
-
-  /**
-   * @brief Configure a PCF-family alarm for a specific minute of every hour.
-   *
-   * The hour, day, and weekday fields are configured as always-match fields.
-   *
-   * @param minute The minute at which the alarm should match.
-   * @return `true` if the alarm was successfully set; otherwise `false`.
-   */
-  bool setAlarm(byte minute) override;
+  bool clearErrorFlags() override;
+  bool setAlarm(AlarmMatch match, const AlarmTime &alarm) override;
 
   /**
    * @brief Check the PCF-family alarm status flag.

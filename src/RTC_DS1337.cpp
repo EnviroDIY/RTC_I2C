@@ -1,8 +1,10 @@
 #include <RTC_DS1337.h>
 
-bool DS1337::init(__attribute__((unused)) BatteryMode mode) {
-  bool success = setRegister(DS1337_CONTROL, 0b00000100); // typical value after power-on, except bit 2 disables SQW
-  success &= setRegister(DS1337_STATUS, 0b00000000);      // clear OSF flag and clear alarm flags
+bool DS1337::init(bool reset_configuration, bool clear_flags) {
+  bool success = true;
+  if (reset_configuration)
+    success &= setRegister(DS1337_CONTROL, 0b00000100); // typical value after power-on, except bit 2 disables SQW
+  if (clear_flags) success &= clearErrorFlags();
   return success;
 }
 

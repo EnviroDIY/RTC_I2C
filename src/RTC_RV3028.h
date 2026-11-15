@@ -49,12 +49,16 @@ class RV3028 : public RTC_I2C {
     _wdaybase = RV3028_WDAYBASE;
     _wdayfirst = RV3028_WDAYFIRST;
     _capabilities = RV3028_CAP;
+    _supportedAlarmMatches = static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |
+                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) |
+                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH);
     _bit7set = RV3028_BIT7;
   }
-  bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
+  bool init(bool reset_configuration = true, bool clear_flags = true) override;
+  bool setBatteryMode(BatteryMode mode) override;
   bool isValid() override;
-  bool setAlarm(byte minute, byte hour) override;
-  bool setAlarm(byte minute) override;
+  bool clearErrorFlags() override;
+  bool setAlarm(AlarmMatch match, const AlarmTime &alarm) override;
   bool senseAlarm() override;
   bool clearAlarm() override;
   bool enableAlarm() override;

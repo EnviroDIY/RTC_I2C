@@ -53,12 +53,16 @@ class RV3032 : public RTC_I2C {
     _wdaybase = RV3032_WDAYBASE;
     _wdayfirst = RV3032_WDAYFIRST;
     _capabilities = RV3032_CAP;
+    _supportedAlarmMatches = static_cast<byte>(AlarmMatch::MATCH_SECONDS) |
+                             static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |
+                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH);
     _bit7set = RV3032_BIT7;
   }
-  bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
+  bool init(bool reset_configuration = true, bool clear_flags = true) override;
+  bool setBatteryMode(BatteryMode mode) override;
   bool isValid() override;
-  bool setAlarm(byte minute, byte hour) override;
-  bool setAlarm(byte minute) override;
+  bool clearErrorFlags() override;
+  bool setAlarm(AlarmMatch match, const AlarmTime &alarm) override;
   bool senseAlarm() override;
   bool clearAlarm() override;
   bool enableAlarm() override;
@@ -67,6 +71,7 @@ class RV3032 : public RTC_I2C {
   bool disable32kHz() override;
   bool enable1Hz() override;
   bool disable1Hz() override;
+  bool getTemperature(float &temperatureC) override;
   /**
    * @copydoc RTC_I2C::setOffset()
    *
@@ -99,6 +104,15 @@ class RV3032 : public RTC_I2C {
    * @return `true` if the control register was successfully updated; otherwise `false`.
    */
   bool setEEPROMRefresh(byte control, bool enable);
+
+  /**
+   * @brief Update an EEPROM-backed register only when the value must change.
+   *
+   * @param reg The EEPROM-backed register address to update.
+   * @param value The desired register value.
+   * @return `true` when the register already matched or when the update succeeds; otherwise `false`.
+   */
+  bool setEEPROMBackedRegister(byte reg, byte value);
 };
 #endif
 

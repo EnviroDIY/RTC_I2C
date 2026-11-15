@@ -131,13 +131,13 @@ void loop() {
     Serial.println(digitalRead(PINALARM));
     break;
   case 'h':
-    if ((rtc.getCapabilities() & RTC_CAP_ALARM) == 0) {
+    if ((rtc.getSupportedAlarmMatches() & static_cast<byte>(AlarmMatch::MATCH_HOURS)) == 0) {
       unsupported();
       break;
     }
     rtc.disableAlarm();
     rtc.getTime(timeParts);
-    rtc.setAlarm(timeParts.tm_min, (timeParts.tm_hour + 1) % 24);
+    rtc.setDailyAlarm((timeParts.tm_hour + 1) % 24, timeParts.tm_min);
     rtc.enableAlarm();
     Serial.print(F("Alarm set to hour/minute "));
     Serial.print((timeParts.tm_hour + 1) % 24);
@@ -145,13 +145,13 @@ void loop() {
     Serial.println(timeParts.tm_min);
     break;
   case 'm':
-    if ((rtc.getCapabilities() & RTC_CAP_HOURLY_ALARM) == 0) {
+    if ((rtc.getSupportedAlarmMatches() & static_cast<byte>(AlarmMatch::MATCH_MINUTES)) == 0) {
       unsupported();
       break;
     }
     rtc.getTime(timeParts);
     rtc.disableAlarm();
-    rtc.setAlarm(timeParts.tm_min);
+    rtc.setHourlyAlarm(timeParts.tm_min);
     rtc.enableAlarm();
     Serial.print(F("Alarm set to minute "));
     Serial.println(timeParts.tm_min);
@@ -328,7 +328,8 @@ bool initRTC() {
   set_time = *localtime(&assembled_time);
   printTmComponents(set_time, Serial);
 
-  bool success = rtc.init(BatteryMode::DIRECT_SWITCHING);
+  bool success = rtc.setBatteryMode(BatteryMode::DIRECT_SWITCHING);
+  if (success) success = rtc.init();
   if (parse) {
     rtc.setTime(set_time);
     rtc.getTime(new_tm);

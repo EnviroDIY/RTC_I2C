@@ -1,11 +1,14 @@
 #include <RTC_PCF8563.h>
 
 
-bool PCF8563::init(__attribute__((unused)) BatteryMode mode) {
+bool PCF8563::init(bool reset_configuration, bool clear_flags) {
   bool success = true;
-  success &= setRegister(PCF8563_CONTROL, 0);
-  success &= setRegister(PCF8563_CONTROL + 1, 0);
-  success &= setRegister(PCF8563_CLKOUT, 0);
+  if (reset_configuration) {
+    success &= setRegister(PCF8563_CONTROL, 0);
+    success &= setRegister(PCF8563_CONTROL + 1, 0);
+    success &= setRegister(PCF8563_CLKOUT, 0);
+  }
+  if (clear_flags) success &= clearErrorFlags();
   return success;
 }
 

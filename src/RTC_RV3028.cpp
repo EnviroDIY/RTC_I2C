@@ -1,37 +1,51 @@
 #include <RTC_RV3028.h>
 
-bool RV3028::init(BatteryMode mode) {
+bool RV3028::init(bool reset_configuration, bool clear_flags) {
   bool success = true;
-  success &= setRegister(RV3028_CONTROL, 0);         // clear control1 register
-  success &= setRegister(RV3028_CONTROL + 1, 0);     // clear control2 register
-  success &= setRegister(RV3028_STATUS, 0);          // clear all flags
-  success &= setRegister(RV3028_CLKOUT, 0b01000000); // 32 KHz output by default, CLKOUT is off
+  if (reset_configuration) {
+    success &= setRegister(RV3028_CONTROL, 0);     // clear control1 register
+    success &= setRegister(RV3028_CONTROL + 1, 0); // clear control2 register
+  }
+  if (clear_flags) success &= clearErrorFlags();
+  if (reset_configuration) {
+    byte clkout;
+    if (!readRegister(RV3028_CLKOUT, clkout))
+      success = false;
+    else if (clkout != 0b01000000) {
+      if (!setRegister(RV3028_CLKOUT, 0b01000000)) // 32 KHz output by default, CLKOUT is off
+        success = false;
+      else
+        success &= updateEEPROMByte(RV3028_CLKOUT);
+    }
+  }
+  return success;
+}
+
+bool RV3028::setBatteryMode(BatteryMode mode) {
   byte bsm_reg;
   if (!readRegister(RV3028_BSM, bsm_reg)) return false;
-  bsm_reg &= 0b11110011; // zero only the switching mode bits
+  byte requested_bsm = bsm_reg & 0b11110011; // zero only the switching mode bits
   switch (mode) {
   case BatteryMode::SWITCHING_DISABLED: {
     // Switchover Disabled. – Default value on delivery
-    bsm_reg |= 0;
     break;
   }
   case BatteryMode::LEVEL_SWITCHING: {
     // Enables the Level Switching Mode (LSM).  Switchover when VDD < VTH:LSM (2.0 V) AND VBACKUP > VTH:LSM (2.0 V). Use
     // this with a standard coin cell battery.
-    bsm_reg |= 0b1100;
+    requested_bsm |= 0b1100;
     break;
   }
   case BatteryMode::DIRECT_SWITCHING: {
     // Enables the Direct Switching Mode (DSM).  Switchover when VDD < VBACKUP.  Slightly lower power consumption than
     // LSM.  Use this when charging a rechargeable battery.
-    bsm_reg |= 0b0100;
+    requested_bsm |= 0b0100;
     break;
   }
   }
-  success &= setRegister(RV3028_BSM, bsm_reg); // switching mode
-  success &= updateEEPROMByte(RV3028_CLKOUT);
-  success &= updateEEPROMByte(RV3028_BSM);
-  return success;
+  if (requested_bsm == bsm_reg) return true;
+  if (!setRegister(RV3028_BSM, requested_bsm)) return false;
+  return updateEEPROMByte(RV3028_BSM);
 }
 
 bool RV3028::isValid() {
@@ -41,19 +55,53 @@ bool RV3028::isValid() {
   return success;
 }
 
-bool RV3028::setAlarm(byte minute, byte hour) {
-  bool success = true;
-  success &= setRegister(RV3028_ALARM, bin2bcd(minute));   // set minute alarm
-  success &= setRegister(RV3028_ALARM + 1, bin2bcd(hour)); // set hour alarm
-  success &= setRegister(RV3028_ALARM + 2, 0x80);          // set weekday/day alarm to always
-  return success;
+bool RV3028::clearErrorFlags() {
+  byte status;
+  if (!readRegister(RV3028_STATUS, status)) return false;
+  if ((status & 0b1) == 0) return true;
+  return setRegister(RV3028_STATUS, status & 0b11111110); // clear PORF
 }
 
-bool RV3028::setAlarm(byte minute) {
+bool RV3028::setAlarm(AlarmMatch match, const AlarmTime &alarm) {
+  byte minuteRegister = 0x80;
+  byte hourRegister = 0x80;
+  byte dayRegister = 0x80;
+  bool setWeekdayMode = false;
+  bool setDateMode = false;
+
+  switch (match) {
+  case AlarmMatch::MATCH_MINUTES:
+    minuteRegister = bin2bcd(alarm.minute);
+    break;
+  case AlarmMatch::MATCH_HOURS:
+    minuteRegister = bin2bcd(alarm.minute);
+    hourRegister = bin2bcd(alarm.hour);
+    break;
+  case AlarmMatch::MATCH_DAY_OF_WEEK:
+    minuteRegister = bin2bcd(alarm.minute);
+    hourRegister = bin2bcd(alarm.hour);
+    dayRegister = bin2bcd(alarm.weekday);
+    setWeekdayMode = true;
+    break;
+  case AlarmMatch::MATCH_DAY_OF_MONTH:
+    minuteRegister = bin2bcd(alarm.minute);
+    hourRegister = bin2bcd(alarm.hour);
+    dayRegister = bin2bcd(alarm.day);
+    setDateMode = true;
+    break;
+  default:
+    return false;
+  }
+
   bool success = true;
-  success &= setRegister(RV3028_ALARM, bin2bcd(minute)); // set minute alarm
-  success &= setRegister(RV3028_ALARM + 1, 0x80);        // set hour alarm to always
-  success &= setRegister(RV3028_ALARM + 2, 0x80);        // set weekday/day alarm to always
+  if (setWeekdayMode || setDateMode) {
+    byte control;
+    if (!readRegister(RV3028_CONTROL, control)) return false;
+    success &= setRegister(RV3028_CONTROL, setDateMode ? (control | 0x20) : (control & ~0x20));
+  }
+  success &= setRegister(RV3028_ALARM, minuteRegister);
+  success &= setRegister(RV3028_ALARM + 1, hourRegister);
+  success &= setRegister(RV3028_ALARM + 2, dayRegister);
   return success;
 }
 
@@ -208,4 +256,4 @@ String RV3028::getModel() {
   return F("RV3028");
 }
 
-// cSpell:ignore EEADDR EEDATA EECMD
+// cSpell:ignore EEADDR EEDATA EECMD PORF

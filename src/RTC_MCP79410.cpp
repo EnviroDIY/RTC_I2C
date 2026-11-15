@@ -1,7 +1,10 @@
 #include <RTC_MCP79410.h>
 
-bool MCP79410::init(__attribute__((unused)) BatteryMode mode) {
-  return setRegister(MCP79410_CONTROL, 0x80); // 0b10000000
+bool MCP79410::init(bool reset_configuration, bool clear_flags) {
+  bool success = true;
+  if (reset_configuration) success &= setRegister(MCP79410_CONTROL, 0x80); // 0b10000000
+  if (clear_flags) success &= clearErrorFlags();
+  return success;
 }
 
 bool MCP79410::isValid() {
@@ -41,29 +44,35 @@ bool MCP79410::setTime(timestamp_t t) {
 }
 
 
-bool MCP79410::setAlarm(byte minute, byte hour) {
-  bool success = true;
-  tm timeParts;
-  time_t t;
-  if (!getTime(timeParts)) return false; // current time
-  if (!((timeParts.tm_min < minute && timeParts.tm_hour == hour) ||
-        (timeParts.tm_hour < hour))) { // alarm should be next day
-    t = TimeUtils::tmToEpochTime(timeParts).getTimestamp() + SECONDS_IN_DAY;
-    TimeUtils::fillTimeParts(t, 0, epochStart::unix_epoch, timeParts);
+bool MCP79410::setAlarm(AlarmMatch match, const AlarmTime &alarm) {
+  byte matchBits;
+  switch (match) {
+  case AlarmMatch::MATCH_SECONDS:
+    matchBits = 0x00;
+    break;
+  case AlarmMatch::MATCH_MINUTES:
+    matchBits = 0x10;
+    break;
+  case AlarmMatch::MATCH_HOURS:
+    matchBits = 0x20;
+    break;
+  case AlarmMatch::MATCH_DAY_OF_WEEK:
+    matchBits = 0x30;
+    break;
+  case AlarmMatch::MATCH_DAY_OF_MONTH:
+    matchBits = 0x40;
+    break;
+  default:
+    return false;
   }
-  success &= setRegister(MCP79410_ALARM, bin2bcd(0));          // set second alarm
-  success &= setRegister(MCP79410_ALARM + 1, bin2bcd(minute)); // set minute alarm
-  success &= setRegister(MCP79410_ALARM + 2, bin2bcd(hour));   // set hour alarm
-  success &= setRegister(MCP79410_ALARM + 3,
-                         0x70 | bin2bcd(timeParts.tm_wday + _wdaybase));     // set weekday alarm and match condition
-  success &= setRegister(MCP79410_ALARM + 4, bin2bcd(timeParts.tm_mday));    // set day of month
-  success &= setRegister(MCP79410_ALARM + 5, bin2bcd(timeParts.tm_mon + 1)); // set month
-  return success;
-}
 
-bool MCP79410::setAlarm(byte minute) {
-  bool success = setRegister(MCP79410_ALARM + 1, bin2bcd(minute)); // set minute alarm
-  success &= setRegister(MCP79410_ALARM + 3, 0x10);                // set match condition to minutes must match
+  bool success = true;
+  success &= setRegister(MCP79410_ALARM, bin2bcd(alarm.second));
+  success &= setRegister(MCP79410_ALARM + 1, bin2bcd(alarm.minute));
+  success &= setRegister(MCP79410_ALARM + 2, bin2bcd(alarm.hour));
+  success &= setRegister(MCP79410_ALARM + 3, matchBits | bin2bcd(alarm.weekday + _wdaybase));
+  success &= setRegister(MCP79410_ALARM + 4, bin2bcd(alarm.day));
+  success &= setRegister(MCP79410_ALARM + 5, bin2bcd(alarm.month));
   return success;
 }
 

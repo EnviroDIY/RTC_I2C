@@ -14,6 +14,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - [ChangeLog](#changelog)
   - [Unreleased](#unreleased)
+  - [0.8.0 (2026-11-14)](#080-2026-11-14)
   - [0.7.0](#070)
   - [V0.6.0 (22.3.2023)](#v060-2232023)
   - [V0.5.2 (8.3.2023)](#v052-832023)
@@ -49,18 +50,48 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ***
 
+## [0.8.0] (2026-11-14)
+
+### Changed
+
+- **Potentially breaking:** Moved backup-battery switchover configuration from `begin()` and `init()` to the separate `setBatteryMode()` function.
+- Added independent `reset_configuration` and `clear_flags` options to `begin()` and `init()`.
+  The `reset_configuration` option controls whether RTC-specific operational control registers are set to library defaults without changing the time, battery mode, or calibration.
+  The `clear_flags` option controls whether power-loss, oscillator-stop, and voltage-low validity evidence is cleared during initialization.
+  Both options default to `true` to preserve the previous initialization behavior unless the caller opts out.
+- Centralized shared alarm and validity behavior in the DS-family and PCF-family parent classes.
+- Redesigned alarm configuration around one virtual `setAlarm(AlarmMatch, const AlarmTime&)` implementation point returning a simple success/failure result.
+  Alarm inputs are passed to the hardware without date/time validation; supported coarser-resolution modes truncate finer fields and may therefore trigger early.
+- Increased minimum required EpochTime to 1.3.0.
+
+### Added
+
+- Added success-returning `getTime(timestamp_t&)` and `getTemperature(float&)` APIs.
+- Added `AlarmMatch`, `AlarmTime`, `getSupportedAlarmMatches()`, and non-virtual convenience functions from
+  `setSecondAlarm()` through `setExactAlarm()`; each convenience function delegates to `setAlarm()`.
+- Added recurring alarm support only for the match modes each RTC can represent; unsupported modes return `false`.
+- Added non-blocking DS3231 forced temperature conversion and native fake-I2C regression tests for time, alarm, validity, temperature, and EEPROM paths.
+
+### Removed
+
+- **BREAKING**: Removed the legacy alarm setters and overloads and the upward-rounding `roundAlarmToMinute()` helper.
+
+### Fixed
+
+- Preserved DS3231 quarter-degree temperature resolution and decoded the RV-3032 signed 12-bit temperature at one-sixteenth-degree resolution.
+- Preserved the RV-8803 repeated-read workaround in success-returning timestamp reads and propagated I2C failures through new alarm and temperature paths.
+- Avoided unchanged RV-3032 EEPROM-backed configuration writes.
+
+***
+
 ## [0.7.0]
 
 ### Changed
 
-- Replaced Paul Stoffregen's Time library with the EnviroDIY EpochTime library
-  and the standard `time.h` `tm` structure.
-- Renamed the base `RTC` class to `RTC_I2C` to avoid conflicts with platform
-  core definitions.
-- Changed initialization, time-setting, alarm, output, offset, and register
-  operations to return success or failure.
-- Added strongly typed battery-switching and offset-mode enums, and made
-  `begin()` perform device initialization.
+- Replaced Paul Stoffregen's Time library with the EnviroDIY EpochTime library and the standard `time.h` `tm` structure.
+- Renamed the base `RTC` class to `RTC_I2C` to avoid conflicts with platform core definitions.
+- Changed initialization, time-setting, alarm, output, offset, and register operations to return success or failure.
+- Added strongly typed battery-switching and offset-mode enums, and made `begin()` perform device initialization.
 - Expanded support from AVR-only to all Arduino architectures.
 - Updated and documented the examples, public API, and RTC capability tables.
 
@@ -112,19 +143,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## V0.5.0 (7.3.2023)
 
-- integrated the strange register addressing  (RTC_CAP_SREGADDR) into
-  the base class, so now it is totally transparent to everybody
-  using the library.
+- integrated the strange register addressing  (RTC_CAP_SREGADDR) into the base class, so now it is totally transparent to everybody using the library.
 
 ***
 
 ## V0.4.1 (6.3.2023)
 
-- fixed in testall: register number when 'setting' must also be
-  massaged when RTC_CAP_SREGADDR.
+- fixed in testall: register number when 'setting' must also be massaged when RTC_CAP_SREGADDR.
 - added also OFFSET constants for all RTCs that do not have any
-- added some explanations read.md about that and about the new example
-  iterate.ino
+- added some explanations read.md about that and about the new example iterate.ino
 
 ***
 
@@ -138,8 +165,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## V0.3.2 (4.3.2023)
 
 - added SD2405
-- added possible extra '1' bits in clock register for some RTCs by new
-  var _bit7set
+- added possible extra '1' bits in clock register for some RTCs by new var `_bit7set`
 - moved constructor into header file
 
 ***
@@ -185,7 +211,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## V0.2.3 (2.3.2023)
 
-- checked with new PCF8563 module. This one works flawlessly! The Waveshare one is apparently broken.
+- checked with new PCF8563 module.
+This one works flawlessly!
+The Waveshare one is apparently broken.
 - added RV-8523 (well, it is simply a synonym for PCF8523)
 - added getTemp method
 
@@ -194,9 +222,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## V0.2.2 (2.3.2023)
 
 - added support for RS5C372
-- added a new "capability": strange register address: SREGADDR
-  used for RS5C372, who wants to see the register address in
-  the upper nibble
+- added a new "capability": strange register address: SREGADDR used for RS5C372, who wants to see the register address in the upper nibble
 
 ***
 
@@ -209,8 +235,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## V0.2.0 (28.2.2023)
 
 - added new methods: enableXXHz, disableXXHz, alarm methods, and a getCapabilities method
-- thrown out setAlarm with only minutes since not all RTCs support that, so only hour with minute is
-  supported
+- thrown out setAlarm with only minutes since not all RTCs support that, so only hour with minute is supported
 - added support for DS1337, DS3231, PCF8523
 - added example testall, which can be used as a unit test for the different modules
 
@@ -227,11 +252,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - first stub with an idea for the API
 
-[Unreleased]: https://github.com/EnviroDIY/RTC_I2C/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/EnviroDIY/RTC_I2C/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/EnviroDIY/RTC_I2C/releases/tag/v0.8.0
 [0.7.0]: https://github.com/EnviroDIY/RTC_I2C/releases/tag/v0.7.0
 
 <!--! @tableofcontents{HTML:1} -->
 
 <!--! @m_footernavigation -->
 
-<!-- cspell:words I2CRTC SREGADDR Waveshare wday -->
+<!-- cspell:words I2CRTC SREGADDR Waveshare wday pico -->

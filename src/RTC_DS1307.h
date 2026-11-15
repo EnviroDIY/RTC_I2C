@@ -35,8 +35,9 @@ class DS1307 : public RTC_I2C {
     _capabilities = DS1307_CAP;
     _bit7set = DS1307_BIT7;
   }
-  bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
+  bool init(bool reset_configuration = true, bool clear_flags = true) override;
   bool isValid() override;
+  bool clearErrorFlags() override;
   bool enable32kHz() override;
   bool disable32kHz() override;
   bool enable1Hz() override;

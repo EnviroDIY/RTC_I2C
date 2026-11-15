@@ -37,12 +37,17 @@ class SD2405 : public RTC_I2C {
     _wdaybase = SD2405_WDAYBASE;
     _wdayfirst = SD2405_WDAYFIRST;
     _capabilities = SD2405_CAP;
+    _supportedAlarmMatches =
+      static_cast<byte>(AlarmMatch::MATCH_SECONDS) | static_cast<byte>(AlarmMatch::MATCH_MINUTES) |
+      static_cast<byte>(AlarmMatch::MATCH_HOURS) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) |
+      static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_YEAR) |
+      static_cast<byte>(AlarmMatch::MATCH_EXACT);
     _bit7set = SD2405_BIT7;
   }
-  bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
+  bool init(bool reset_configuration = true, bool clear_flags = true) override;
   bool isValid() override;
-  bool setAlarm(byte minute, byte hour) override; // here we can only set the alarm til next match
-  bool setAlarm(byte minute) override;            // hourly alarm at a particular minute
+  bool clearErrorFlags() override;
+  bool setAlarm(AlarmMatch match, const AlarmTime &alarm) override;
   bool senseAlarm() override;
   bool clearAlarm() override;
   bool enableAlarm() override;

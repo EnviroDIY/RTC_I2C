@@ -46,17 +46,22 @@ class RV8803 : public RTC_I2C {
     _wdaybase = RV8803_WDAYBASE;
     _wdayfirst = RV8803_WDAYFIRST;
     _capabilities = RV8803_CAP;
+    _supportedAlarmMatches = static_cast<byte>(AlarmMatch::MATCH_SECONDS) |
+                             static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |
+                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) |
+                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH);
     _bit7set = RV8803_BIT7;
   }
-  bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
+  bool init(bool reset_configuration = true, bool clear_flags = true) override;
   bool isValid() override;
+  bool clearErrorFlags() override;
   using RTC_I2C::setTime;
   bool setTime(timestamp_t t) override;
   bool setTime(tm timeParts) override;
   timestamp_t getTime() override;
+  bool getTime(timestamp_t &unixTimestamp) override;
   bool getTime(tm &timeParts) override;
-  bool setAlarm(byte minute, byte hour) override;
-  bool setAlarm(byte minute) override;
+  bool setAlarm(AlarmMatch match, const AlarmTime &alarm) override;
   bool senseAlarm() override;
   bool clearAlarm() override;
   bool enableAlarm() override;

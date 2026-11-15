@@ -48,6 +48,7 @@ bool RV3028U::setTime(timestamp_t t) {
     t = t >> 8;
   }
   success &= (_wire->endTransmission() == 0);
+  if (success) success &= clearErrorFlags();
   return success;
 }
 

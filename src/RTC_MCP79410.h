@@ -40,15 +40,18 @@ class MCP79410 : public RTC_I2C {
     _wdaybase = MCP79410_WDAYBASE;
     _wdayfirst = MCP79410_WDAYFIRST;
     _capabilities = MCP79410_CAP;
+    _supportedAlarmMatches = static_cast<byte>(AlarmMatch::MATCH_SECONDS) |
+                             static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |
+                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) |
+                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH);
     _bit7set = MCP79410_BIT7;
   }
-  bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
+  bool init(bool reset_configuration = true, bool clear_flags = true) override;
   bool isValid() override;
   using RTC_I2C::setTime;
   bool setTime(timestamp_t t) override;
   bool setTime(tm timeParts) override;
-  bool setAlarm(byte minute, byte hour) override; // here we can only set the alarm til next match
-  bool setAlarm(byte minute) override;
+  bool setAlarm(AlarmMatch match, const AlarmTime &alarm) override;
   bool senseAlarm() override;
   bool clearAlarm() override;
   bool enableAlarm() override;

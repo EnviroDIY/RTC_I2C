@@ -2,15 +2,19 @@
 
 
 // try to establish connection to RTC after RTC specific parameters have been set
-bool RTC_I2C::begin(TwoWire *wi, BatteryMode mode) {
+bool RTC_I2C::begin(TwoWire *wi, bool reset_configuration, bool clear_flags) {
   if (_i2caddr == 0 || wi == NULL) return false;
   if (_started) return true;
   _wire = wi;
   _wire->begin();
   _wire->beginTransmission(_i2caddr);
   if (_wire->endTransmission() != 0) return false;
-  _started = init(mode);
+  _started = init(reset_configuration, clear_flags);
   return _started;
+}
+
+bool RTC_I2C::setBatteryMode(__attribute__((unused)) BatteryMode mode) {
+  return true;
 }
 
 // set time from epochTime object
@@ -43,14 +47,23 @@ bool RTC_I2C::setTime(tm timeParts) {
   // ^^ month of the year, shifted from 0-indexed to 1-indexed
   _wire->write(bin2bcd(timeParts.tm_year - 100));
   // ^^ years since 1900 (as in tm structure) converted to years since 2000 used by supported RTCs
-  return _wire->endTransmission() == 0;
+  bool success = _wire->endTransmission() == 0;
+  if (success) success &= clearErrorFlags();
+  return success;
 }
 
 // get Unix time
 timestamp_t RTC_I2C::getTime() {
+  timestamp_t unixTimestamp = 0;
+  getTime(unixTimestamp);
+  return unixTimestamp;
+}
+
+bool RTC_I2C::getTime(timestamp_t &unixTimestamp) {
   tm timeParts;
-  getTime(timeParts);
-  return TimeUtils::tmToEpochTime(timeParts).getTimestamp();
+  if (!getTime(timeParts)) return false;
+  unixTimestamp = TimeUtils::tmToEpochTime(timeParts).getTimestamp();
+  return true;
 }
 
 // get time as time record
@@ -75,6 +88,75 @@ bool RTC_I2C::getTime(tm &timeParts) {
   timeParts.tm_year = bcd2bin(_wire->read()) + 100;
   // ^^ years since 2000 used by supported RTCs converted to years since 1900 (as in tm structure)
   return true;
+}
+
+bool RTC_I2C::setAlarm(__attribute__((unused)) AlarmMatch match, __attribute__((unused)) const AlarmTime &alarm) {
+  return false;
+}
+
+bool RTC_I2C::setExactAlarm(uint16_t year, byte month, byte day, byte hour, byte minute, byte second) {
+  AlarmTime alarm;
+  alarm.year = year;
+  alarm.month = month;
+  alarm.day = day;
+  alarm.hour = hour;
+  alarm.minute = minute;
+  alarm.second = second;
+  return setAlarm(AlarmMatch::MATCH_EXACT, alarm);
+}
+
+bool RTC_I2C::setYearlyAlarm(byte month, byte day, byte hour, byte minute, byte second) {
+  AlarmTime alarm;
+  alarm.month = month;
+  alarm.day = day;
+  alarm.hour = hour;
+  alarm.minute = minute;
+  alarm.second = second;
+  return setAlarm(AlarmMatch::MATCH_DAY_OF_YEAR, alarm);
+}
+
+bool RTC_I2C::setMonthlyAlarm(byte day, byte hour, byte minute, byte second) {
+  AlarmTime alarm;
+  alarm.day = day;
+  alarm.hour = hour;
+  alarm.minute = minute;
+  alarm.second = second;
+  return setAlarm(AlarmMatch::MATCH_DAY_OF_MONTH, alarm);
+}
+
+bool RTC_I2C::setWeeklyAlarm(byte weekday, byte hour, byte minute, byte second) {
+  AlarmTime alarm;
+  alarm.weekday = weekday;
+  alarm.hour = hour;
+  alarm.minute = minute;
+  alarm.second = second;
+  return setAlarm(AlarmMatch::MATCH_DAY_OF_WEEK, alarm);
+}
+
+bool RTC_I2C::setDailyAlarm(byte hour, byte minute, byte second) {
+  AlarmTime alarm;
+  alarm.hour = hour;
+  alarm.minute = minute;
+  alarm.second = second;
+  return setAlarm(AlarmMatch::MATCH_HOURS, alarm);
+}
+
+bool RTC_I2C::setHourlyAlarm(byte minute, byte second) {
+  AlarmTime alarm;
+  alarm.minute = minute;
+  alarm.second = second;
+  return setAlarm(AlarmMatch::MATCH_MINUTES, alarm);
+}
+
+bool RTC_I2C::setMinuteAlarm(byte second) {
+  AlarmTime alarm;
+  alarm.second = second;
+  return setAlarm(AlarmMatch::MATCH_SECONDS, alarm);
+}
+
+bool RTC_I2C::setSecondAlarm() {
+  AlarmTime alarm;
+  return setAlarm(AlarmMatch::EVERY_SECOND, alarm);
 }
 
 byte RTC_I2C::decodewday(byte bits) {
@@ -124,28 +206,62 @@ bool RTC_I2C::readRegister(byte reg, byte &res) {
 /// DS-family Status Register; referred to as Status Register in the DS1337/DS3231 documentation (ADDRESS 0x0F).
 #define DSALARM_STATUS 0x0F
 
-bool DSAlarm::setAlarm(byte minute, byte hour) {
-  bool success = true;
-  success &= setRegister(DSALARM_ALARM1, 0x00);                // clear seconds alarm
-  success &= setRegister(DSALARM_ALARM1 + 1, bin2bcd(minute)); // set minute alarm
-  success &= setRegister(DSALARM_ALARM1 + 2, bin2bcd(hour));   // set hour alarm
-  success &= setRegister(DSALARM_ALARM1 + 3, 0x80);            // set day alarm to always
-  return success;
+bool DSAlarm::clearErrorFlags() {
+  byte status;
+  if (!readRegister(DSALARM_STATUS, status)) return false;
+  if ((status & 0x80) == 0) return true;
+  return setRegister(DSALARM_STATUS, status & 0x7F);
 }
 
-bool DSAlarm::setAlarm(byte minute) {
+bool DSAlarm::setAlarm(AlarmMatch match, const AlarmTime &alarm) {
+  byte secondRegister = 0x80;
+  byte minuteRegister = 0x80;
+  byte hourRegister = 0x80;
+  byte dayRegister = 0x80;
+
+  switch (match) {
+  case AlarmMatch::EVERY_SECOND:
+    break;
+  case AlarmMatch::MATCH_SECONDS:
+    secondRegister = bin2bcd(alarm.second);
+    break;
+  case AlarmMatch::MATCH_MINUTES:
+    secondRegister = bin2bcd(alarm.second);
+    minuteRegister = bin2bcd(alarm.minute);
+    break;
+  case AlarmMatch::MATCH_HOURS:
+    secondRegister = bin2bcd(alarm.second);
+    minuteRegister = bin2bcd(alarm.minute);
+    hourRegister = bin2bcd(alarm.hour);
+    break;
+  case AlarmMatch::MATCH_DAY_OF_WEEK:
+    secondRegister = bin2bcd(alarm.second);
+    minuteRegister = bin2bcd(alarm.minute);
+    hourRegister = bin2bcd(alarm.hour);
+    dayRegister = 0x40 | bin2bcd(alarm.weekday + _wdaybase);
+    break;
+  case AlarmMatch::MATCH_DAY_OF_MONTH:
+    secondRegister = bin2bcd(alarm.second);
+    minuteRegister = bin2bcd(alarm.minute);
+    hourRegister = bin2bcd(alarm.hour);
+    dayRegister = bin2bcd(alarm.day);
+    break;
+  default:
+    return false;
+  }
+
   bool success = true;
-  success &= setRegister(DSALARM_ALARM1, 0x00);                // clear seconds alarm
-  success &= setRegister(DSALARM_ALARM1 + 1, bin2bcd(minute)); // set minute alarm
-  success &= setRegister(DSALARM_ALARM1 + 2, 0x80);            // set hour alarm to always
-  success &= setRegister(DSALARM_ALARM1 + 3, 0x80);            // set day alarm to always
+  success &= setRegister(DSALARM_ALARM1, secondRegister);
+  success &= setRegister(DSALARM_ALARM1 + 1, minuteRegister);
+  success &= setRegister(DSALARM_ALARM1 + 2, hourRegister);
+  success &= setRegister(DSALARM_ALARM1 + 3, dayRegister);
   return success;
 }
 
 bool DSAlarm::enableAlarm() {
   byte ctr;
   if (!readRegister(DSALARM_CONTROL, ctr)) return false;
-  return setRegister(DSALARM_CONTROL, (ctr & 0b11111110) | 0b00000001);
+  return setRegister(DSALARM_CONTROL, ctr | 0b00000101); // select interrupt output and enable Alarm 1
 }
 
 bool DSAlarm::disableAlarm() {
@@ -172,21 +288,51 @@ bool DSAlarm::clearAlarm() {
 /// PCF-family Control/status register 2; the shared alarm flag is in the register at address 0x01.
 #define PCFALARM_STATUS 0x01
 
-bool PCFAlarm::setAlarm(byte minute, byte hour) {
+bool PCFAlarm::clearErrorFlags() {
+  byte control;
+  if (!readRegister(0x00, control)) return false;
   bool success = true;
-  success &= setRegister(_clockreg + 7, bin2bcd(minute)); // set minute alarm
-  success &= setRegister(_clockreg + 8, bin2bcd(hour));   // set hour alarm
-  success &= setRegister(_clockreg + 9, 0x80);            // set day alarm to always
-  success &= setRegister(_clockreg + 10, 0x80);           // set weekday alarm to always
+  if (control & 0x20) success &= setRegister(0x00, control & 0xDF); // release STOP
+
+  byte seconds;
+  if (!readRegister(_clockreg, seconds)) return false;
+  if (seconds & 0x80) success &= setRegister(_clockreg, seconds & 0x7F); // clear OS/VL
   return success;
 }
 
-bool PCFAlarm::setAlarm(byte minute) {
+bool PCFAlarm::setAlarm(AlarmMatch match, const AlarmTime &alarm) {
+  byte minuteRegister = 0x80;
+  byte hourRegister = 0x80;
+  byte dayRegister = 0x80;
+  byte weekdayRegister = 0x80;
+
+  switch (match) {
+  case AlarmMatch::MATCH_MINUTES:
+    minuteRegister = bin2bcd(alarm.minute);
+    break;
+  case AlarmMatch::MATCH_HOURS:
+    minuteRegister = bin2bcd(alarm.minute);
+    hourRegister = bin2bcd(alarm.hour);
+    break;
+  case AlarmMatch::MATCH_DAY_OF_WEEK:
+    minuteRegister = bin2bcd(alarm.minute);
+    hourRegister = bin2bcd(alarm.hour);
+    weekdayRegister = bin2bcd(alarm.weekday + _wdaybase);
+    break;
+  case AlarmMatch::MATCH_DAY_OF_MONTH:
+    minuteRegister = bin2bcd(alarm.minute);
+    hourRegister = bin2bcd(alarm.hour);
+    dayRegister = bin2bcd(alarm.day);
+    break;
+  default:
+    return false;
+  }
+
   bool success = true;
-  success &= setRegister(_clockreg + 7, bin2bcd(minute)); // set minute alarm
-  success &= setRegister(_clockreg + 8, 0x80);            // set hour alarm to always
-  success &= setRegister(_clockreg + 9, 0x80);            // set day alarm to always
-  success &= setRegister(_clockreg + 10, 0x80);           // set weekday alarm to always
+  success &= setRegister(_clockreg + 7, minuteRegister);
+  success &= setRegister(_clockreg + 8, hourRegister);
+  success &= setRegister(_clockreg + 9, dayRegister);
+  success &= setRegister(_clockreg + 10, weekdayRegister);
   return success;
 }
 

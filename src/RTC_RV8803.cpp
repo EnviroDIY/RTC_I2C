@@ -1,16 +1,23 @@
 #include <RTC_RV8803.h>
 
-bool RV8803::init(__attribute__((unused)) BatteryMode mode) {
+bool RV8803::init(bool reset_configuration, bool clear_flags) {
   bool success = true;
-  success &= setRegister(RV8803_CONTROL, 0); // clear control register
-  success &= setRegister(RV8803_STATUS, 0);  // clear all flags
-  success &= setRegister(RV8803_CLKOUT, 0);  // 32 KHz output by default
+  if (reset_configuration) success &= setRegister(RV8803_CONTROL, 0); // clear control register
+  if (clear_flags) success &= clearErrorFlags();                      // clear all flags
+  if (reset_configuration) success &= setRegister(RV8803_CLKOUT, 0);  // 32 KHz output by default
   return success;
 }
 
 bool RV8803::isValid() {
   byte status;
   return readRegister(RV8803_STATUS, status) && ((status & 0b11) == 0); // both voltage low flags are cleared
+}
+
+bool RV8803::clearErrorFlags() {
+  byte status;
+  if (!readRegister(RV8803_STATUS, status)) return false;
+  if ((status & 0b11) == 0) return true;
+  return setRegister(RV8803_STATUS, status & 0b11111100); // clear voltage low flags
 }
 
 // set & clear reset bit when setting time/date
@@ -26,6 +33,7 @@ bool RV8803::setTime(tm timeParts) {
   bool success = setRegister(RV8803_CONTROL, control | 1); // set RESET bit
   if (success) success = writeTimeRegisters(timeParts);
   success &= setRegister(RV8803_CONTROL, control & 0b11111110); // clear RESET bit
+  if (success) success &= clearErrorFlags();
   return success;
 }
 
@@ -61,9 +69,16 @@ bool RV8803::finishWriteAccess(byte reg) {
 }
 
 timestamp_t RV8803::getTime() {
+  timestamp_t unixTimestamp = 0;
+  getTime(unixTimestamp);
+  return unixTimestamp;
+}
+
+bool RV8803::getTime(timestamp_t &unixTimestamp) {
   tm timeParts;
-  getTime(timeParts);
-  return TimeUtils::tmToEpochTime(timeParts).getTimestamp();
+  if (!getTime(timeParts)) return false;
+  unixTimestamp = TimeUtils::tmToEpochTime(timeParts).getTimestamp();
+  return true;
 }
 
 // Implement the time-reading procedure described in the application note, section 4.12.
@@ -77,21 +92,48 @@ bool RV8803::getTime(tm &timeParts) {
   return true;
 }
 
-bool RV8803::setAlarm(byte minute, byte hour) {
-  bool success = true;
-  success &= setRegister(RV8803_ALARM, bin2bcd(minute));   // set minute alarm
-  success &= setRegister(RV8803_ALARM + 1, bin2bcd(hour)); // set hour alarm
-  success &= setRegister(RV8803_ALARM + 2, 0x80);          // set weekday alarm to always
-  success &= setRegister(RV8803_ALARM + 3, 0x80);          // set day alarm to always
-  return success;
-}
+bool RV8803::setAlarm(AlarmMatch match, const AlarmTime &alarm) {
+  byte minuteRegister = 0x80;
+  byte hourRegister = 0x80;
+  byte dayRegister = 0x80;
+  bool setWeekdayMode = false;
+  bool setDateMode = false;
 
-bool RV8803::setAlarm(byte minute) {
+  switch (match) {
+  case AlarmMatch::MATCH_SECONDS:
+    break;
+  case AlarmMatch::MATCH_MINUTES:
+    minuteRegister = bin2bcd(alarm.minute);
+    break;
+  case AlarmMatch::MATCH_HOURS:
+    minuteRegister = bin2bcd(alarm.minute);
+    hourRegister = bin2bcd(alarm.hour);
+    break;
+  case AlarmMatch::MATCH_DAY_OF_WEEK:
+    minuteRegister = bin2bcd(alarm.minute);
+    hourRegister = bin2bcd(alarm.hour);
+    dayRegister = (byte)(1u << alarm.weekday);
+    setWeekdayMode = true;
+    break;
+  case AlarmMatch::MATCH_DAY_OF_MONTH:
+    minuteRegister = bin2bcd(alarm.minute);
+    hourRegister = bin2bcd(alarm.hour);
+    dayRegister = bin2bcd(alarm.day);
+    setDateMode = true;
+    break;
+  default:
+    return false;
+  }
+
   bool success = true;
-  success &= setRegister(RV8803_ALARM, bin2bcd(minute)); // set minute alarm
-  success &= setRegister(RV8803_ALARM + 1, 0x80);        // set hour alarm to always
-  success &= setRegister(RV8803_ALARM + 2, 0x80);        // set weekday alarm to always
-  success &= setRegister(RV8803_ALARM + 3, 0x80);        // set day alarm to always
+  if (setWeekdayMode || setDateMode) {
+    byte extension;
+    if (!readRegister(RV8803_CLKOUT, extension)) return false;
+    success &= setRegister(RV8803_CLKOUT, setDateMode ? (extension | 0x40) : (extension & ~0x40));
+  }
+  success &= setRegister(RV8803_ALARM, minuteRegister);
+  success &= setRegister(RV8803_ALARM + 1, hourRegister);
+  success &= setRegister(RV8803_ALARM + 2, dayRegister);
   return success;
 }
 

@@ -47,12 +47,14 @@ class RS5C372 : public RTC_I2C {
     _wdaybase = RS5C372_WDAYBASE;
     _wdayfirst = RS5C372_WDAYFIRST;
     _capabilities = RS5C372_CAP;
+    _supportedAlarmMatches =
+      static_cast<byte>(AlarmMatch::MATCH_HOURS) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK);
     _bit7set = RS5C372_BIT7;
   }
-  bool init(BatteryMode mode = BatteryMode::LEVEL_SWITCHING) override;
+  bool init(bool reset_configuration = true, bool clear_flags = true) override;
   bool isValid() override;
-  bool setAlarm(byte minute, byte hour) override;
-  bool setAlarm(__attribute__((unused)) byte minute) override { return true; } // no-op for this RTC!
+  bool clearErrorFlags() override;
+  bool setAlarm(AlarmMatch match, const AlarmTime &alarm) override;
   bool enableAlarm() override;
   bool disableAlarm() override;
   bool senseAlarm() override;
