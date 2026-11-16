@@ -54,6 +54,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Changed
 
+- **Breaking:** Replaced the `RTC_CAP_*` macros with the scoped `RTCCapability` enum and made `getCapabilities()` non-virtual.
+- Moved device-specific I2C transaction flags out of the public capability mask and into an internal quirks mask.
 - **Potentially breaking:** Moved backup-battery switchover configuration from `begin()` and `init()` to the separate `setBatteryMode()` function.
 - Added independent `reset_configuration` and `clear_flags` options to `begin()` and `init()`.
   The `reset_configuration` option controls whether RTC-specific operational control registers are set to library defaults without changing the time, battery mode, or calibration.
@@ -66,6 +68,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 
+- Added `supports(RTCCapability)` and `supports(AlarmMatch)` capability queries and the `RTCCapability::RTC_CAP_BATTERY` capability.
 - Added success-returning `getTime(timestamp_t&)` and `getTemperature(float&)` APIs.
 - Added `AlarmMatch`, `AlarmTime`, `getSupportedAlarmMatches()`, and non-virtual convenience functions from
   `setSecondAlarm()` through `setExactAlarm()`; each convenience function delegates to `setAlarm()`.
@@ -74,6 +77,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Removed
 
+- **BREAKING:** Removed the redundant `RTC_CAP_HOURLY_ALARM` capability.
 - **BREAKING**: Removed the legacy alarm setters and overloads and the upward-rounding `roundAlarmToMinute()` helper.
 
 ### Fixed

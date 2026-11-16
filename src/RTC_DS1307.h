@@ -20,7 +20,7 @@
 /// No clock-register bit 7 must be forced when writing time.
 #define DS1307_BIT7 0
 /// Capabilities supported by the DS1307 implementation.
-#define DS1307_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ)
+#define DS1307_CAP (static_cast<byte>(RTCCapability::RTC_CAP_32KHZ) | static_cast<byte>(RTCCapability::RTC_CAP_1HZ))
 
 /// The class for the [Analog Devices
 /// DS1307](https://www.analog.com/media/en/technical-documentation/data-sheets/ds1307.pdf)

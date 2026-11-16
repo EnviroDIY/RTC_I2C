@@ -43,7 +43,9 @@ I tried to identify the least common denominator of the functionality.
 However, I wanted to have some kind of alarm, and being able to make use of an offset register and read the temperature, if possible.
 Unfortunately, one RTC does not have alarms at all, one RTC does not allow recurring alarms, a few RTCs do not have an offset register, and many do not possess the ability to read out the temperature.
 
-In order to check at runtime what capabilities an RTC has, the method `getCapabilities()` will be useful (see table entry below).
+Use `supports(RTCCapability)` to check at runtime whether an RTC has a capability.
+Use `supports(AlarmMatch)` to check whether it supports a specific alarm match mode.
+The full capability masks remain available from `getCapabilities()` and `getSupportedAlarmMatches()`.
 The list of capabilities and at which pins you can sense the different signals appears in the [RTC capabilities section](#rtc-capabilities).
 
 In addition, one can, of course, extend each particular RTC class with methods catering for the particular RTC model, if one wishes to do so.
@@ -91,27 +93,25 @@ The following tables list the hardware capabilities relevant to the common libra
 
 ### Capability bits
 
-| RTC               | 32 kHz | 1 Hz  | Alarm | Offset | Temperature | Event interrupt | Special register addressing |
-| ----------------- | :----: | :---: | :---: | :----: | :---------: | :-------------: | :-------------------------: |
-| <!--!%-->DS1307   |  Yes   |  Yes  |   —   |   —    |      —      |        —        |              —              |
-| <!--!%-->DS1337   |  Yes   |  Yes  |  Yes  |   —    |      —      |        —        |              —              |
-| DS3231S(N)        |  Yes   |  Yes  |  Yes  |  Yes   |     Yes     |        —        |              —              |
-| DS3231M           |  Yes   |  Yes  |  Yes  |  Yes   |     Yes     |        —        |              —              |
-| <!--!%-->MCP79410 |  Yes   |  Yes  |  Yes  |  Yes   |      —      |        —        |              —              |
-| <!--!%-->PCF8523  |  Yes   |  Yes  |  Yes  |  Yes   |      —      |        —        |              —              |
-| <!--!%-->PCF8563  |  Yes   |  Yes  |  Yes  |   —    |      —      |        —        |              —              |
-| <!--!%-->RS5C372  |  Yes   |  Yes  |  Yes  |  Yes   |      —      |        —        |             Yes             |
-| RV-3028           |  Yes   |  Yes  |  Yes  |  Yes   |      —      |       Yes       |              —              |
-| RV-3028U          |  Yes   |  Yes  |   —   |  Yes   |      —      |       Yes       |              —              |
-| RV-3032           |  Yes   |  Yes  |  Yes  |  Yes   |     Yes     |       Yes       |              —              |
-| RV-8523           |  Yes   |  Yes  |  Yes  |  Yes   |      —      |        —        |              —              |
-| RV-8803           |  Yes   |  Yes  |  Yes  |  Yes   |      —      |       Yes       |              —              |
-| <!--!%-->SD2405   |  Yes   |  Yes  |  Yes  |  Yes   |      —      |        —        |              —              |
+| RTC               | 32 kHz | 1 Hz  | Alarm | Battery mode | Offset | Temperature | Event interrupt |
+| ----------------- | :----: | :---: | :---: | :----------: | :----: | :---------: | :-------------: |
+| <!--!%-->DS1307   |  Yes   |  Yes  |   —   |      —       |   —    |      —      |        —        |
+| <!--!%-->DS1337   |  Yes   |  Yes  |  Yes  |      —       |   —    |      —      |        —        |
+| DS3231S(N)        |  Yes   |  Yes  |  Yes  |      —       |  Yes   |     Yes     |        —        |
+| DS3231M           |  Yes   |  Yes  |  Yes  |      —       |  Yes   |     Yes     |        —        |
+| <!--!%-->MCP79410 |  Yes   |  Yes  |  Yes  |      —       |  Yes   |      —      |        —        |
+| <!--!%-->PCF8523  |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |        —        |
+| <!--!%-->PCF8563  |  Yes   |  Yes  |  Yes  |      —       |   —    |      —      |        —        |
+| <!--!%-->RS5C372  |  Yes   |  Yes  |  Yes  |      —       |  Yes   |      —      |        —        |
+| RV-3028           |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |       Yes       |
+| RV-3028U          |  Yes   |  Yes  |   —   |     Yes      |  Yes   |      —      |       Yes       |
+| RV-3032           |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |     Yes     |       Yes       |
+| RV-8523           |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |        —        |
+| RV-8803           |  Yes   |  Yes  |  Yes  |      —       |  Yes   |      —      |       Yes       |
+| <!--!%-->SD2405   |  Yes   |  Yes  |  Yes  |      —       |  Yes   |      —      |        —        |
 
+`Battery mode` means that `setBatteryMode()` supports at least one mode for that RTC implementation.
 `Event interrupt` means the RTC provides a dedicated external event input that can generate an interrupt; it does not include alarm, timer, or periodic time-update interrupts.
-
-The `RTC_CAP_HOURLY_ALARM` bit describes the recurring hourly alarm supported by the common API.
-It is deliberately separate from the more general alarm capabilities described in the alarm table below.
 
 ### Timekeeping accuracy
 
@@ -139,7 +139,7 @@ Ricoh also describes the use of a ±20 ppm crystal as an example; the ±20 ppm f
 
 ### Frequency adjustment / calibration
 
-The library exposes frequency correction through `setOffset()` and `getOffset()` when the RTC has `RTC_CAP_OFFSET`.
+The library exposes frequency correction through `setOffset()` and `getOffset()` when the RTC supports `RTCCapability::RTC_CAP_OFFSET`.
 
 | RTC               | Offset register | Library adjustment step (ppm) | Native/library mode notes                                      |
 | ----------------- | :-------------: | ----------------------------: | -------------------------------------------------------------- |
@@ -162,7 +162,7 @@ The library exposes frequency correction through `setOffset()` and `getOffset()`
 
 `getTemperature(float&)` reports I2C success separately from the measured value and preserves the hardware's fractional Celsius resolution.
 `getTemp()` remains available as an integer compatibility wrapper.
-A value is available only for RTCs with the `RTC_CAP_TEMP` capability.
+A value is available only for RTCs that support `RTCCapability::RTC_CAP_TEMP`.
 The DS3231 also provides `startTemperatureConversion()` to start a forced conversion without blocking.
 
 | RTC               | `getTemp()` | Temperature accuracy |
@@ -207,7 +207,7 @@ Maximum bus speed is the value listed for the supported device family.
 Several devices therefore share the same I2C address.
 This is the reason that multiple RTCs often require either different I2C buses or an I2C multiplexer.
 
-The <!--!%-->RS5C372 is additionally marked with `RTC_CAP_SREGADDR` because its register-addressing scheme is different from the other RTCs supported by the common base class.
+The common base class handles device-specific I2C transaction quirks internally.
 
 ### Time representation
 
@@ -268,7 +268,8 @@ On the SparkFun breakout board, this input is pulled to GND by a 100 kΩ resisto
 `setAlarm(AlarmMatch, const AlarmTime&)` is the only virtual alarm-setting function.
 `setExactAlarm()`, `setYearlyAlarm()`, `setMonthlyAlarm()`, `setWeeklyAlarm()`, `setDailyAlarm()`, `setHourlyAlarm()`, `setMinuteAlarm()`, and `setSecondAlarm()` are non-virtual convenience functions that construct an `AlarmTime` and defer to `setAlarm()`.
 
-`getSupportedAlarmMatches()` returns a bitmask of the `AlarmMatch` values supported by the selected RTC.
+`supports(AlarmMatch)` reports whether the selected RTC supports one alarm match mode.
+`getSupportedAlarmMatches()` returns the complete bitmask of supported `AlarmMatch` values.
 Unsupported match modes return `false`; the library does not replace them with a less-specific mode.
 
 RTC_I2C does not validate alarm date or time fields.
@@ -329,7 +330,7 @@ It therefore provides recurring calendar matching rather than a separate one-sho
 <a name="f11"></a><sup>11)</sup> The <!--!%-->RS5C372 provides two equivalent alarm register sets.
 Each compares the programmed minute, hour, and weekday values with the calendar counter.
 An enabled alarm generates an interrupt whenever the programmed calendar condition coincides with the current time.
-The separate periodic interrupt function is not part of the alarm function, and the library therefore does not advertise `RTC_CAP_HOURLY_ALARM` for this RTC.
+The separate periodic interrupt function is not part of the common alarm function.
 
 <a name="f12"></a><sup>12)</sup> The RV-3028 provides one alarm function with independently selectable minute, hour, and weekday/date comparisons.
 The available combinations produce recurring hourly, daily, or selected weekday/date events.

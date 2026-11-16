@@ -28,7 +28,13 @@
 #define PCF8523_BIT7 0
 /// Capabilities supported by the PCF8523 implementation.
 #define PCF8523_CAP                                                                                                    \
-  (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET | RTC_CAP_STOP_BEFORE_READ)
+  (static_cast<byte>(RTCCapability::RTC_CAP_32KHZ) | static_cast<byte>(RTCCapability::RTC_CAP_1HZ) |                   \
+   static_cast<byte>(RTCCapability::RTC_CAP_ALARM) | static_cast<byte>(RTCCapability::RTC_CAP_BATTERY) |               \
+   static_cast<byte>(RTCCapability::RTC_CAP_OFFSET))
+/// Alarms supported by the PCF8523 implementation.
+#define PCF8523_ALARMS                                                                                                 \
+  static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |                          \
+    static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH)
 
 /// The class for the [NXP Semiconductors PCF8523](https://www.nxp.com/docs/en/data-sheet/PCF8523.pdf)
 class PCF8523 : public PCFAlarm {
@@ -40,9 +46,8 @@ class PCF8523 : public PCFAlarm {
     _wdaybase = PCF8523_WDAYBASE;
     _wdayfirst = PCF8523_WDAYFIRST;
     _capabilities = PCF8523_CAP;
-    _supportedAlarmMatches = static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |
-                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) |
-                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH);
+    _quirks = QUIRK_STOP_BEFORE_READ;
+    _supportedAlarmMatches = PCF8523_ALARMS;
     _bit7set = PCF8523_BIT7;
   }
   bool init(bool reset_configuration = true, bool clear_flags = true) override;

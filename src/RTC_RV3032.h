@@ -40,7 +40,14 @@
 /// The weekday register comes before the day-of-month register in the clock register sequence.
 #define RV3032_WDAYFIRST true
 /// Capabilities supported by the RV-3032 implementation.
-#define RV3032_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET | RTC_CAP_TEMP)
+#define RV3032_CAP                                                                                                     \
+  (static_cast<byte>(RTCCapability::RTC_CAP_32KHZ) | static_cast<byte>(RTCCapability::RTC_CAP_1HZ) |                   \
+   static_cast<byte>(RTCCapability::RTC_CAP_ALARM) | static_cast<byte>(RTCCapability::RTC_CAP_BATTERY) |               \
+   static_cast<byte>(RTCCapability::RTC_CAP_OFFSET) | static_cast<byte>(RTCCapability::RTC_CAP_TEMP))
+/// Alarms supported by the RV-3032 implementation.
+#define RV3032_ALARMS                                                                                                  \
+  static_cast<byte>(AlarmMatch::MATCH_SECONDS) | static_cast<byte>(AlarmMatch::MATCH_MINUTES) |                        \
+    static_cast<byte>(AlarmMatch::MATCH_HOURS) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH)
 
 /// The class for the [Micro Crystal
 /// RV-3032](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-3032-C7.pdf)
@@ -53,9 +60,7 @@ class RV3032 : public RTC_I2C {
     _wdaybase = RV3032_WDAYBASE;
     _wdayfirst = RV3032_WDAYFIRST;
     _capabilities = RV3032_CAP;
-    _supportedAlarmMatches = static_cast<byte>(AlarmMatch::MATCH_SECONDS) |
-                             static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |
-                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH);
+    _supportedAlarmMatches = RV3032_ALARMS;
     _bit7set = RV3032_BIT7;
   }
   bool init(bool reset_configuration = true, bool clear_flags = true) override;

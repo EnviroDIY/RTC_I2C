@@ -33,7 +33,13 @@
 /// No clock-register bit 7 must be forced when writing time.
 #define RV8803_BIT7 0
 /// Capabilities supported by the RV-8803 implementation.
-#define RV8803_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET)
+#define RV8803_CAP                                                                                                     \
+  (static_cast<byte>(RTCCapability::RTC_CAP_32KHZ) | static_cast<byte>(RTCCapability::RTC_CAP_1HZ) |                   \
+   static_cast<byte>(RTCCapability::RTC_CAP_ALARM) | static_cast<byte>(RTCCapability::RTC_CAP_OFFSET))
+/// Alarms supported by the RV-8803 implementation.
+#define RV8803_ALARMS                                                                                                  \
+  static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |                          \
+    static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH)
 
 /// The class for the [Micro Crystal
 /// RV-8803](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-8803-C7.pdf)
@@ -46,9 +52,7 @@ class RV8803 : public RTC_I2C {
     _wdaybase = RV8803_WDAYBASE;
     _wdayfirst = RV8803_WDAYFIRST;
     _capabilities = RV8803_CAP;
-    _supportedAlarmMatches = static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |
-                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) |
-                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH);
+    _supportedAlarmMatches = RV8803_ALARMS;
     _bit7set = RV8803_BIT7;
   }
   bool init(bool reset_configuration = true, bool clear_flags = true) override;

@@ -9,7 +9,10 @@
 #define RV3028_UCLOCK 0x1B
 
 /// Capabilities supported by the RV-3028-U implementation.
-#define RV3028U_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_OFFSET)
+#define RV3028U_CAP                                                                                                    \
+  (static_cast<byte>(RTCCapability::RTC_CAP_32KHZ) | static_cast<byte>(RTCCapability::RTC_CAP_1HZ) |                   \
+   static_cast<byte>(RTCCapability::RTC_CAP_ALARM) | static_cast<byte>(RTCCapability::RTC_CAP_BATTERY) |               \
+   static_cast<byte>(RTCCapability::RTC_CAP_OFFSET))
 
 
 /// Class for the [Micro Crystal
@@ -23,22 +26,14 @@ class RV3028U : public RV3028 {
     _wdaybase = 0;
     _wdayfirst = 0;
     _capabilities = RV3028U_CAP;
-    _supportedAlarmMatches = 0;
+    _supportedAlarmMatches = RV3028_ALARMS;
     _bit7set = RV3028_BIT7;
   }
-  bool setAlarm(__attribute__((unused)) AlarmMatch match, __attribute__((unused)) const AlarmTime &alarm) override {
-    return false;
-  }
-  bool senseAlarm() override { return false; }  // no-op for this RTC
-  bool clearAlarm() override { return true; }   // no-op for this RTC
-  bool enableAlarm() override { return true; }  // no-op for this RTC
-  bool disableAlarm() override { return true; } // no-op for this RTC
   using RTC_I2C::setTime;
   bool setTime(timestamp_t t) override;
   bool setTime(tm timeParts) override;
   timestamp_t getTime() override;
   bool getTime(tm &timeParts) override;
-  String getManufacturer() override;
   String getModel() override;
 
  private:

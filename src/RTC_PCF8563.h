@@ -23,7 +23,13 @@
 /// No clock-register bit 7 must be forced when writing time.
 #define PCF8563_BIT7 0
 /// Capabilities supported by the PCF8563 implementation.
-#define PCF8563_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM)
+#define PCF8563_CAP                                                                                                    \
+  (static_cast<byte>(RTCCapability::RTC_CAP_32KHZ) | static_cast<byte>(RTCCapability::RTC_CAP_1HZ) |                   \
+   static_cast<byte>(RTCCapability::RTC_CAP_ALARM))
+/// Alarms supported by the PCF8563 implementation.
+#define PCF8563_ALARMS                                                                                                 \
+  static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |                          \
+    static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH)
 
 /// The class for the [NXP Semiconductors PCF8563](https://www.nxp.com/docs/en/data-sheet/PCF8563.pdf)
 class PCF8563 : public PCFAlarm {
@@ -35,9 +41,7 @@ class PCF8563 : public PCFAlarm {
     _wdaybase = PCF8563_WDAYBASE;
     _wdayfirst = PCF8563_WDAYFIRST;
     _capabilities = PCF8563_CAP;
-    _supportedAlarmMatches = static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |
-                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) |
-                             static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH);
+    _supportedAlarmMatches = PCF8563_ALARMS;
     _bit7set = PCF8563_BIT7;
   }
   bool init(bool reset_configuration = true, bool clear_flags = true) override;

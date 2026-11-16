@@ -24,7 +24,15 @@
 /// The 24-hour-mode flag is required in bit 2 of the hour register.
 #define SD2405_BIT7 (1 << 2)
 /// Capabilities supported by the SD2405 implementation.
-#define SD2405_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET)
+#define SD2405_CAP                                                                                                     \
+  (static_cast<byte>(RTCCapability::RTC_CAP_32KHZ) | static_cast<byte>(RTCCapability::RTC_CAP_1HZ) |                   \
+   static_cast<byte>(RTCCapability::RTC_CAP_ALARM) | static_cast<byte>(RTCCapability::RTC_CAP_OFFSET))
+/// Alarms supported by the SD2405 implementation.
+#define SD2405_ALARMS                                                                                                  \
+  static_cast<byte>(AlarmMatch::MATCH_SECONDS) | static_cast<byte>(AlarmMatch::MATCH_MINUTES) |                        \
+    static_cast<byte>(AlarmMatch::MATCH_HOURS) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) |                    \
+    static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_YEAR) |             \
+    static_cast<byte>(AlarmMatch::MATCH_EXACT)
 
 /// The class for the [DFRobot
 /// SD2405](https://image.dfrobot.com/image/data/TOY0021/SD2405AL%20datasheet%20(Angelo%20v0.1).pdf)
@@ -37,11 +45,7 @@ class SD2405 : public RTC_I2C {
     _wdaybase = SD2405_WDAYBASE;
     _wdayfirst = SD2405_WDAYFIRST;
     _capabilities = SD2405_CAP;
-    _supportedAlarmMatches =
-      static_cast<byte>(AlarmMatch::MATCH_SECONDS) | static_cast<byte>(AlarmMatch::MATCH_MINUTES) |
-      static_cast<byte>(AlarmMatch::MATCH_HOURS) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) |
-      static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_YEAR) |
-      static_cast<byte>(AlarmMatch::MATCH_EXACT);
+    _supportedAlarmMatches = SD2405_ALARMS;
     _bit7set = SD2405_BIT7;
   }
   bool init(bool reset_configuration = true, bool clear_flags = true) override;

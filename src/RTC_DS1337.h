@@ -26,7 +26,14 @@
 /// No clock-register bit 7 must be forced when writing time.
 #define DS1337_BIT7 0
 /// Capabilities supported by the DS1337 implementation.
-#define DS1337_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM)
+#define DS1337_CAP                                                                                                     \
+  (static_cast<byte>(RTCCapability::RTC_CAP_32KHZ) | static_cast<byte>(RTCCapability::RTC_CAP_1HZ) |                   \
+   static_cast<byte>(RTCCapability::RTC_CAP_ALARM))
+/// Alarms supported by the DS1337 implementation.
+#define DS1337_ALARMS                                                                                                  \
+  static_cast<byte>(AlarmMatch::EVERY_SECOND) | static_cast<byte>(AlarmMatch::MATCH_SECONDS) |                         \
+    static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |                        \
+    static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH)
 
 /// The class for the [Analog Devices
 /// DS1337](https://www.analog.com/media/en/technical-documentation/data-sheets/ds1337-ds1337c.pdf)
@@ -39,10 +46,7 @@ class DS1337 : public DSAlarm {
     _wdaybase = DS1337_WDAYBASE;
     _wdayfirst = DS1337_WDAYFIRST;
     _capabilities = DS1337_CAP;
-    _supportedAlarmMatches =
-      static_cast<byte>(AlarmMatch::EVERY_SECOND) | static_cast<byte>(AlarmMatch::MATCH_SECONDS) |
-      static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |
-      static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH);
+    _supportedAlarmMatches = DS1337_ALARMS;
     _bit7set = DS1337_BIT7;
   }
   bool init(bool reset_configuration = true, bool clear_flags = true) override;

@@ -32,7 +32,7 @@ bool RTC_I2C::setTime(timestamp_t t) {
 // set time from a time record
 bool RTC_I2C::setTime(tm timeParts) {
   _wire->beginTransmission(_i2caddr);
-  _wire->write((_capabilities & RTC_CAP_SREGADDR) ? (_clockreg << 4) : _clockreg);
+  _wire->write((_quirks & QUIRK_SREGADDR) ? (_clockreg << 4) : _clockreg);
   _wire->write(bin2bcd(timeParts.tm_sec) | ((_bit7set & 1) ? 0x80 : 0));         // seconds after the minute
   _wire->write(bin2bcd(timeParts.tm_min) | ((_bit7set & (1 << 1)) ? 0x80 : 0));  // minutes after the hour
   _wire->write(bin2bcd(timeParts.tm_hour) | ((_bit7set & (1 << 2)) ? 0x80 : 0)); // hours since midnight
@@ -71,8 +71,8 @@ bool RTC_I2C::getTime(tm &timeParts) {
   timeParts = tm{0, 0, 0, 0, 0, 0, 0, 0, 0};
 
   _wire->beginTransmission(_i2caddr);
-  _wire->write((_capabilities & RTC_CAP_SREGADDR) ? (_clockreg << 4) : _clockreg);
-  if (_wire->endTransmission((_capabilities & RTC_CAP_STOP_BEFORE_READ) != 0) != 0) return false;
+  _wire->write((_quirks & QUIRK_SREGADDR) ? (_clockreg << 4) : _clockreg);
+  if (_wire->endTransmission((_quirks & QUIRK_STOP_BEFORE_READ) != 0) != 0) return false;
   if (_wire->requestFrom(_i2caddr, (byte)7) != 7) return false;
   timeParts.tm_sec = bcd2bin(_wire->read() & 0x7F);  // seconds after the minute
   timeParts.tm_min = bcd2bin(_wire->read() & 0x7F);  // minutes after the hour
@@ -171,7 +171,7 @@ byte RTC_I2C::decodewday(byte bits) {
 bool RTC_I2C::setRegister(byte reg, byte val) {
   // Serial.print(F("setReg(0x")); Serial.print(reg,HEX); Serial.print(F(")=0b")); Serial.println(val,BIN);
   _wire->beginTransmission(_i2caddr);
-  _wire->write((_capabilities & RTC_CAP_SREGADDR) ? (reg << 4) : reg);
+  _wire->write((_quirks & QUIRK_SREGADDR) ? (reg << 4) : reg);
   _wire->write(val);
   bool success = _wire->endTransmission() == 0;
   // Serial.println(F("Verify:")); Serial.println(getRegister(reg),BIN);
@@ -188,8 +188,8 @@ byte RTC_I2C::getRegister(byte reg) {
 bool RTC_I2C::readRegister(byte reg, byte &res) {
   // Serial.print(F("getReg(0x")); Serial.print(reg,HEX); Serial.print(F(")=0b"));
   _wire->beginTransmission(_i2caddr);
-  _wire->write((_capabilities & RTC_CAP_SREGADDR) ? (reg << 4) : reg);
-  if (_wire->endTransmission((_capabilities & RTC_CAP_STOP_BEFORE_READ) != 0) != 0) return false;
+  _wire->write((_quirks & QUIRK_SREGADDR) ? (reg << 4) : reg);
+  if (_wire->endTransmission((_quirks & QUIRK_STOP_BEFORE_READ) != 0) != 0) return false;
   if (_wire->requestFrom(_i2caddr, (byte)1) != 1) return false;
   res = _wire->read();
   // Serial.println(res,BIN);

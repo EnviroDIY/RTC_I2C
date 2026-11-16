@@ -165,7 +165,9 @@ bool beginRTC(RTC_I2C &rtc, tm &set_time) {
   bool valid = false;
 
   bool success = rtc.begin(&Wire);
-  if (success) success = rtc.setBatteryMode(BatteryMode::DIRECT_SWITCHING);
+  if (success && rtc.supports(RTCCapability::RTC_CAP_BATTERY)) {
+    success = rtc.setBatteryMode(BatteryMode::DIRECT_SWITCHING);
+  }
   if (!success) {
     return success;
   }

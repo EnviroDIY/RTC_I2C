@@ -140,7 +140,7 @@ void setup() {
   attachClockAlarmInterrupt();
 
   bool secondTestPassed = true;
-  if ((rtc.getSupportedAlarmMatches() & static_cast<byte>(AlarmMatch::MATCH_SECONDS)) == 0) {
+  if (!rtc.supports(AlarmMatch::MATCH_SECONDS)) {
     Serial.println(F("Every-second alarm not supported"));
   } else {
     Serial.println(F("\nTesting an alarm every second for 15 seconds"));
@@ -153,7 +153,7 @@ void setup() {
   }
 
   bool futureAlarmTestsPassed = true;
-  if ((rtc.getSupportedAlarmMatches() & static_cast<byte>(AlarmMatch::MATCH_SECONDS)) == 0) {
+  if (!rtc.supports(AlarmMatch::MATCH_SECONDS)) {
     Serial.println(F("Seconds matching alarm not supported"));
   } else {
     Serial.println(F("\nTesting an alarm set 5 seconds in the future 5 times"));
@@ -163,7 +163,7 @@ void setup() {
   }
 
   bool minuteTestPassed = true;
-  if ((rtc.getSupportedAlarmMatches() & static_cast<byte>(AlarmMatch::MATCH_MINUTES)) == 0) {
+  if (!rtc.supports(AlarmMatch::MATCH_MINUTES)) {
     Serial.println(F("Minute matching alarm not supported"));
   } else {
     Serial.println(F("\nTesting an alarm every minute for 2 minutes"));

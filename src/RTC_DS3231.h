@@ -27,7 +27,15 @@
 /// No clock-register bit 7 must be forced when writing time.
 #define DS3231_BIT7 0
 /// Capabilities supported by the DS3231 implementation.
-#define DS3231_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_HOURLY_ALARM | RTC_CAP_OFFSET | RTC_CAP_TEMP)
+#define DS3231_CAP                                                                                                     \
+  (static_cast<byte>(RTCCapability::RTC_CAP_32KHZ) | static_cast<byte>(RTCCapability::RTC_CAP_1HZ) |                   \
+   static_cast<byte>(RTCCapability::RTC_CAP_ALARM) | static_cast<byte>(RTCCapability::RTC_CAP_OFFSET) |                \
+   static_cast<byte>(RTCCapability::RTC_CAP_TEMP))
+/// Alarms supported by the DS3231 implementation.
+#define DS3231_ALARMS                                                                                                  \
+  static_cast<byte>(AlarmMatch::EVERY_SECOND) | static_cast<byte>(AlarmMatch::MATCH_SECONDS) |                         \
+    static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |                        \
+    static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH)
 
 /// The class for the [Analog Devices
 /// DS3231](https://www.analog.com/media/en/technical-documentation/data-sheets/ds3231.pdf)
@@ -40,10 +48,7 @@ class DS3231 : public DSAlarm {
     _wdaybase = DS3231_WDAYBASE;
     _wdayfirst = DS3231_WDAYFIRST;
     _capabilities = DS3231_CAP;
-    _supportedAlarmMatches =
-      static_cast<byte>(AlarmMatch::EVERY_SECOND) | static_cast<byte>(AlarmMatch::MATCH_SECONDS) |
-      static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |
-      static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH);
+    _supportedAlarmMatches = DS3231_ALARMS;
     _bit7set = DS3231_BIT7;
   }
   bool init(bool reset_configuration = true, bool clear_flags = true) override;

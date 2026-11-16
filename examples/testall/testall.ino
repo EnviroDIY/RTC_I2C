@@ -91,7 +91,7 @@ void loop() {
     Serial.println(F("Time has advanced to 28.2.2100, 23:59:00"));
     break;
   case '1':
-    if ((rtc.getCapabilities() & RTC_CAP_1HZ) == 0) {
+    if (!rtc.supports(RTCCapability::RTC_CAP_1HZ)) {
       unsupported();
       break;
     }
@@ -99,7 +99,7 @@ void loop() {
     Serial.println(F("1 Hz signal enabled"));
     break;
   case '3':
-    if ((rtc.getCapabilities() & RTC_CAP_32KHZ) == 0) {
+    if (!rtc.supports(RTCCapability::RTC_CAP_32KHZ)) {
       unsupported();
       break;
     }
@@ -135,7 +135,7 @@ void loop() {
     Serial.println(digitalRead(PINALARM));
     break;
   case 'h':
-    if ((rtc.getSupportedAlarmMatches() & static_cast<byte>(AlarmMatch::MATCH_HOURS)) == 0) {
+    if (!rtc.supports(AlarmMatch::MATCH_HOURS)) {
       unsupported();
       break;
     }
@@ -149,7 +149,7 @@ void loop() {
     Serial.println(timeParts.tm_min);
     break;
   case 'm':
-    if ((rtc.getSupportedAlarmMatches() & static_cast<byte>(AlarmMatch::MATCH_MINUTES)) == 0) {
+    if (!rtc.supports(AlarmMatch::MATCH_MINUTES)) {
       unsupported();
       break;
     }
@@ -161,14 +161,14 @@ void loop() {
     Serial.println(timeParts.tm_min);
     break;
   case 'n':
-    if ((rtc.getCapabilities() & RTC_CAP_ALARM) == 0) {
+    if (!rtc.supports(RTCCapability::RTC_CAP_ALARM)) {
       unsupported();
       break;
     }
     rtc.disableAlarm();
     break;
   case 'a':
-    if ((rtc.getCapabilities() & RTC_CAP_ALARM) == 0) {
+    if (!rtc.supports(RTCCapability::RTC_CAP_ALARM)) {
       unsupported();
       break;
     }
@@ -184,7 +184,7 @@ void loop() {
     Serial.println(F("All alarms disabled"));
     break;
   case 't':
-    if ((rtc.getCapabilities() & RTC_CAP_TEMP) == 0) {
+    if (!rtc.supports(RTCCapability::RTC_CAP_TEMP)) {
       unsupported();
       break;
     }
@@ -193,7 +193,7 @@ void loop() {
     Serial.println(temp);
     break;
   case 'o':
-    if ((rtc.getCapabilities() & RTC_CAP_OFFSET) == 0) {
+    if (!rtc.supports(RTCCapability::RTC_CAP_OFFSET)) {
       unsupported();
       break;
     }
@@ -332,7 +332,10 @@ bool initRTC() {
   set_time = *localtime(&assembled_time);
   printTmComponents(set_time, Serial);
 
-  bool success = rtc.setBatteryMode(BatteryMode::DIRECT_SWITCHING);
+  bool success = true;
+  if (rtc.supports(RTCCapability::RTC_CAP_BATTERY)) {
+    success = rtc.setBatteryMode(BatteryMode::DIRECT_SWITCHING);
+  }
   if (success) success = rtc.init();
   if (parse) {
     rtc.setTime(set_time);

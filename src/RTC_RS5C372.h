@@ -30,7 +30,11 @@
 /// No clock-register bit 7 must be forced when writing time.
 #define RS5C372_BIT7 0
 /// Capabilities supported by the RS5C372 implementation.
-#define RS5C372_CAP (RTC_CAP_32KHZ | RTC_CAP_1HZ | RTC_CAP_ALARM | RTC_CAP_OFFSET | RTC_CAP_SREGADDR)
+#define RS5C372_CAP                                                                                                    \
+  (static_cast<byte>(RTCCapability::RTC_CAP_32KHZ) | static_cast<byte>(RTCCapability::RTC_CAP_1HZ) |                   \
+   static_cast<byte>(RTCCapability::RTC_CAP_ALARM) | static_cast<byte>(RTCCapability::RTC_CAP_OFFSET))
+/// Alarms supported by the RS5C372 implementation.
+#define RS5C372_ALARMS static_cast<byte>(AlarmMatch::MATCH_HOURS) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK)
 
 /**
  * @brief The class for the [Ricoh RS5C372](http://www.ricoh.com/LSI/product_rtc/2wire/5c372/5c372a-e.pdf)
@@ -47,8 +51,8 @@ class RS5C372 : public RTC_I2C {
     _wdaybase = RS5C372_WDAYBASE;
     _wdayfirst = RS5C372_WDAYFIRST;
     _capabilities = RS5C372_CAP;
-    _supportedAlarmMatches =
-      static_cast<byte>(AlarmMatch::MATCH_HOURS) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK);
+    _quirks = QUIRK_SREGADDR;
+    _supportedAlarmMatches = RS5C372_ALARMS;
     _bit7set = RS5C372_BIT7;
   }
   bool init(bool reset_configuration = true, bool clear_flags = true) override;

@@ -20,22 +20,16 @@
 
 /// Number of clock/calendar bytes transferred by the common RTC implementation.
 #define TIMEBYTES 7
-/// Capability flag: the RTC can generate a 32 kHz signal.
-#define RTC_CAP_32KHZ 0x01
-/// Capability flag: the RTC can generate a 1 Hz signal.
-#define RTC_CAP_1HZ 0x02
-/// Capability flag: the RTC has alarm functionality to set hour and minute.
-#define RTC_CAP_ALARM 0x04
-/// Capability flag: the RTC can raise an alarm every hour.
-#define RTC_CAP_HOURLY_ALARM 0x08
-/// Capability flag: the RTC has an offset/calibration register.
-#define RTC_CAP_OFFSET 0x10
-/// Capability flag: the RTC has a temperature sensor.
-#define RTC_CAP_TEMP 0x20
-/// Capability flag: the RTC uses the library's special upper-nibble register-address format.
-#define RTC_CAP_SREGADDR 0x40
-/// Capability flag: the RTC requires a STOP between the register-address write and subsequent read.
-#define RTC_CAP_STOP_BEFORE_READ 0x80
+
+/// Capabilities supported by an RTC implementation.
+enum class RTCCapability : byte {
+  RTC_CAP_32KHZ = 0x01,   ///< The RTC can generate a 32 kHz signal.
+  RTC_CAP_1HZ = 0x02,     ///< The RTC can generate a 1 Hz signal.
+  RTC_CAP_ALARM = 0x04,   ///< The RTC has alarm functionality.
+  RTC_CAP_BATTERY = 0x08, ///< The RTC supports configuring its backup-battery switchover mode.
+  RTC_CAP_OFFSET = 0x10,  ///< The RTC has an offset/calibration register.
+  RTC_CAP_TEMP = 0x20,    ///< The RTC has a temperature sensor.
+};
 
 #ifndef SECONDS_IN_DAY
 /// Number of seconds in a day.
@@ -422,17 +416,31 @@ class RTC_I2C {
   /**
    * @brief Get the capability flags supported by this RTC.
    *
-   * The returned value is a bitmask composed of the `RTC_CAP_*` constants.
+   * The returned value is a bitmask composed of `RTCCapability` values.
    *
    * @return The RTC capability bitmask.
    */
-  virtual byte getCapabilities() { return _capabilities; }
+  byte getCapabilities() const { return _capabilities; }
 
   /**
    * @brief Get the alarm match modes supported by this RTC.
    * @return A bitmask composed of `AlarmMatch` values.
    */
-  byte getSupportedAlarmMatches() { return _supportedAlarmMatches; }
+  byte getSupportedAlarmMatches() const { return _supportedAlarmMatches; }
+
+  /**
+   * @brief Check whether the RTC supports a capability.
+   * @param capability The capability to check.
+   * @return `true` when the capability is supported; otherwise `false`.
+   */
+  bool supports(RTCCapability capability) const { return (_capabilities & static_cast<byte>(capability)) != 0; }
+
+  /**
+   * @brief Check whether the RTC supports an alarm match mode.
+   * @param match The alarm match mode to check.
+   * @return `true` when the alarm match mode is supported; otherwise `false`.
+   */
+  bool supports(AlarmMatch match) const { return (_supportedAlarmMatches & static_cast<byte>(match)) != 0; }
 
   /**
    * @brief Get the RTC's I2C address.
@@ -441,6 +449,12 @@ class RTC_I2C {
   virtual uint8_t getAddress() { return _i2caddr; }
 
  protected:
+  /// Internal I2C behavior flags used by RTC implementations.
+  enum RTCQuirk : byte {
+    QUIRK_SREGADDR = 0x01,         ///< The register address is placed in the upper nibble.
+    QUIRK_STOP_BEFORE_READ = 0x02, ///< A STOP is required before reading the addressed register.
+  };
+
   /**
    * @brief Read one RTC register and report I2C failures separately from the byte value.
    * @param reg The RTC register address.
@@ -486,9 +500,11 @@ class RTC_I2C {
   /// true when weekday comes before day in clock register
   bool _wdayfirst;
   /// lists all capabilities of this RTC
-  byte _capabilities;
+  byte _capabilities = 0;
   /// bitmask of supported AlarmMatch values
   byte _supportedAlarmMatches = 0;
+  /// bitmask of internal I2C behavior flags
+  byte _quirks = 0;
   /// if the 7th bit in a byte of the clock register must be set (bit 0=sec, bit 1=min, ...)
   byte _bit7set;
 };
