@@ -46,8 +46,8 @@
    static_cast<byte>(RTCCapability::RTC_CAP_OFFSET) | static_cast<byte>(RTCCapability::RTC_CAP_TEMP))
 /// Alarms supported by the RV-3032 implementation.
 #define RV3032_ALARMS                                                                                                  \
-  static_cast<byte>(AlarmMatch::MATCH_SECONDS) | static_cast<byte>(AlarmMatch::MATCH_MINUTES) |                        \
-    static_cast<byte>(AlarmMatch::MATCH_HOURS) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH)
+  static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |                          \
+    static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH)
 
 /// The class for the [Micro Crystal
 /// RV-3032](https://www.microcrystal.com/fileadmin/Media/Products/RTC/Datasheet/RV-3032-C7.pdf)

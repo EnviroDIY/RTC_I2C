@@ -71,8 +71,6 @@ bool RV3032::setAlarm(AlarmMatch match, const AlarmTime &alarm) {
   byte dateRegister = 0x80;
 
   switch (match) {
-  case AlarmMatch::MATCH_SECONDS:
-    break;
   case AlarmMatch::MATCH_MINUTES:
     minuteRegister = bin2bcd(alarm.minute);
     break;
