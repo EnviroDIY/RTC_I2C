@@ -14,7 +14,7 @@ bool RTC_I2C::begin(TwoWire *wi, bool reset_configuration, bool clear_flags) {
 }
 
 bool RTC_I2C::setBatteryMode(__attribute__((unused)) BatteryMode mode) {
-  return true;
+  return false;
 }
 
 // set time from epochTime object

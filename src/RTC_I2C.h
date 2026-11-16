@@ -130,11 +130,11 @@ class RTC_I2C {
   /**
    * @brief Set the backup-battery switchover mode.
    *
-   * RTCs that do not support configurable battery switchover leave their configuration unchanged and return `true`.
+   * RTCs that do not support configurable battery switchover leave their configuration unchanged and return `false`.
    *
    * @param mode The battery switchover mode to configure.
-   * @return `true` when the requested mode is supported and configured or no configuration is needed; otherwise
-   * `false`.
+   * @return `true` when the requested mode is supported and is already active or successfully configured; `false` if
+   * the configuration is unsupported or no battery modes are supported.
    */
   virtual bool setBatteryMode(BatteryMode mode);
 

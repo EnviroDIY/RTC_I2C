@@ -49,6 +49,8 @@ bool RV3028::setBatteryMode(BatteryMode mode) {
     requested_bsm |= 0b0100;
     break;
   }
+  default:
+    return false;
   }
   const byte batteryModePendingMask = 0x02;
   if (requested_bsm == bsm_reg && !(_pendingEEPROMWrites & batteryModePendingMask)) return true;

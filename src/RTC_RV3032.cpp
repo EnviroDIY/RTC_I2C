@@ -45,6 +45,8 @@ bool RV3032::setBatteryMode(BatteryMode mode) {
     requested_coe |= 0b010000;
     break;
   }
+  default:
+    return false;
   }
   return setEEPROMBackedRegister(RV3032_COE, requested_coe);
 }

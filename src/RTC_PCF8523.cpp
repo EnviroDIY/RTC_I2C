@@ -28,6 +28,8 @@ bool PCF8523::setBatteryMode(BatteryMode mode) {
     bsm_reg = 0b00100000;
     break;
   }
+  default:
+    return false;
   }
   byte control3;
   if (!readRegister(PCF8523_CONTROL + 2, control3)) return false;
