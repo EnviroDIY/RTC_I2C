@@ -73,6 +73,7 @@ reviews:
     - path: '**/*.ino'
       instructions: >-
         Treat Arduino code in ino files as C++ code.
+        ino files in the in the examples folder should have a Doxygen file header, but do not need individual function-level Doxygen comments.
         Files should be formatted according to the .clang-format file in the repo.
         If a local analysis is being performed and a `filters` folder is present, confirm that credential information will be removed by the clean filters.
         When evaluating a pull request, confirm that no credential information is present.

@@ -20,15 +20,15 @@ ___
 
 ## Simple<!--! {#examples_simple} -->
 
-This example demonstrates receiving alarm interrupts from a DS3231 real-time clock.
+This example demonstrates using the basic set and get methods of an RTC device.
+It shows how to initialize an RTC, set the time, and read back the time to verify the values were stored correctly.
 <!--
 - [Simple](\ref example_simple) -->
 - [The simple example on GitHub](https://github.com/EnviroDIY/RTC_I2C/tree/master/examples/simple)
 
 ## Alarm<!--! {#examples_alarm} -->
 
-This example demonstrates using the basic set and get methods of an RTC device.
-It shows how to initialize an RTC, set the time, and read back the time to verify the values were stored correctly.
+This example demonstrates receiving alarm interrupts from a DS3231 real-time clock.
 <!--
 - [Alarm](\ref example_alarm) -->
 - [The alarm example on GitHub](https://github.com/EnviroDIY/RTC_I2C/tree/master/examples/alarm)

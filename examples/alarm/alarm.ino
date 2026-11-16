@@ -9,7 +9,7 @@
 #include <EnableInterrupt.h>
 #endif
 
-const uint8_t alarmInterruptPin = 10;
+const uint8_t alarmInterruptPin = 31;
 const uint8_t expectedSecondAlarms = 15;
 const uint8_t expectedMinuteAlarms = 2;
 const uint8_t futureAlarmTestCount = 5;
