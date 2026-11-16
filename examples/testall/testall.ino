@@ -183,6 +183,35 @@ void loop() {
     rtc.disableAlarm();
     Serial.println(F("All alarms disabled"));
     break;
+  case 'k':
+    if (!rtc.supports(RTCCapability::RTC_CAP_COUNTDOWN)) {
+      unsupported();
+      break;
+    }
+    rtc.disableCountdownAlarm();
+    if (rtc.setCountdownAlarm(10) && rtc.enableCountdownAlarm())
+      Serial.println(F("Countdown alarm set for every 10 seconds"));
+    else
+      Serial.println(F("Could not configure countdown alarm"));
+    break;
+  case 'K':
+    if (!rtc.supports(RTCCapability::RTC_CAP_COUNTDOWN)) {
+      unsupported();
+      break;
+    }
+    alarm = rtc.senseCountdownAlarm();
+    Serial.print(F("Countdown alarm: "));
+    Serial.println(alarm);
+    if (alarm) rtc.clearCountdownAlarm();
+    break;
+  case 'x':
+    if (!rtc.supports(RTCCapability::RTC_CAP_COUNTDOWN)) {
+      unsupported();
+      break;
+    }
+    rtc.disableCountdownAlarm();
+    Serial.println(F("Countdown alarm disabled"));
+    break;
   case 't':
     if (!rtc.supports(RTCCapability::RTC_CAP_TEMP)) {
       unsupported();
@@ -307,6 +336,9 @@ void help() {
                    "  a      - sense alarm and clear flag\n\r"
                    "  A      - disable alarms\n\r"
                    "  n      - disable alarm\n\r"
+                   "  k      - start a periodic 10-second countdown alarm\n\r"
+                   "  K      - sense and clear the countdown alarm flag\n\r"
+                   "  x      - disable the countdown alarm\n\r"
                    "  f      - skip 59 minutes forward\n\r"
                    "  y      - skip to 23:59:00 of February 28, 2100\n\r"
                    "  o<num> - set offset register\n\r"

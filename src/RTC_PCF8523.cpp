@@ -49,6 +49,77 @@ bool PCF8523::isValid() {
   return success;
 }
 
+bool PCF8523::setCountdownAlarm(uint16_t timerValue, CountdownTimerFrequency timerFrequency) {
+  if (timerValue == 0 || timerValue > 0xFF) return false;
+
+  byte frequencyBits;
+  switch (timerFrequency) {
+  case CountdownTimerFrequency::HZ_4096:
+    frequencyBits = 0;
+    break;
+  case CountdownTimerFrequency::HZ_64:
+    frequencyBits = 1;
+    break;
+  case CountdownTimerFrequency::HZ_1:
+    frequencyBits = 2;
+    break;
+  case CountdownTimerFrequency::PER_MINUTE:
+    frequencyBits = 3;
+    break;
+  case CountdownTimerFrequency::PER_HOUR:
+    frequencyBits = 7;
+    break;
+  default:
+    return false;
+  }
+
+  byte timerControl;
+  byte interruptControl;
+  byte frequencyControl;
+  if (!readRegister(PCF8523_CLKOUT, timerControl) || !readRegister(PCF8523_CONTROL + 1, interruptControl) ||
+      !readRegister(PCF8523_TIMER_FREQUENCY, frequencyControl))
+    return false;
+
+  bool success = true;
+  success &= setRegister(PCF8523_CLKOUT, (timerControl & 0b10111110) | 0b01000000); // stop timer B; use pulse mode
+  success &= setRegister(PCF8523_CONTROL + 1,
+                         (interruptControl & 0b00000110) | 0b11011000); // disable CTBIE and clear CTBF only
+  success &= setRegister(PCF8523_TIMER_FREQUENCY, (frequencyControl & 0b11111000) | frequencyBits);
+  success &= setRegister(PCF8523_TIMER_VALUE, static_cast<byte>(timerValue));
+  return success;
+}
+
+bool PCF8523::enableCountdownAlarm() {
+  byte timerControl;
+  byte interruptControl;
+  if (!readRegister(PCF8523_CLKOUT, timerControl) || !readRegister(PCF8523_CONTROL + 1, interruptControl)) return false;
+  bool success = setRegister(PCF8523_CONTROL + 1,
+                             (interruptControl & 0b00000110) | 0b11011001); // clear CTBF and enable CTBIE
+  success &= setRegister(PCF8523_CLKOUT, timerControl | 0b01000001);        // pulse mode; start timer B
+  return success;
+}
+
+bool PCF8523::disableCountdownAlarm() {
+  byte timerControl;
+  byte interruptControl;
+  if (!readRegister(PCF8523_CLKOUT, timerControl) || !readRegister(PCF8523_CONTROL + 1, interruptControl)) return false;
+  bool success = setRegister(PCF8523_CLKOUT, timerControl & 0b11111110); // stop timer B
+  success &= setRegister(PCF8523_CONTROL + 1,
+                         (interruptControl & 0b00000110) | 0b11111000); // preserve flags; disable CTBIE
+  return success;
+}
+
+bool PCF8523::senseCountdownAlarm() {
+  byte control;
+  return readRegister(PCF8523_CONTROL + 1, control) && ((control & 0b00100000) != 0);
+}
+
+bool PCF8523::clearCountdownAlarm() {
+  byte control;
+  if (!readRegister(PCF8523_CONTROL + 1, control)) return false;
+  return setRegister(PCF8523_CONTROL + 1, (control & 0b00000111) | 0b11011000); // clear CTBF only
+}
+
 bool PCF8523::enableAlarm() {
   byte ctr;
   if (!readRegister(PCF8523_CONTROL, ctr)) return false;

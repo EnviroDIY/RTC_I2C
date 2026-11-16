@@ -94,6 +94,68 @@ bool RV3032::setAlarm(AlarmMatch match, const AlarmTime &alarm) {
   return success;
 }
 
+bool RV3032::setCountdownAlarm(uint16_t timerValue, CountdownTimerFrequency timerFrequency) {
+  if (timerValue == 0 || timerValue > 0x0FFF) return false;
+
+  byte frequencyBits;
+  switch (timerFrequency) {
+  case CountdownTimerFrequency::HZ_4096:
+    frequencyBits = 0;
+    break;
+  case CountdownTimerFrequency::HZ_64:
+    frequencyBits = 1;
+    break;
+  case CountdownTimerFrequency::HZ_1:
+    frequencyBits = 2;
+    break;
+  case CountdownTimerFrequency::PER_MINUTE:
+    frequencyBits = 3;
+    break;
+  default:
+    return false;
+  }
+
+  byte control1;
+  byte control2;
+  if (!readRegister(RV3032_CONTROL, control1) || !readRegister(RV3032_CONTROL + 1, control2)) return false;
+
+  bool success = true;
+  success &= setRegister(RV3032_CONTROL, (control1 & 0b00110100) | frequencyBits); // stop timer and set TD
+  success &= setRegister(RV3032_CONTROL + 1, control2 & 0b11101111);               // disable TIE
+  success &= clearCountdownAlarm();
+  success &= setRegister(RV3032_TIMER, static_cast<byte>(timerValue));
+  success &= setRegister(RV3032_TIMER + 1, static_cast<byte>(timerValue >> 8));
+  return success;
+}
+
+bool RV3032::enableCountdownAlarm() {
+  byte control1;
+  byte control2;
+  if (!readRegister(RV3032_CONTROL, control1) || !readRegister(RV3032_CONTROL + 1, control2)) return false;
+  bool success = clearCountdownAlarm();
+  success &= setRegister(RV3032_CONTROL + 1, control2 | 0b00010000); // enable TIE
+  success &= setRegister(RV3032_CONTROL, control1 | 0b00001000);     // start timer
+  return success;
+}
+
+bool RV3032::disableCountdownAlarm() {
+  byte control1;
+  byte control2;
+  if (!readRegister(RV3032_CONTROL, control1) || !readRegister(RV3032_CONTROL + 1, control2)) return false;
+  bool success = setRegister(RV3032_CONTROL, control1 & 0b11110111); // stop timer
+  success &= setRegister(RV3032_CONTROL + 1, control2 & 0b11101111); // disable TIE
+  return success;
+}
+
+bool RV3032::senseCountdownAlarm() {
+  byte status;
+  return readRegister(RV3032_STATUS, status) && ((status & 0b00010000) != 0);
+}
+
+bool RV3032::clearCountdownAlarm() {
+  return setRegister(RV3032_STATUS, 0b11101111); // clear TF; any status write also clears THF and TLF
+}
+
 
 bool RV3032::enableAlarm() {
   byte ctr;

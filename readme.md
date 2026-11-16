@@ -19,6 +19,7 @@
     - [Time representation](#time-representation)
     - [1 Hz and 32 kHz oscillator outputs](#1-hz-and-32-khz-oscillator-outputs)
     - [Alarm](#alarm)
+    - [Countdown timer alarms](#countdown-timer-alarms)
 
 ## A universal API for I2C RTCs
 
@@ -93,22 +94,22 @@ The following tables list the hardware capabilities relevant to the common libra
 
 ### Capability bits
 
-| RTC               | 32 kHz | 1 Hz  | Alarm | Battery mode | Offset | Temperature | Event interrupt |
-| ----------------- | :----: | :---: | :---: | :----------: | :----: | :---------: | :-------------: |
-| <!--!%-->DS1307   |  Yes   |  Yes  |   —   |      —       |   —    |      —      |        —        |
-| <!--!%-->DS1337   |  Yes   |  Yes  |  Yes  |      —       |   —    |      —      |        —        |
-| DS3231S(N)        |  Yes   |  Yes  |  Yes  |      —       |  Yes   |     Yes     |        —        |
-| DS3231M           |  Yes   |  Yes  |  Yes  |      —       |  Yes   |     Yes     |        —        |
-| <!--!%-->MCP79410 |  Yes   |  Yes  |  Yes  |      —       |  Yes   |      —      |        —        |
-| <!--!%-->PCF8523  |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |        —        |
-| <!--!%-->PCF8563  |  Yes   |  Yes  |  Yes  |      —       |   —    |      —      |        —        |
-| <!--!%-->RS5C372  |  Yes   |  Yes  |  Yes  |      —       |  Yes   |      —      |        —        |
-| RV-3028           |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |       Yes       |
-| RV-3028U          |  Yes   |  Yes  |   —   |     Yes      |  Yes   |      —      |       Yes       |
-| RV-3032           |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |     Yes     |       Yes       |
-| RV-8523           |  Yes   |  Yes  |  Yes  |     Yes      |  Yes   |      —      |        —        |
-| RV-8803           |  Yes   |  Yes  |  Yes  |      —       |  Yes   |      —      |       Yes       |
-| <!--!%-->SD2405   |  Yes   |  Yes  |  Yes  |      —       |  Yes   |      —      |        —        |
+| RTC               | 32 kHz | 1 Hz  | Alarm | Countdown | Battery mode | Offset | Temperature | Event interrupt |
+| ----------------- | :----: | :---: | :---: | :-------: | :----------: | :----: | :---------: | :-------------: |
+| <!--!%-->DS1307   |  Yes   |  Yes  |   —   |     —     |      —       |   —    |      —      |        —        |
+| <!--!%-->DS1337   |  Yes   |  Yes  |  Yes  |     —     |      —       |   —    |      —      |        —        |
+| DS3231S(N)        |  Yes   |  Yes  |  Yes  |     —     |      —       |  Yes   |     Yes     |        —        |
+| DS3231M           |  Yes   |  Yes  |  Yes  |     —     |      —       |  Yes   |     Yes     |        —        |
+| <!--!%-->MCP79410 |  Yes   |  Yes  |  Yes  |     —     |      —       |  Yes   |      —      |        —        |
+| <!--!%-->PCF8523  |  Yes   |  Yes  |  Yes  |    Yes    |     Yes      |  Yes   |      —      |        —        |
+| <!--!%-->PCF8563  |  Yes   |  Yes  |  Yes  |    Yes    |      —       |   —    |      —      |        —        |
+| <!--!%-->RS5C372  |  Yes   |  Yes  |  Yes  |     —     |      —       |  Yes   |      —      |        —        |
+| RV-3028           |  Yes   |  Yes  |  Yes  |    Yes    |     Yes      |  Yes   |      —      |       Yes       |
+| RV-3028U          |  Yes   |  Yes  |   —   |    Yes    |     Yes      |  Yes   |      —      |       Yes       |
+| RV-3032           |  Yes   |  Yes  |  Yes  |    Yes    |     Yes      |  Yes   |     Yes     |       Yes       |
+| RV-8523           |  Yes   |  Yes  |  Yes  |    Yes    |     Yes      |  Yes   |      —      |        —        |
+| RV-8803           |  Yes   |  Yes  |  Yes  |    Yes    |      —       |  Yes   |      —      |       Yes       |
+| <!--!%-->SD2405   |  Yes   |  Yes  |  Yes  |    Yes    |      —       |  Yes   |      —      |        —        |
 
 `Battery mode` means that `setBatteryMode()` supports at least one mode for that RTC implementation.
 `Event interrupt` means the RTC provides a dedicated external event input that can generate an interrupt; it does not include alarm, timer, or periodic time-update interrupts.
@@ -353,5 +354,33 @@ The separate periodic time-update and countdown-timer interrupts are not counted
 Its alarm interrupt has an explicit single-event mode and a periodic mode.
 The periodic mode continues to generate alarm interrupts until the alarm flag is reset.
 Its separate frequency and countdown interrupts are not counted as additional alarms.
+
+### Countdown timer alarms
+
+RTCs with `RTCCapability::RTC_CAP_COUNTDOWN` expose a periodic countdown timer separately from their calendar alarm.
+Configure the timer with `setCountdownAlarm(timerValue, timerFrequency)`, then start it with `enableCountdownAlarm()`.
+The default frequency is `CountdownTimerFrequency::HZ_1`, so `setCountdownAlarm(30)` configures a 30-second period.
+
+The exact period is the timer value divided by the selected source frequency.
+The library does not round or substitute unsupported values.
+`setCountdownAlarm()` returns `false` when the selected RTC does not support the requested source frequency or timer value.
+A timer value of zero is invalid.
+
+```cpp
+if (rtc.supports(RTCCapability::RTC_CAP_COUNTDOWN)) {
+  rtc.setCountdownAlarm(10);  // 10 seconds
+  rtc.enableCountdownAlarm();
+}
+```
+
+The available source clocks are `HZ_4096`, `HZ_64`, `HZ_1`, and `PER_MINUTE`.
+The PCF8523 and RV-8523 additionally support `PER_HOUR`.
+The PCF8523, PCF8563, RV-8523, and SD2405 accept timer values from 1 through 255.
+The RV-3028, RV-3028-U, RV-3032, and RV-8803 accept timer values from 1 through 4095.
+
+The first period after enabling can have device-specific uncertainty because the I2C start operation is asynchronous to the timer source.
+Subsequent periods use the configured interval.
+Use `senseCountdownAlarm()` and `clearCountdownAlarm()` for the separate countdown flag, and `disableCountdownAlarm()` to stop the timer and disable its interrupt.
+Countdown interrupt pulse widths are device-specific and can be much shorter than the configured period.
 
 <!-- cSpell:ignore capa -->

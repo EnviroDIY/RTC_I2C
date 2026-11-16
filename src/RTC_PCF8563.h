@@ -14,6 +14,10 @@
 #define PCF8563_CONTROL 0x00
 /// CLKOUT control register; referred to as CLKOUT_control in documentation (ADDRESS 0x0D).
 #define PCF8563_CLKOUT 0x0D
+/// Timer control register; referred to as Timer_control in documentation (ADDRESS 0x0E).
+#define PCF8563_TIMER_CONTROL 0x0E
+/// Timer value register; referred to as Timer in documentation (ADDRESS 0x0F).
+#define PCF8563_TIMER_VALUE 0x0F
 /// No offset/calibration register is provided by the PCF8563.
 #define PCF8563_OFFSET 0xFF
 /// Weekday numbering used by the RTC: 0 through 6.
@@ -25,7 +29,7 @@
 /// Capabilities supported by the PCF8563 implementation.
 #define PCF8563_CAP                                                                                                    \
   (static_cast<byte>(RTCCapability::RTC_CAP_32KHZ) | static_cast<byte>(RTCCapability::RTC_CAP_1HZ) |                   \
-   static_cast<byte>(RTCCapability::RTC_CAP_ALARM))
+   static_cast<byte>(RTCCapability::RTC_CAP_ALARM) | static_cast<byte>(RTCCapability::RTC_CAP_COUNTDOWN))
 /// Alarms supported by the PCF8563 implementation.
 #define PCF8563_ALARMS                                                                                                 \
   (static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |                         \
@@ -46,6 +50,12 @@ class PCF8563 : public PCFAlarm {
   }
   bool init(bool reset_configuration = true, bool clear_flags = true) override;
   bool isValid() override;
+  bool setCountdownAlarm(uint16_t timerValue,
+                         CountdownTimerFrequency timerFrequency = CountdownTimerFrequency::HZ_1) override;
+  bool enableCountdownAlarm() override;
+  bool disableCountdownAlarm() override;
+  bool senseCountdownAlarm() override;
+  bool clearCountdownAlarm() override;
   bool enableAlarm() override;
   bool disableAlarm() override;
   bool enable32kHz() override;

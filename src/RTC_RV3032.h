@@ -12,6 +12,8 @@
 #define RV3032_CLOCKREG 0x01
 /// Minutes Alarm register; referred to as Minutes Alarm in documentation (ADDRESS 0x08).
 #define RV3032_ALARM 0x08
+/// Timer Value 0 register; the 12-bit periodic countdown timer begins at address 0x0B.
+#define RV3032_TIMER 0x0B
 /// Status register; referred to as Status in documentation (ADDRESS 0x0D).
 #define RV3032_STATUS 0x0D
 /// Control 1 register; referred to as Control 1 in documentation (ADDRESS 0x10).
@@ -43,7 +45,8 @@
 #define RV3032_CAP                                                                                                     \
   (static_cast<byte>(RTCCapability::RTC_CAP_32KHZ) | static_cast<byte>(RTCCapability::RTC_CAP_1HZ) |                   \
    static_cast<byte>(RTCCapability::RTC_CAP_ALARM) | static_cast<byte>(RTCCapability::RTC_CAP_BATTERY) |               \
-   static_cast<byte>(RTCCapability::RTC_CAP_OFFSET) | static_cast<byte>(RTCCapability::RTC_CAP_TEMP))
+   static_cast<byte>(RTCCapability::RTC_CAP_OFFSET) | static_cast<byte>(RTCCapability::RTC_CAP_TEMP) |                 \
+   static_cast<byte>(RTCCapability::RTC_CAP_COUNTDOWN))
 /// Alarms supported by the RV-3032 implementation.
 #define RV3032_ALARMS                                                                                                  \
   static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |                          \
@@ -68,6 +71,17 @@ class RV3032 : public RTC_I2C {
   bool isValid() override;
   bool clearErrorFlags() override;
   bool setAlarm(AlarmMatch match, const AlarmTime &alarm) override;
+  bool setCountdownAlarm(uint16_t timerValue,
+                         CountdownTimerFrequency timerFrequency = CountdownTimerFrequency::HZ_1) override;
+  bool enableCountdownAlarm() override;
+  bool disableCountdownAlarm() override;
+  bool senseCountdownAlarm() override;
+  /**
+   * @copydoc RTC_I2C::clearCountdownAlarm()
+   *
+   * The RV-3032 clears its temperature threshold flags whenever the shared status register is written.
+   */
+  bool clearCountdownAlarm() override;
   bool senseAlarm() override;
   bool clearAlarm() override;
   bool enableAlarm() override;

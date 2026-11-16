@@ -16,6 +16,8 @@
 #define SD2405_CONTROL 0x0F
 /// Time trimming register; referred to as Time Trimming Register in documentation (ADDRESS 0x12).
 #define SD2405_OFFSET 0x12
+/// Countdown timer register; referred to as Count down in documentation (ADDRESS 0x13).
+#define SD2405_TIMER 0x13
 
 /// Weekday numbering used by the RTC: 0 through 6.
 #define SD2405_WDAYBASE 0
@@ -26,7 +28,8 @@
 /// Capabilities supported by the SD2405 implementation.
 #define SD2405_CAP                                                                                                     \
   (static_cast<byte>(RTCCapability::RTC_CAP_32KHZ) | static_cast<byte>(RTCCapability::RTC_CAP_1HZ) |                   \
-   static_cast<byte>(RTCCapability::RTC_CAP_ALARM) | static_cast<byte>(RTCCapability::RTC_CAP_OFFSET))
+   static_cast<byte>(RTCCapability::RTC_CAP_ALARM) | static_cast<byte>(RTCCapability::RTC_CAP_OFFSET) |                \
+   static_cast<byte>(RTCCapability::RTC_CAP_COUNTDOWN))
 /// Alarms supported by the SD2405 implementation.
 #define SD2405_ALARMS                                                                                                  \
   static_cast<byte>(AlarmMatch::MATCH_SECONDS) | static_cast<byte>(AlarmMatch::MATCH_MINUTES) |                        \
@@ -52,6 +55,12 @@ class SD2405 : public RTC_I2C {
   bool isValid() override;
   bool clearErrorFlags() override;
   bool setAlarm(AlarmMatch match, const AlarmTime &alarm) override;
+  bool setCountdownAlarm(uint16_t timerValue,
+                         CountdownTimerFrequency timerFrequency = CountdownTimerFrequency::HZ_1) override;
+  bool enableCountdownAlarm() override;
+  bool disableCountdownAlarm() override;
+  bool senseCountdownAlarm() override;
+  bool clearCountdownAlarm() override;
   bool senseAlarm() override;
   bool clearAlarm() override;
   bool enableAlarm() override;

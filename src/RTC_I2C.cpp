@@ -159,6 +159,11 @@ bool RTC_I2C::setSecondAlarm() {
   return setAlarm(AlarmMatch::EVERY_SECOND, alarm);
 }
 
+bool RTC_I2C::setCountdownAlarm(__attribute__((unused)) uint16_t timerValue,
+                                __attribute__((unused)) CountdownTimerFrequency timerFrequency) {
+  return false;
+}
+
 byte RTC_I2C::decodewday(byte bits) {
   for (byte res = 1; res < 8; res++) {
     if (bits & 1) return res - 1;
