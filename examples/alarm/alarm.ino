@@ -54,11 +54,11 @@ void reportAlarmInterrupts(uint8_t& reportedCount) {
   }
 }
 
-bool runAlarmTest(unsigned long durationMs, uint8_t expectedCount) {
+bool runAlarmTest(unsigned long timeoutMs, uint8_t expectedCount) {
   uint8_t reportedCount = 0;
   unsigned long startTime = millis();
 
-  while (millis() - startTime < durationMs) {
+  while (alarmInterruptCount < expectedCount && millis() - startTime < timeoutMs) {
     reportAlarmInterrupts(reportedCount);
   }
 
@@ -139,27 +139,41 @@ void setup() {
 
   attachClockAlarmInterrupt();
 
-  Serial.println(F("\nTesting an alarm every second for 15 seconds"));
-  resetAlarmInterruptCount();
-  if (!rtc.disableAlarm() || !rtc.clearAlarm() || !rtc.setSecondAlarm() || !rtc.enableAlarm()) {
-    Serial.println(F("Could not configure the every-second alarm"));
-    while (true);
+  bool secondTestPassed = true;
+  if ((rtc.getSupportedAlarmMatches() & static_cast<byte>(AlarmMatch::MATCH_SECONDS)) == 0) {
+    Serial.println(F("Every-second alarm not supported"));
+  } else {
+    Serial.println(F("\nTesting an alarm every second for 15 seconds"));
+    resetAlarmInterruptCount();
+    if (!rtc.disableAlarm() || !rtc.clearAlarm() || !rtc.setSecondAlarm() || !rtc.enableAlarm()) {
+      Serial.println(F("Could not configure the every-second alarm"));
+      while (true);
+    }
+    secondTestPassed = runAlarmTest(secondTestDurationMs, expectedSecondAlarms);
   }
-  bool secondTestPassed = runAlarmTest(secondTestDurationMs, expectedSecondAlarms);
 
-  Serial.println(F("\nTesting an alarm every minute for 2 minutes"));
-  resetAlarmInterruptCount();
-  if (!rtc.setMinuteAlarm(0) || !rtc.enableAlarm()) {
-    Serial.println(F("Could not configure the every-minute alarm"));
-    while (true);
-  }
-  bool minuteTestPassed = runAlarmTest(minuteTestDurationMs, expectedMinuteAlarms);
-
-  Serial.println(F("\nTesting an alarm set 5 seconds in the future 5 times"));
   bool futureAlarmTestsPassed = true;
-  for (uint8_t testNumber = 1; testNumber <= futureAlarmTestCount; ++testNumber) {
-    futureAlarmTestsPassed &= runFutureAlarmTest(testNumber);
+  if ((rtc.getSupportedAlarmMatches() & static_cast<byte>(AlarmMatch::MATCH_SECONDS)) == 0) {
+    Serial.println(F("Seconds matching alarm not supported"));
+  } else {
+    Serial.println(F("\nTesting an alarm set 5 seconds in the future 5 times"));
+    for (uint8_t testNumber = 1; testNumber <= futureAlarmTestCount; ++testNumber) {
+      futureAlarmTestsPassed &= runFutureAlarmTest(testNumber);
+    }
   }
+
+  bool minuteTestPassed = true;
+  if ((rtc.getSupportedAlarmMatches() & static_cast<byte>(AlarmMatch::MATCH_MINUTES)) == 0) {
+    Serial.println(F("Minute matching alarm not supported"));
+  } else {
+    Serial.println(F("\nTesting an alarm every minute for 2 minutes"));
+    resetAlarmInterruptCount();
+    if (!rtc.setMinuteAlarm(0) || !rtc.enableAlarm()) {
+      Serial.println(F("Could not configure the every-minute alarm"));
+      while (true);
+    }
+  }
+  minuteTestPassed = runAlarmTest(minuteTestDurationMs, expectedMinuteAlarms);
 
   Serial.println();
   Serial.println(secondTestPassed && minuteTestPassed && futureAlarmTestsPassed ? F("All alarm tests passed") :

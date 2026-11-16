@@ -4,12 +4,8 @@ bool RS5C372::init(bool reset_configuration, bool clear_flags) {
   bool success = true;
   if (reset_configuration) {
     success &= setRegister(RS5C372_CONTROL1, 0b00100000); // INT(1Hz) and 32K to INTRB output, alarms to INTRA
-    byte control2;
-    if (!readRegister(RS5C372_CONTROL2, control2))
-      success = false;
-    else
-      success &= setRegister(RS5C372_CONTROL2,
-                             (control2 & 0b00010000) | 0b00101000); // preserve XSTP; use 24h and disable 32K
+    // Writing CONTROL2 clears XSTP, so preserve the validity flag when flag clearing was not requested.
+    if (clear_flags) success &= setRegister(RS5C372_CONTROL2, 0b00101000); // ADJ = 0; use 24h and disable 32K
   }
   if (clear_flags) success &= clearErrorFlags();
   return success;

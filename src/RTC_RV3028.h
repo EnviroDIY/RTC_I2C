@@ -83,6 +83,7 @@ class RV3028 : public RTC_I2C {
   String getModel() override;
 
  protected:
+  byte _pendingEEPROMWrites = 0;
   /**
    * @brief Update a byte in the EEPROM.
    *

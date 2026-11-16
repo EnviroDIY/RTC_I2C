@@ -89,6 +89,7 @@ class RV3032 : public RTC_I2C {
 
 
  protected:
+  byte _pendingEEPROMWrites = 0;
   /**
    * @brief Update a byte in the EEPROM.
    *

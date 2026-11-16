@@ -3,8 +3,10 @@
 bool SD2405::init(bool reset_configuration, bool clear_flags) {
   byte control;
   if (!readRegister(SD2405_CONTROL, control)) return false;
-  bool success = setRegister(SD2405_CONTROL + 1, 0x80);   // unlock RTC
-  success &= setRegister(SD2405_CONTROL, control | 0x84); // unlock RTC without clearing status flags
+  byte control2 = 0;
+  if (!reset_configuration && !readRegister(SD2405_CONTROL + 1, control2)) return false;
+  bool success = setRegister(SD2405_CONTROL + 1, control2 | 0x80); // unlock RTC
+  success &= setRegister(SD2405_CONTROL, control | 0x84);          // unlock RTC without clearing status flags
   if (clear_flags) success &= clearErrorFlags();
   if (reset_configuration) success &= setRegister(SD2405_CONTROL + 2, 0x00);
   return success;
@@ -55,7 +57,7 @@ bool SD2405::setAlarm(AlarmMatch match, const AlarmTime &alarm) {
   success &= setRegister(SD2405_ALARM, bin2bcd(alarm.second));
   success &= setRegister(SD2405_ALARM + 1, bin2bcd(alarm.minute));
   success &= setRegister(SD2405_ALARM + 2, bin2bcd(alarm.hour));
-  success &= setRegister(SD2405_ALARM + 3, bin2bcd(alarm.weekday + _wdaybase));
+  success &= setRegister(SD2405_ALARM + 3, 1 << (alarm.weekday + _wdaybase));
   success &= setRegister(SD2405_ALARM + 4, bin2bcd(alarm.day));
   success &= setRegister(SD2405_ALARM + 5, bin2bcd(alarm.month));
   success &= setRegister(SD2405_ALARM + 6, bin2bcd((byte)(alarm.year - 2000)));

@@ -17,7 +17,7 @@ bool RV8803::clearErrorFlags() {
   byte status;
   if (!readRegister(RV8803_STATUS, status)) return false;
   if ((status & 0b11) == 0) return true;
-  return setRegister(RV8803_STATUS, status & 0b11111100); // clear voltage low flags
+  return setRegister(RV8803_STATUS, (status | 0b00111100) & 0b11111100); // clear only voltage low flags
 }
 
 // set & clear reset bit when setting time/date
@@ -100,8 +100,6 @@ bool RV8803::setAlarm(AlarmMatch match, const AlarmTime &alarm) {
   bool setDateMode = false;
 
   switch (match) {
-  case AlarmMatch::MATCH_SECONDS:
-    break;
   case AlarmMatch::MATCH_MINUTES:
     minuteRegister = bin2bcd(alarm.minute);
     break;

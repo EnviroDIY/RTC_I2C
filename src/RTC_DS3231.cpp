@@ -41,8 +41,12 @@ bool DS3231::disable1Hz() {
 bool DS3231::getTemperature(float &temperatureC) {
   byte tempMSB;
   byte tempLSB;
-  if (!readRegister(DS3231_TEMPMSB, tempMSB)) return false;
-  if (!readRegister(DS3231_TEMPMSB + 1, tempLSB)) return false;
+  byte verifiedTempMSB;
+  do {
+    if (!readRegister(DS3231_TEMPMSB, tempMSB)) return false;
+    if (!readRegister(DS3231_TEMPMSB + 1, tempLSB)) return false;
+    if (!readRegister(DS3231_TEMPMSB, verifiedTempMSB)) return false;
+  } while (tempMSB != verifiedTempMSB);
   temperatureC = (float)(int8_t)tempMSB + (float)((tempLSB >> 6) & 0x03) * 0.25f;
   return true;
 }

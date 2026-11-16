@@ -46,8 +46,7 @@ class RV8803 : public RTC_I2C {
     _wdaybase = RV8803_WDAYBASE;
     _wdayfirst = RV8803_WDAYFIRST;
     _capabilities = RV8803_CAP;
-    _supportedAlarmMatches = static_cast<byte>(AlarmMatch::MATCH_SECONDS) |
-                             static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |
+    _supportedAlarmMatches = static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |
                              static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) |
                              static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH);
     _bit7set = RV8803_BIT7;

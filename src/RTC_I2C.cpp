@@ -210,7 +210,9 @@ bool DSAlarm::clearErrorFlags() {
   byte status;
   if (!readRegister(DSALARM_STATUS, status)) return false;
   if ((status & 0x80) == 0) return true;
-  return setRegister(DSALARM_STATUS, status & 0x7F);
+  return setRegister(DSALARM_STATUS,
+                     (status & 0x7F) |
+                       0x03); // don't clear any new alarms that may have occurred since reading the status
 }
 
 bool DSAlarm::setAlarm(AlarmMatch match, const AlarmTime &alarm) {
@@ -291,13 +293,14 @@ bool DSAlarm::clearAlarm() {
 bool PCFAlarm::clearErrorFlags() {
   byte control;
   if (!readRegister(0x00, control)) return false;
-  bool success = true;
-  if (control & 0x20) success &= setRegister(0x00, control & 0xDF); // release STOP
-
-  byte seconds;
-  if (!readRegister(_clockreg, seconds)) return false;
-  if (seconds & 0x80) success &= setRegister(_clockreg, seconds & 0x7F); // clear OS/VL
-  return success;
+  bool success = setRegister(0x00, control | 0x20); // stop the counters while updating seconds
+  if (success) {
+    byte seconds;
+    success = readRegister(_clockreg, seconds);
+    if (success && (seconds & 0x80)) success = setRegister(_clockreg, seconds & 0x7F); // clear OS/VL
+  }
+  bool countersStarted = setRegister(0x00, control & 0xDF); // release STOP even if the update failed
+  return success && countersStarted;
 }
 
 bool PCFAlarm::setAlarm(AlarmMatch match, const AlarmTime &alarm) {

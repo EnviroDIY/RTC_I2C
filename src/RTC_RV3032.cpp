@@ -155,7 +155,7 @@ bool RV3032::getTemperature(float &temperatureC) {
   byte tempMSB;
   if (!readRegister(RV3032_TEMP, tempMSB)) return false;
 
-  int16_t rawTemperature = ((int16_t)(int8_t)tempMSB << 4) | ((tempLSB >> 4) & 0x0F);
+  int16_t rawTemperature = (int16_t)(int8_t)tempMSB * 16 + ((tempLSB >> 4) & 0x0F);
   temperatureC = (float)rawTemperature * 0.0625f;
   return true;
 }
@@ -234,11 +234,17 @@ bool RV3032::updateEEPROMByte(byte reg) {
 }
 
 bool RV3032::setEEPROMBackedRegister(byte reg, byte value) {
+  const byte pendingMask = (byte)(1u << (reg - RV3032_COE));
   byte currentValue;
   if (!readRegister(reg, currentValue)) return false;
-  if (currentValue == value) return true;
-  if (!setRegister(reg, value)) return false;
-  return updateEEPROMByte(reg);
+  if (currentValue == value && !(_pendingEEPROMWrites & pendingMask)) return true;
+  if (currentValue != value && !setRegister(reg, value)) return false;
+  bool persistenceSuccess = updateEEPROMByte(reg);
+  if (persistenceSuccess)
+    _pendingEEPROMWrites &= ~pendingMask;
+  else
+    _pendingEEPROMWrites |= pendingMask;
+  return persistenceSuccess;
 }
 
 String RV3032::getManufacturer() {

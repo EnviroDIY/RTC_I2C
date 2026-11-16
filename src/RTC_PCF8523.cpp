@@ -2,11 +2,11 @@
 
 bool PCF8523::init(bool reset_configuration, bool clear_flags) {
   bool success = true;
-  success &= setRegister(PCF8523_CONTROL, 0b01011000); // initiate software reset with the documented 0x58 command
   if (reset_configuration) {
-    success &= setRegister(PCF8523_CONTROL, 0);         // enable the clock and disable correction interrupts
-    success &= setRegister(PCF8523_CONTROL + 1, 0);     // disable watchdog and countdown timers
-    success &= setRegister(PCF8523_CLKOUT, 0b00111000); // disable clock output
+    success &= setRegister(PCF8523_CONTROL, 0b01011000); // initiate software reset with the documented 0x58 command
+    success &= setRegister(PCF8523_CONTROL, 0);          // enable the clock and disable correction interrupts
+    success &= setRegister(PCF8523_CONTROL + 1, 0);      // disable watchdog and countdown timers
+    success &= setRegister(PCF8523_CLKOUT, 0b00111000);  // disable clock output
   }
   if (clear_flags) success &= clearErrorFlags();
   return success;

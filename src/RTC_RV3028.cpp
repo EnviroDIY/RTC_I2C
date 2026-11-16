@@ -8,14 +8,21 @@ bool RV3028::init(bool reset_configuration, bool clear_flags) {
   }
   if (clear_flags) success &= clearErrorFlags();
   if (reset_configuration) {
+    const byte clkoutPendingMask = 0x01;
     byte clkout;
     if (!readRegister(RV3028_CLKOUT, clkout))
       success = false;
-    else if (clkout != 0b01000000) {
-      if (!setRegister(RV3028_CLKOUT, 0b01000000)) // 32 KHz output by default, CLKOUT is off
+    else if (clkout != 0b01000000 || (_pendingEEPROMWrites & clkoutPendingMask)) {
+      if (clkout != 0b01000000 && !setRegister(RV3028_CLKOUT, 0b01000000)) // 32 KHz output by default, CLKOUT is off
         success = false;
-      else
-        success &= updateEEPROMByte(RV3028_CLKOUT);
+      else {
+        bool persistenceSuccess = updateEEPROMByte(RV3028_CLKOUT);
+        if (persistenceSuccess)
+          _pendingEEPROMWrites &= ~clkoutPendingMask;
+        else
+          _pendingEEPROMWrites |= clkoutPendingMask;
+        success &= persistenceSuccess;
+      }
     }
   }
   return success;
@@ -43,9 +50,15 @@ bool RV3028::setBatteryMode(BatteryMode mode) {
     break;
   }
   }
-  if (requested_bsm == bsm_reg) return true;
-  if (!setRegister(RV3028_BSM, requested_bsm)) return false;
-  return updateEEPROMByte(RV3028_BSM);
+  const byte batteryModePendingMask = 0x02;
+  if (requested_bsm == bsm_reg && !(_pendingEEPROMWrites & batteryModePendingMask)) return true;
+  if (requested_bsm != bsm_reg && !setRegister(RV3028_BSM, requested_bsm)) return false;
+  bool persistenceSuccess = updateEEPROMByte(RV3028_BSM);
+  if (persistenceSuccess)
+    _pendingEEPROMWrites &= ~batteryModePendingMask;
+  else
+    _pendingEEPROMWrites |= batteryModePendingMask;
+  return persistenceSuccess;
 }
 
 bool RV3028::isValid() {
@@ -59,7 +72,7 @@ bool RV3028::clearErrorFlags() {
   byte status;
   if (!readRegister(RV3028_STATUS, status)) return false;
   if ((status & 0b1) == 0) return true;
-  return setRegister(RV3028_STATUS, status & 0b11111110); // clear PORF
+  return setRegister(RV3028_STATUS, (status | 0b01111110) & 0b11111110); // clear only PORF
 }
 
 bool RV3028::setAlarm(AlarmMatch match, const AlarmTime &alarm) {
