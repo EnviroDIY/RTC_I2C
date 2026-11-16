@@ -33,9 +33,9 @@
    static_cast<byte>(RTCCapability::RTC_CAP_TEMP))
 /// Alarms supported by the DS3231 implementation.
 #define DS3231_ALARMS                                                                                                  \
-  static_cast<byte>(AlarmMatch::EVERY_SECOND) | static_cast<byte>(AlarmMatch::MATCH_SECONDS) |                         \
-    static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |                        \
-    static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH)
+  (static_cast<byte>(AlarmMatch::EVERY_SECOND) | static_cast<byte>(AlarmMatch::MATCH_SECONDS) |                        \
+   static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |                         \
+   static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH))
 
 /// The class for the [Analog Devices
 /// DS3231](https://www.analog.com/media/en/technical-documentation/data-sheets/ds3231.pdf)

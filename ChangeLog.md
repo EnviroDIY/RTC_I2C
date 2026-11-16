@@ -74,6 +74,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `setSecondAlarm()` through `setExactAlarm()`; each convenience function delegates to `setAlarm()`.
 - Added recurring alarm support only for the match modes each RTC can represent; unsupported modes return `false`.
 - Added non-blocking DS3231 forced temperature conversion and native fake-I2C regression tests for time, alarm, validity, temperature, and EEPROM paths.
+- Added example usage and documentation for the new alarm and time APIs.
 
 ### Removed
 
@@ -85,6 +86,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Preserved DS3231 quarter-degree temperature resolution and decoded the RV-3032 signed 12-bit temperature at one-sixteenth-degree resolution.
 - Preserved the RV-8803 repeated-read workaround in success-returning timestamp reads and propagated I2C failures through new alarm and temperature paths.
 - Avoided unchanged RV-3032 EEPROM-backed configuration writes.
+- Made RV-3028 and RV-3032 EEPROM retries persist the requested value without allowing automatic refresh to replace the RAM mirror first.
+- Avoided stopping running PCF-family clocks when their oscillator-stop or voltage-low flag is already clear.
+- Synchronized the RV-3028-U calendar and Unix counters when setting time so inherited alarms use the same time base.
 
 ***
 

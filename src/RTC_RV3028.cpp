@@ -13,16 +13,12 @@ bool RV3028::init(bool reset_configuration, bool clear_flags) {
     if (!readRegister(RV3028_CLKOUT, clkout))
       success = false;
     else if (clkout != 0b01000000 || (_pendingEEPROMWrites & clkoutPendingMask)) {
-      if (clkout != 0b01000000 && !setRegister(RV3028_CLKOUT, 0b01000000)) // 32 KHz output by default, CLKOUT is off
-        success = false;
-      else {
-        bool persistenceSuccess = updateEEPROMByte(RV3028_CLKOUT);
-        if (persistenceSuccess)
-          _pendingEEPROMWrites &= ~clkoutPendingMask;
-        else
-          _pendingEEPROMWrites |= clkoutPendingMask;
-        success &= persistenceSuccess;
-      }
+      bool persistenceSuccess = updateEEPROMByte(RV3028_CLKOUT, 0b01000000); // 32 KHz output by default, CLKOUT is off
+      if (persistenceSuccess)
+        _pendingEEPROMWrites &= ~clkoutPendingMask;
+      else
+        _pendingEEPROMWrites |= clkoutPendingMask;
+      success &= persistenceSuccess;
     }
   }
   return success;
@@ -54,8 +50,7 @@ bool RV3028::setBatteryMode(BatteryMode mode) {
   }
   const byte batteryModePendingMask = 0x02;
   if (requested_bsm == bsm_reg && !(_pendingEEPROMWrites & batteryModePendingMask)) return true;
-  if (requested_bsm != bsm_reg && !setRegister(RV3028_BSM, requested_bsm)) return false;
-  bool persistenceSuccess = updateEEPROMByte(RV3028_BSM);
+  bool persistenceSuccess = updateEEPROMByte(RV3028_BSM, requested_bsm);
   if (persistenceSuccess)
     _pendingEEPROMWrites &= ~batteryModePendingMask;
   else
@@ -146,17 +141,11 @@ bool RV3028::clearAlarm() {
 
 
 bool RV3028::enable32kHz() {
-  bool success = true;
-  success &= setRegister(RV3028_CLKOUT, 0b11000000); // enable CLKOUT 32kHz
-  success &= updateEEPROMByte(RV3028_CLKOUT);
-  return success;
+  return updateEEPROMByte(RV3028_CLKOUT, 0b11000000); // enable CLKOUT 32kHz
 }
 
 bool RV3028::disable32kHz() {
-  bool success = true;
-  success &= setRegister(RV3028_CLKOUT, 0b01000000); // disable CLKOUT
-  success &= updateEEPROMByte(RV3028_CLKOUT);
-  return success;
+  return updateEEPROMByte(RV3028_CLKOUT, 0b01000000); // disable CLKOUT
 }
 
 // use nINT as output since the CLICK board does not
@@ -199,13 +188,11 @@ bool RV3028::setOffset(int offset, OffsetMode mode) {
     // Serial.println(offset);
   }
   // set the offset registers
-  success &= setRegister(RV3028_OFFSET, (offset >> 1));
   byte offsetLow;
   if (!readRegister(RV3028_OFFSET + 1, offsetLow)) return false;
-  success &= setRegister(RV3028_OFFSET + 1,
-                         (offsetLow & 0b01111111) | ((offset & 1) << 7)); // set low offset bit in the RAM mirror
-  success &= updateEEPROMByte(RV3028_OFFSET);
-  success &= updateEEPROMByte(RV3028_OFFSET + 1);
+  byte requestedOffsetLow = (offsetLow & 0b01111111) | ((offset & 1) << 7);
+  success &= updateEEPROMByte(RV3028_OFFSET, offset >> 1);
+  success &= updateEEPROMByte(RV3028_OFFSET + 1, requestedOffsetLow);
   return success;
 }
 
@@ -218,17 +205,19 @@ bool RV3028::setEEPROMRefresh(byte control, bool enable) {
   return setRegister(RV3028_CONTROL, enable ? (control & ~0b00001000) : (control | 0b00001000));
 }
 
-bool RV3028::updateEEPROMByte(byte reg) {
+bool RV3028::updateEEPROMByte(byte reg, byte value) {
   bool success = true;
   byte timeout = 0;
-  byte cnts;
   byte control;
-  // make sure the register to set to EEPROM and the control register are read successfully
-  if (!readRegister(reg, cnts) || !readRegister(RV3028_CONTROL, control)) return false;
+  if (!readRegister(RV3028_CONTROL, control)) return false;
   // disable automatic EEPROM refresh before writing
   if (!setEEPROMRefresh(control, false)) return false; // set EERD = 1
+  if (!setRegister(reg, value)) {
+    setEEPROMRefresh(control, true);
+    return false;
+  }
   // Write the address and data to the EEPROM
-  if (!setRegister(RV3028_EEADDR, reg) || !setRegister(RV3028_EEDATA, cnts)) {
+  if (!setRegister(RV3028_EEADDR, reg) || !setRegister(RV3028_EEDATA, value)) {
     // restore automatic EEPROM refresh before returning after failure
     setEEPROMRefresh(control, true);
     return false;

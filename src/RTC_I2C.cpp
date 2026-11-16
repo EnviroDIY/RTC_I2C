@@ -293,9 +293,11 @@ bool DSAlarm::clearAlarm() {
 bool PCFAlarm::clearErrorFlags() {
   byte control;
   if (!readRegister(0x00, control)) return false;
+  byte seconds;
+  if (!readRegister(_clockreg, seconds)) return false;
+  if (!(control & 0x20) && !(seconds & 0x80)) return true;
   bool success = setRegister(0x00, control | 0x20); // stop the counters while updating seconds
   if (success) {
-    byte seconds;
     success = readRegister(_clockreg, seconds);
     if (success && (seconds & 0x80)) success = setRegister(_clockreg, seconds & 0x7F); // clear OS/VL
   }

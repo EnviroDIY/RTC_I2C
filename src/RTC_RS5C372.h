@@ -34,7 +34,7 @@
   (static_cast<byte>(RTCCapability::RTC_CAP_32KHZ) | static_cast<byte>(RTCCapability::RTC_CAP_1HZ) |                   \
    static_cast<byte>(RTCCapability::RTC_CAP_ALARM) | static_cast<byte>(RTCCapability::RTC_CAP_OFFSET))
 /// Alarms supported by the RS5C372 implementation.
-#define RS5C372_ALARMS static_cast<byte>(AlarmMatch::MATCH_HOURS) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK)
+#define RS5C372_ALARMS (static_cast<byte>(AlarmMatch::MATCH_HOURS) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK))
 
 /**
  * @brief The class for the [Ricoh RS5C372](http://www.ricoh.com/LSI/product_rtc/2wire/5c372/5c372a-e.pdf)
@@ -55,6 +55,12 @@ class RS5C372 : public RTC_I2C {
     _supportedAlarmMatches = RS5C372_ALARMS;
     _bit7set = RS5C372_BIT7;
   }
+  /**
+   * @copydoc RTC_I2C::init()
+   *
+   * Unless both options are `true`, the RTC must already use 24-hour mode. A mode mismatch returns `false` without
+   * writing Control 2, which preserves the XSTP validity flag.
+   */
   bool init(bool reset_configuration = true, bool clear_flags = true) override;
   bool isValid() override;
   bool clearErrorFlags() override;

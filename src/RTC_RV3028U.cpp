@@ -36,16 +36,29 @@ bool RV3028U::setTime(timestamp_t t) {
   // Serial.println(static_cast<uint32_t>(t), HEX);
   byte control;
   if (!readRegister(RV3028_CONTROL + 1, control)) return false;
-  bool success = setRegister(RV3028_CONTROL + 1, control | 0b1); // reset counter chain in clock
+  tm timeParts;
+  TimeUtils::fillTimeParts(t, 0, epochStart::unix_epoch, timeParts);
+  _wire->beginTransmission(_i2caddr);
+  _wire->write(RV3028_CLOCKREG);
+  _wire->write(bin2bcd(timeParts.tm_sec));
+  _wire->write(bin2bcd(timeParts.tm_min));
+  _wire->write(bin2bcd(timeParts.tm_hour));
+  _wire->write(bin2bcd(timeParts.tm_wday));
+  _wire->write(bin2bcd(timeParts.tm_mday));
+  _wire->write(bin2bcd(timeParts.tm_mon + 1));
+  _wire->write(bin2bcd(timeParts.tm_year - 100));
+  bool success = _wire->endTransmission() == 0;
+  success &= setRegister(RV3028_CONTROL + 1, control | 0b1); // reset the shared counter chain before setting Unix time
   _wire->beginTransmission(_i2caddr);
   _wire->write(RV3028_UCLOCK);
+  timestamp_t unixTime = t;
   for (byte i = 0; i < 4; i++) {
 #if defined(ARDUINO_ARCH_NRF52840) || defined(ARDUINO_ARCH_RP2040) || defined(ARDUINO_ARCH_MBED)
-    _wire->write(static_cast<int>(t & 0xFF));
+    _wire->write(static_cast<int>(unixTime & 0xFF));
 #else
-    _wire->write(static_cast<uint32_t>(t & 0xFF));
+    _wire->write(static_cast<uint32_t>(unixTime & 0xFF));
 #endif
-    t = t >> 8;
+    unixTime = unixTime >> 8;
   }
   success &= (_wire->endTransmission() == 0);
   if (success) success &= clearErrorFlags();

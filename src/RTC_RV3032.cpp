@@ -193,17 +193,19 @@ bool RV3032::setEEPROMRefresh(byte control, bool enable) {
   return setRegister(RV3032_CONTROL, enable ? (control & ~0b00000100) : (control | 0b00000100));
 }
 
-bool RV3032::updateEEPROMByte(byte reg) {
+bool RV3032::updateEEPROMByte(byte reg, byte value) {
   bool success = true;
   byte timeout = 0;
-  byte cnts;
   byte control;
-  // make sure the register to set to EEPROM and the control register are read successfully
-  if (!readRegister(reg, cnts) || !readRegister(RV3032_CONTROL, control)) return false;
+  if (!readRegister(RV3032_CONTROL, control)) return false;
   // disable automatic EEPROM refresh before writing
   if (!setEEPROMRefresh(control, false)) return false; // set EERD = 1
+  if (!setRegister(reg, value)) {
+    setEEPROMRefresh(control, true);
+    return false;
+  }
   // Write the address and data to the EEPROM
-  if (!setRegister(RV3032_EEADDR, reg) || !setRegister(RV3032_EEDATA, cnts)) {
+  if (!setRegister(RV3032_EEADDR, reg) || !setRegister(RV3032_EEDATA, value)) {
     // restore automatic EEPROM refresh before returning after failure
     setEEPROMRefresh(control, true);
     return false;
@@ -240,8 +242,7 @@ bool RV3032::setEEPROMBackedRegister(byte reg, byte value) {
   byte currentValue;
   if (!readRegister(reg, currentValue)) return false;
   if (currentValue == value && !(_pendingEEPROMWrites & pendingMask)) return true;
-  if (currentValue != value && !setRegister(reg, value)) return false;
-  bool persistenceSuccess = updateEEPROMByte(reg);
+  bool persistenceSuccess = updateEEPROMByte(reg, value);
   if (persistenceSuccess)
     _pendingEEPROMWrites &= ~pendingMask;
   else

@@ -58,7 +58,7 @@ bool runAlarmTest(unsigned long timeoutMs, uint8_t expectedCount) {
   uint8_t reportedCount = 0;
   unsigned long startTime = millis();
 
-  while (alarmInterruptCount < expectedCount && millis() - startTime < timeoutMs) {
+  while (millis() - startTime < timeoutMs) {
     reportAlarmInterrupts(reportedCount);
   }
 

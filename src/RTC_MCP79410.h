@@ -32,9 +32,9 @@
    static_cast<byte>(RTCCapability::RTC_CAP_ALARM) | static_cast<byte>(RTCCapability::RTC_CAP_OFFSET))
 /// Alarms supported by the MCP79410 implementation.
 #define MCP79410_ALARMS                                                                                                \
-  static_cast<byte>(AlarmMatch::MATCH_SECONDS) | static_cast<byte>(AlarmMatch::MATCH_MINUTES) |                        \
-    static_cast<byte>(AlarmMatch::MATCH_HOURS) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) |                    \
-    static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH)
+  (static_cast<byte>(AlarmMatch::MATCH_SECONDS) | static_cast<byte>(AlarmMatch::MATCH_MINUTES) |                       \
+   static_cast<byte>(AlarmMatch::MATCH_HOURS) | static_cast<byte>(AlarmMatch::MATCH_DAY_OF_WEEK) |                     \
+   static_cast<byte>(AlarmMatch::MATCH_DAY_OF_MONTH))
 
 /// The class for the [Microchip
 /// MCP79410](https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ProductDocuments/DataSheets/20005010H.pdf)

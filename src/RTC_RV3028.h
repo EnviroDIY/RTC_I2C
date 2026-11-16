@@ -92,10 +92,11 @@ class RV3028 : public RTC_I2C {
   /**
    * @brief Update a byte in the EEPROM.
    *
-   * @param reg The EEPROM register address to update.
+   * @param reg The EEPROM-backed register address to update.
+   * @param value The value to write to the RAM mirror and EEPROM.
    * @return `true` if the EEPROM byte was successfully updated; otherwise `false`.
    */
-  bool updateEEPROMByte(byte reg);
+  bool updateEEPROMByte(byte reg, byte value);
   /**
    * @brief Enable or disable automatic EEPROM refresh (the EERD bit of the control register).
    *

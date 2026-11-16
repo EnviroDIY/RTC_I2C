@@ -30,7 +30,17 @@ class RV3028U : public RV3028 {
     _bit7set = RV3028_BIT7;
   }
   using RTC_I2C::setTime;
+  /**
+   * @brief Set both the Unix counter and the calendar counters used by the alarm.
+   * @param t The Unix timestamp to write to the RTC.
+   * @return `true` when the required I2C communication succeeds; otherwise `false`.
+   */
   bool setTime(timestamp_t t) override;
+  /**
+   * @brief Set both the Unix counter and the calendar counters used by the alarm.
+   * @param timeParts The calendar time to write to the RTC.
+   * @return `true` when the required I2C communication succeeds; otherwise `false`.
+   */
   bool setTime(tm timeParts) override;
   timestamp_t getTime() override;
   bool getTime(tm &timeParts) override;
