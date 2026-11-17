@@ -1,7 +1,7 @@
 # Alarm Interrupts<!--! {#example_alarm} -->
 
 This example demonstrates receiving periodic countdown and calendar alarm interrupts from an RV3032 real-time clock.
-It first configures a two-second periodic countdown alarm and verifies that three interrupts are received.
+It first configures a two-second periodic countdown alarm and verifies that ten interrupts are received.
 It then runs each calendar alarm test supported by the selected RTC.
 The RV3032 does not support second-resolution calendar alarms, so the default configuration skips those tests and verifies the next-minute calendar alarm five times.
 

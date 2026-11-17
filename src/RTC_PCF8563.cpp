@@ -89,13 +89,13 @@ bool PCF8563::clearCountdownAlarm() {
 bool PCF8563::enableAlarm() {
   byte ctr;
   if (!readRegister(PCF8563_CONTROL + 1, ctr)) return false;
-  return setRegister(PCF8563_CONTROL + 1, (ctr & 0b11111101) | 0b00000010);
+  return setRegister(PCF8563_CONTROL + 1, (ctr & 0b11110001) | 0b00001110);
 }
 
 bool PCF8563::disableAlarm() {
   byte ctr;
   if (!readRegister(PCF8563_CONTROL + 1, ctr)) return false;
-  return setRegister(PCF8563_CONTROL + 1, (ctr & 0b11111101) | 0b00000000);
+  return setRegister(PCF8563_CONTROL + 1, (ctr & 0b11110001) | 0b00001100);
 }
 
 

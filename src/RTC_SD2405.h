@@ -57,7 +57,20 @@ class SD2405 : public RTC_I2C {
   bool setAlarm(AlarmMatch match, const AlarmTime &alarm) override;
   bool setCountdownAlarm(uint16_t timerValue,
                          CountdownTimerFrequency timerFrequency = CountdownTimerFrequency::HZ_1) override;
+  /**
+   * @copydoc RTC_I2C::enableCountdownAlarm()
+   *
+   * Enabling the countdown alarm replaces the selected calendar-alarm or frequency output.
+   * Callers must explicitly re-enable that output after using the countdown alarm.
+   */
   bool enableCountdownAlarm() override;
+  /**
+   * @copydoc RTC_I2C::disableCountdownAlarm()
+   *
+   * Disabling the countdown alarm disconnects the output without restoring the previously selected calendar-alarm or
+   * frequency output.
+   * Callers must explicitly re-enable that output after using the countdown alarm.
+   */
   bool disableCountdownAlarm() override;
   bool senseCountdownAlarm() override;
   bool clearCountdownAlarm() override;

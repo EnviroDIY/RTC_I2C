@@ -209,8 +209,10 @@ void loop() {
       unsupported();
       break;
     }
-    rtc.disableCountdownAlarm();
-    Serial.println(F("Countdown alarm disabled"));
+    if (rtc.disableCountdownAlarm())
+      Serial.println(F("Countdown alarm disabled"));
+    else
+      Serial.println(F("Could not disable countdown alarm"));
     break;
   case 't':
     if (!rtc.supports(RTCCapability::RTC_CAP_TEMP)) {
