@@ -1,29 +1,38 @@
 /** =========================================================================
  * @example{lineno} alarm.ino
- * @brief Demonstrates receiving every-second and every-minute DS3231 alarm interrupts.
+ * @brief Demonstrates receiving periodic countdown and calendar alarm interrupts from an RV3032.
  * ======================================================================= */
 
-#include <RTC_DS3231.h>
+#include <RTC_RV3032.h>
 
 #if defined(ARDUINO_ARCH_AVR)
 #include <EnableInterrupt.h>
 #endif
 
 const uint8_t alarmInterruptPin = 31;
+
+const uint8_t expectedCountdownAlarms = 10;
+const uint16_t countdownAlarmPeriodSeconds = 2;
+const unsigned long countdownTestTimeoutMs = 21500UL;
+
 const uint8_t expectedSecondAlarms = 15;
-const uint8_t expectedMinuteAlarms = 2;
+const unsigned long secondTestDurationMs = 15000UL;
+
 const uint8_t futureAlarmTestCount = 5;
 const uint8_t futureAlarmLeadSeconds = 5;
-
-const unsigned long secondTestDurationMs = 15000UL;
-const unsigned long minuteTestDurationMs = 120000UL;
 const unsigned long futureSecondsAlarmTimeoutMs = 7000UL;
+
+const uint8_t expectedMinuteAlarms = 2;
+const unsigned long minuteTestDurationMs = 120000UL;
 const unsigned long futureMinutesAlarmTimeoutMs = 70000UL;
 
-DS3231 rtc;
+RV3032 rtc;
 
 volatile uint8_t alarmInterruptCount = 0;
 
+/**
+ * ISR for handling clock alarm interrupts.
+ */
 void clockAlarmISR() {
   ++alarmInterruptCount;
 }
@@ -37,17 +46,24 @@ void attachClockAlarmInterrupt() {
 #endif
 }
 
+/**
+ * Reset the alarm interrupt count to zero.
+ */
 void resetAlarmInterruptCount() {
   noInterrupts();
   alarmInterruptCount = 0;
   interrupts();
 }
 
+/**
+ * Report any calendar alarm interrupts that have occurred since the last report.
+ * @param reportedCount The number of calendar alarm interrupts that have already been reported.
+ */
 void reportAlarmInterrupts(uint8_t& reportedCount) {
   uint8_t currentCount = alarmInterruptCount;
   if (currentCount == reportedCount) return;
 
-  // The DS3231 holds INT/SQW low until the Alarm 1 flag is cleared.
+  // The RTC holds its interrupt output low until the calendar alarm flag is cleared.
   rtc.clearAlarm();
   while (reportedCount < currentCount) {
     ++reportedCount;
@@ -55,6 +71,60 @@ void reportAlarmInterrupts(uint8_t& reportedCount) {
   }
 }
 
+/**
+ * Report any countdown alarm interrupts that have occurred since the last report.
+ * @param reportedCount The number of countdown alarm interrupts that have already been reported.
+ */
+void reportCountdownAlarmInterrupts(uint8_t& reportedCount) {
+  uint8_t currentCount = alarmInterruptCount;
+  if (currentCount == reportedCount) return;
+
+  rtc.clearCountdownAlarm();
+  while (reportedCount < currentCount) {
+    ++reportedCount;
+    Serial.println(F("Countdown alarm detected"));
+  }
+}
+
+/**
+ * Run the countdown alarm test.
+ * Returns true if the test passes, false otherwise.
+ */
+bool runCountdownAlarmTest() {
+  resetAlarmInterruptCount();
+  if (!rtc.disableCountdownAlarm() || !rtc.clearCountdownAlarm() ||
+      !rtc.setCountdownAlarm(countdownAlarmPeriodSeconds, CountdownTimerFrequency::HZ_1) ||
+      !rtc.enableCountdownAlarm()) {
+    Serial.println(F("Could not configure the countdown alarm"));
+    return false;
+  }
+
+  uint8_t reportedCount = 0;
+  unsigned long startTime = millis();
+  while (alarmInterruptCount < expectedCountdownAlarms && millis() - startTime < countdownTestTimeoutMs) {
+    reportCountdownAlarmInterrupts(reportedCount);
+  }
+
+  rtc.disableCountdownAlarm();
+  rtc.clearCountdownAlarm();
+  reportCountdownAlarmInterrupts(reportedCount);
+
+  Serial.print(F("Received "));
+  Serial.print(alarmInterruptCount);
+  Serial.print(F(" countdown interrupts; expected "));
+  Serial.println(expectedCountdownAlarms);
+
+  bool passed = alarmInterruptCount == expectedCountdownAlarms;
+  Serial.println(passed ? F("PASS") : F("FAIL"));
+  return passed;
+}
+
+/**
+ * Run the alarm test for the specified timeout and expected count.
+ * Returns true if the test passes, false otherwise.
+ * @param timeoutMs The maximum time to wait for the alarm interrupts.
+ * @param expectedCount The number of alarm interrupts expected.
+ */
 bool runAlarmTest(unsigned long timeoutMs, uint8_t expectedCount) {
   uint8_t reportedCount = 0;
   unsigned long startTime = millis();
@@ -77,6 +147,11 @@ bool runAlarmTest(unsigned long timeoutMs, uint8_t expectedCount) {
   return passed;
 }
 
+/**
+ * Run the future minutes alarm test.
+ * Returns true if the test passes, false otherwise.
+ * @param testNumber The test number for reporting purposes.
+ */
 bool runFutureMinutesAlarmTest(uint8_t testNumber) {
   tm currentTime;
   if (!rtc.disableAlarm() || !rtc.clearAlarm() || !rtc.getTime(currentTime)) {
@@ -132,6 +207,11 @@ bool runFutureMinutesAlarmTest(uint8_t testNumber) {
   return passed;
 }
 
+/**
+ * Run the future seconds alarm test.
+ * Returns true if the test passes, false otherwise.
+ * @param testNumber The test number for reporting purposes.
+ */
 bool runFutureSecondsAlarmTest(uint8_t testNumber) {
   tm currentTime;
   if (!rtc.disableAlarm() || !rtc.clearAlarm() || !rtc.getTime(currentTime)) {
@@ -183,12 +263,17 @@ bool runFutureSecondsAlarmTest(uint8_t testNumber) {
   return passed;
 }
 
+
+/** ===========================================================================
+ * Setup function for the alarm interrupt example.
+ * Initializes the RTC, attaches the alarm interrupt, and runs various alarm tests.
+ =========================================================================== */
 void setup() {
   Serial.begin(115200);
   while (!Serial);
   Serial.println();
   Serial.print(rtc.getMakeModel());
-  Serial.println(F(" alarm interrupt example"));
+  Serial.println(F(" alarm interrupt example\n"));
 
   if (!rtc.begin() || !rtc.init()) {
     Serial.print(F("Cannot access the "));
@@ -200,9 +285,19 @@ void setup() {
 
   attachClockAlarmInterrupt();
 
+  bool countdownTestPassed = true;
+  if (!rtc.supports(RTCCapability::RTC_CAP_COUNTDOWN)) {
+    Serial.println(F("/nCountdown alarm not supported"));
+  } else {
+    Serial.print(F("\nTesting a periodic two-second countdown alarm "));
+    Serial.print(futureAlarmTestCount);
+    Serial.println(F(" times"));
+    countdownTestPassed = runCountdownAlarmTest();
+  }
+
   bool secondTestPassed = true;
   if (!rtc.supports(AlarmMatch::MATCH_SECONDS)) {
-    Serial.println(F("Every-second alarm not supported"));
+    Serial.println(F("\nEvery-second alarm not supported"));
   } else {
     Serial.println(F("\nTesting an alarm every second for 15 seconds"));
     resetAlarmInterruptCount();
@@ -215,7 +310,7 @@ void setup() {
 
   bool futureSecondsTestsPassed = true;
   if (!rtc.supports(AlarmMatch::MATCH_SECONDS)) {
-    Serial.println(F("Seconds matching alarm not supported for future second matching"));
+    Serial.println(F("\nSeconds matching alarm not supported for future second matching"));
   } else {
     Serial.println(F("\nTesting an alarm set 5 seconds in the future 5 times"));
     for (uint8_t testNumber = 1; testNumber <= futureAlarmTestCount; ++testNumber) {
@@ -225,7 +320,7 @@ void setup() {
 
   bool everyMinuteTestPassed = true;
   if (!rtc.supports(AlarmMatch::MATCH_SECONDS)) {
-    Serial.println(F("Seconds matching alarm not supported for every-minute alarm"));
+    Serial.println(F("\nSeconds matching alarm not supported for every-minute alarm"));
   } else {
     Serial.println(F("\nTesting an alarm every minute for 2 minutes"));
     resetAlarmInterruptCount();
@@ -239,7 +334,7 @@ void setup() {
 
   bool futureMinutesTestsPassed = true;
   if (!rtc.supports(AlarmMatch::MATCH_MINUTES)) {
-    Serial.println(F("Minutes matching alarm not supported for future minute matching"));
+    Serial.println(F("\nMinutes matching alarm not supported for future minute matching"));
   } else {
     Serial.println(F("\nTesting an alarm set for the next minute"));
     for (uint8_t testNumber = 1; testNumber <= futureAlarmTestCount; ++testNumber) {
@@ -248,7 +343,8 @@ void setup() {
   }
 
   Serial.println();
-  Serial.println(secondTestPassed && everyMinuteTestPassed && futureSecondsTestsPassed && futureMinutesTestsPassed ?
+  Serial.println(countdownTestPassed && secondTestPassed && everyMinuteTestPassed && futureSecondsTestsPassed &&
+                     futureMinutesTestsPassed ?
                    F("All alarm tests passed") :
                    F("One or more tests failed"));
 }
