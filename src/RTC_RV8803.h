@@ -18,6 +18,8 @@
 #define RV8803_CLOCKREG 0x00
 /// Minutes Alarm register; the alarm register set begins at address 0x08.
 #define RV8803_ALARM 0x08
+/// Timer Counter 0 register; the 12-bit periodic countdown timer begins at address 0x0B.
+#define RV8803_TIMER 0x0B
 /// CLKOUT register; referred to as the CLKOUT register in documentation (ADDRESS 0x0D).
 #define RV8803_CLKOUT 0x0D
 /// Status register; referred to as the Status register in documentation (ADDRESS 0x0E).
@@ -35,7 +37,8 @@
 /// Capabilities supported by the RV-8803 implementation.
 #define RV8803_CAP                                                                                                     \
   (static_cast<byte>(RTCCapability::RTC_CAP_32KHZ) | static_cast<byte>(RTCCapability::RTC_CAP_1HZ) |                   \
-   static_cast<byte>(RTCCapability::RTC_CAP_ALARM) | static_cast<byte>(RTCCapability::RTC_CAP_OFFSET))
+   static_cast<byte>(RTCCapability::RTC_CAP_ALARM) | static_cast<byte>(RTCCapability::RTC_CAP_OFFSET) |                \
+   static_cast<byte>(RTCCapability::RTC_CAP_COUNTDOWN))
 /// Alarms supported by the RV-8803 implementation.
 #define RV8803_ALARMS                                                                                                  \
   static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |                          \
@@ -65,6 +68,12 @@ class RV8803 : public RTC_I2C {
   bool getTime(timestamp_t &unixTimestamp) override;
   bool getTime(tm &timeParts) override;
   bool setAlarm(AlarmMatch match, const AlarmTime &alarm) override;
+  bool setCountdownAlarm(uint16_t timerValue,
+                         CountdownTimerFrequency timerFrequency = CountdownTimerFrequency::HZ_1) override;
+  bool enableCountdownAlarm() override;
+  bool disableCountdownAlarm() override;
+  bool senseCountdownAlarm() override;
+  bool clearCountdownAlarm() override;
   bool senseAlarm() override;
   bool clearAlarm() override;
   bool enableAlarm() override;

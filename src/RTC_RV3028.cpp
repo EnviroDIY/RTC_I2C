@@ -115,6 +115,69 @@ bool RV3028::setAlarm(AlarmMatch match, const AlarmTime &alarm) {
   return success;
 }
 
+bool RV3028::setCountdownAlarm(uint16_t timerValue, CountdownTimerFrequency timerFrequency) {
+  if (timerValue == 0 || timerValue > 0x0FFF) return false;
+
+  byte frequencyBits;
+  switch (timerFrequency) {
+  case CountdownTimerFrequency::HZ_4096:
+    frequencyBits = 0;
+    break;
+  case CountdownTimerFrequency::HZ_64:
+    frequencyBits = 1;
+    break;
+  case CountdownTimerFrequency::HZ_1:
+    frequencyBits = 2;
+    break;
+  case CountdownTimerFrequency::PER_MINUTE:
+    frequencyBits = 3;
+    break;
+  default:
+    return false;
+  }
+
+  byte control1;
+  byte control2;
+  if (!readRegister(RV3028_CONTROL, control1) || !readRegister(RV3028_CONTROL + 1, control2)) return false;
+
+  bool success = true;
+  success &= setRegister(RV3028_CONTROL,
+                         (control1 & 0b00111000) | 0b10000000 | frequencyBits); // repeat mode; stop timer; set TD
+  success &= setRegister(RV3028_CONTROL + 1, control2 & 0b11101111);            // disable TIE
+  success &= clearCountdownAlarm();
+  success &= setRegister(RV3028_TIMER, static_cast<byte>(timerValue));
+  success &= setRegister(RV3028_TIMER + 1, static_cast<byte>(timerValue >> 8));
+  return success;
+}
+
+bool RV3028::enableCountdownAlarm() {
+  byte control1;
+  byte control2;
+  if (!readRegister(RV3028_CONTROL, control1) || !readRegister(RV3028_CONTROL + 1, control2)) return false;
+  bool success = clearCountdownAlarm();
+  success &= setRegister(RV3028_CONTROL + 1, control2 | 0b00010000); // enable TIE
+  success &= setRegister(RV3028_CONTROL, control1 | 0b10000100);     // repeat mode; start timer
+  return success;
+}
+
+bool RV3028::disableCountdownAlarm() {
+  byte control1;
+  byte control2;
+  if (!readRegister(RV3028_CONTROL, control1) || !readRegister(RV3028_CONTROL + 1, control2)) return false;
+  bool success = setRegister(RV3028_CONTROL, control1 & 0b11111011); // stop timer
+  success &= setRegister(RV3028_CONTROL + 1, control2 & 0b11101111); // disable TIE
+  return success;
+}
+
+bool RV3028::senseCountdownAlarm() {
+  byte status;
+  return readRegister(RV3028_STATUS, status) && ((status & 0b00001000) != 0);
+}
+
+bool RV3028::clearCountdownAlarm() {
+  return setRegister(RV3028_STATUS, 0b01110111); // clear TF without clearing the other writable status flags
+}
+
 
 bool RV3028::enableAlarm() {
   byte ctr;

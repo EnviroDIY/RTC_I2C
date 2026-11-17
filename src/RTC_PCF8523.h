@@ -20,6 +20,10 @@
 #define PCF8523_OFFSET 0x0E
 /// Timer and clock-output control register; referred to as Tmr_CLKOUT_ctrl in documentation (ADDRESS 0x0F).
 #define PCF8523_CLKOUT 0x0F
+/// Timer B frequency control register; referred to as Tmr_B_freq_ctrl in documentation (ADDRESS 0x12).
+#define PCF8523_TIMER_FREQUENCY 0x12
+/// Timer B value register; referred to as Tmr_B_reg in documentation (ADDRESS 0x13).
+#define PCF8523_TIMER_VALUE 0x13
 /// Weekday numbering used by the RTC: 0 through 6.
 #define PCF8523_WDAYBASE 0
 /// The weekday register comes after the day-of-month register in the clock register sequence.
@@ -30,7 +34,7 @@
 #define PCF8523_CAP                                                                                                    \
   (static_cast<byte>(RTCCapability::RTC_CAP_32KHZ) | static_cast<byte>(RTCCapability::RTC_CAP_1HZ) |                   \
    static_cast<byte>(RTCCapability::RTC_CAP_ALARM) | static_cast<byte>(RTCCapability::RTC_CAP_BATTERY) |               \
-   static_cast<byte>(RTCCapability::RTC_CAP_OFFSET))
+   static_cast<byte>(RTCCapability::RTC_CAP_OFFSET) | static_cast<byte>(RTCCapability::RTC_CAP_COUNTDOWN))
 /// Alarms supported by the PCF8523 implementation.
 #define PCF8523_ALARMS                                                                                                 \
   (static_cast<byte>(AlarmMatch::MATCH_MINUTES) | static_cast<byte>(AlarmMatch::MATCH_HOURS) |                         \
@@ -53,6 +57,12 @@ class PCF8523 : public PCFAlarm {
   bool init(bool reset_configuration = true, bool clear_flags = true) override;
   bool setBatteryMode(BatteryMode mode) override;
   bool isValid() override;
+  bool setCountdownAlarm(uint16_t timerValue,
+                         CountdownTimerFrequency timerFrequency = CountdownTimerFrequency::HZ_1) override;
+  bool enableCountdownAlarm() override;
+  bool disableCountdownAlarm() override;
+  bool senseCountdownAlarm() override;
+  bool clearCountdownAlarm() override;
   bool enableAlarm() override;
   bool disableAlarm() override;
   bool enable32kHz() override;

@@ -65,6 +65,65 @@ bool SD2405::setAlarm(AlarmMatch match, const AlarmTime &alarm) {
   return success;
 }
 
+bool SD2405::setCountdownAlarm(uint16_t timerValue, CountdownTimerFrequency timerFrequency) {
+  if (timerValue == 0 || timerValue > 0xFF) return false;
+
+  byte frequencyBits;
+  switch (timerFrequency) {
+  case CountdownTimerFrequency::HZ_4096:
+    frequencyBits = 0;
+    break;
+  case CountdownTimerFrequency::HZ_64:
+    frequencyBits = 1;
+    break;
+  case CountdownTimerFrequency::HZ_1:
+    frequencyBits = 2;
+    break;
+  case CountdownTimerFrequency::PER_MINUTE:
+    frequencyBits = 3;
+    break;
+  default:
+    return false;
+  }
+
+  byte control2;
+  byte control3;
+  if (!readRegister(SD2405_CONTROL + 1, control2) || !readRegister(SD2405_CONTROL + 2, control3)) return false;
+
+  bool success = setRegister(SD2405_CONTROL + 1, control2 & 0b11111011); // disable INTDE
+  success &= clearCountdownAlarm();
+  success &= setRegister(SD2405_CONTROL + 2, (control3 & 0b11001111) | (frequencyBits << 4));
+  success &= setRegister(SD2405_TIMER, static_cast<byte>(timerValue));
+  return success;
+}
+
+bool SD2405::enableCountdownAlarm() {
+  byte control;
+  if (!readRegister(SD2405_CONTROL + 1, control)) return false;
+  bool success = clearCountdownAlarm();
+  success &= setRegister(SD2405_CONTROL + 1, (control & 0b11001111) | 0b00110100); // select countdown INT; enable INTDE
+  return success;
+}
+
+bool SD2405::disableCountdownAlarm() {
+  byte control;
+  if (!readRegister(SD2405_CONTROL + 1, control)) return false;
+  byte requestedControl = control & 0b11111011;                                      // disable INTDE
+  if ((requestedControl & 0b00110000) == 0b00110000) requestedControl &= 0b11001111; // disconnect countdown INT
+  return setRegister(SD2405_CONTROL + 1, requestedControl);
+}
+
+bool SD2405::senseCountdownAlarm() {
+  byte control;
+  return readRegister(SD2405_CONTROL, control) && ((control & 0b00010000) != 0);
+}
+
+bool SD2405::clearCountdownAlarm() {
+  byte control;
+  if (!readRegister(SD2405_CONTROL, control)) return false;
+  return setRegister(SD2405_CONTROL, control & 0b11101111); // clear INTDF
+}
+
 
 bool SD2405::enableAlarm() {
   byte ctr;

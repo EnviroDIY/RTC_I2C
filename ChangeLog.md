@@ -75,6 +75,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Added recurring alarm support only for the match modes each RTC can represent; unsupported modes return `false`.
 - Added non-blocking DS3231 forced temperature conversion and native fake-I2C regression tests for time, alarm, validity, temperature, and EEPROM paths.
 - Added example usage and documentation for the new alarm and time APIs.
+- Added `RTCCapability::RTC_CAP_COUNTDOWN`, `CountdownTimerFrequency`, and periodic countdown timer configuration, enable, disable, sense, and clear APIs for the PCF8523, PCF8563, RV-3028, RV-3028-U, RV-3032, RV-8523, RV-8803, and SD2405.
 
 ### Removed
 

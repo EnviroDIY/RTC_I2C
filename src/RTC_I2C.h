@@ -23,12 +23,13 @@
 
 /// Capabilities supported by an RTC implementation.
 enum class RTCCapability : byte {
-  RTC_CAP_32KHZ = 0x01,   ///< The RTC can generate a 32 kHz signal.
-  RTC_CAP_1HZ = 0x02,     ///< The RTC can generate a 1 Hz signal.
-  RTC_CAP_ALARM = 0x04,   ///< The RTC has alarm functionality.
-  RTC_CAP_BATTERY = 0x08, ///< The RTC supports configuring its backup-battery switchover mode.
-  RTC_CAP_OFFSET = 0x10,  ///< The RTC has an offset/calibration register.
-  RTC_CAP_TEMP = 0x20,    ///< The RTC has a temperature sensor.
+  RTC_CAP_32KHZ = 0x01,     ///< The RTC can generate a 32 kHz signal.
+  RTC_CAP_1HZ = 0x02,       ///< The RTC can generate a 1 Hz signal.
+  RTC_CAP_ALARM = 0x04,     ///< The RTC has alarm functionality.
+  RTC_CAP_BATTERY = 0x08,   ///< The RTC supports configuring its backup-battery switchover mode.
+  RTC_CAP_OFFSET = 0x10,    ///< The RTC has an offset/calibration register.
+  RTC_CAP_TEMP = 0x20,      ///< The RTC has a temperature sensor.
+  RTC_CAP_COUNTDOWN = 0x40, ///< The RTC has a periodic countdown timer interrupt.
 };
 
 #ifndef SECONDS_IN_DAY
@@ -74,6 +75,20 @@ enum class AlarmMatch : byte {
 };
 
 /**
+ * @brief Selects the source clock for a periodic countdown timer.
+ *
+ * The countdown period is the timer value divided by the selected source frequency. A driver returns `false` when
+ * the selected RTC does not support the requested source frequency or timer value.
+ */
+enum class CountdownTimerFrequency : byte {
+  HZ_4096,    ///< One timer tick every 1/4096 second.
+  HZ_64,      ///< One timer tick every 1/64 second.
+  HZ_1,       ///< One timer tick every second.
+  PER_MINUTE, ///< One timer tick every minute.
+  PER_HOUR    ///< One timer tick every hour.
+};
+
+/**
  * @brief Calendar and time fields used to configure an alarm.
  *
  * RTC_I2C does not validate these values. The caller is responsible for supplying values accepted by the selected RTC.
@@ -103,7 +118,8 @@ class RTC_I2C {
    * function is called.
    *
    * @param wi The I2C interface to use.
-   * @param reset_configuration Whether to reset the RTC's operational configuration to the library defaults.
+   * @param reset_configuration Whether to reset the RTC's operational configuration to the library defaults.  Optional
+   * with a default of true.  In versions prior to 0.8.0, this was always true.
    * @param clear_flags Whether to clear any previously set error flags during initialization.  Optional with a default
    * of true.  In versions prior to 0.8.0, this was always true.
    * @return `true` if the RTC address is valid and the device responds on I2C; otherwise `false`.
@@ -178,10 +194,6 @@ class RTC_I2C {
 
   /**
    * @brief Read the RTC and return a Unix timestamp when the complete operation succeeds.
-   *
-   * The default implementation reads `tm` calendar fields with `getTime(tm&)` and converts
-   * them only after a successful I2C read.
-   *
    * @param[out] unixTimestamp The Unix timestamp read from the RTC.
    * @return `true` when both the I2C read and conversion succeed; otherwise `false`.
    */
@@ -240,7 +252,8 @@ class RTC_I2C {
    * @param hour The hour after midnight.
    * @param minute The minute after the hour.
    * @param second The second after the minute.
-   * @return The result of `setAlarm(AlarmMatch::MATCH_EXACT, alarm)`.
+   * @return `true` when the alarm registers are configured; `false` when the match mode is unsupported or communication
+   * fails.
    */
   bool setExactAlarm(uint16_t year = 2000, byte month = 1, byte day = 1, byte hour = 0, byte minute = 0,
                      byte second = 0);
@@ -251,7 +264,8 @@ class RTC_I2C {
    * @param hour The hour after midnight.
    * @param minute The minute after the hour.
    * @param second The second after the minute.
-   * @return The result of `setAlarm(AlarmMatch::MATCH_DAY_OF_YEAR, alarm)`.
+   * @return `true` when the alarm registers are configured; `false` when the match mode is unsupported or communication
+   * fails.
    */
   bool setYearlyAlarm(byte month = 1, byte day = 1, byte hour = 0, byte minute = 0, byte second = 0);
   /**
@@ -260,7 +274,8 @@ class RTC_I2C {
    * @param hour The hour after midnight.
    * @param minute The minute after the hour.
    * @param second The second after the minute.
-   * @return The result of `setAlarm(AlarmMatch::MATCH_DAY_OF_MONTH, alarm)`.
+   * @return `true` when the alarm registers are configured; `false` when the match mode is unsupported or communication
+   * fails.
    */
   bool setMonthlyAlarm(byte day = 1, byte hour = 0, byte minute = 0, byte second = 0);
   /**
@@ -269,7 +284,8 @@ class RTC_I2C {
    * @param hour The hour after midnight.
    * @param minute The minute after the hour.
    * @param second The second after the minute.
-   * @return The result of `setAlarm(AlarmMatch::MATCH_DAY_OF_WEEK, alarm)`.
+   * @return `true` when the alarm registers are configured; `false` when the match mode is unsupported or communication
+   * fails.
    */
   bool setWeeklyAlarm(byte weekday = 0, byte hour = 0, byte minute = 0, byte second = 0);
   /**
@@ -277,27 +293,69 @@ class RTC_I2C {
    * @param hour The hour after midnight.
    * @param minute The minute after the hour.
    * @param second The second after the minute.
-   * @return The result of `setAlarm(AlarmMatch::MATCH_HOURS, alarm)`.
+   * @return `true` when the alarm registers are configured; `false` when the match mode is unsupported or communication
+   * fails.
    */
   bool setDailyAlarm(byte hour = 0, byte minute = 0, byte second = 0);
   /**
    * @brief Configure an hourly alarm matching minute and second.
    * @param minute The minute after the hour.
    * @param second The second after the minute.
-   * @return The result of `setAlarm(AlarmMatch::MATCH_MINUTES, alarm)`.
+   * @return `true` when the alarm registers are configured; `false` when the match mode is unsupported or communication
+   * fails.
    */
   bool setHourlyAlarm(byte minute = 0, byte second = 0);
   /**
    * @brief Configure an alarm every minute matching the requested second.
    * @param second The second after the minute.
-   * @return The result of `setAlarm(AlarmMatch::MATCH_SECONDS, alarm)`.
+   * @return `true` when the alarm registers are configured; `false` when the match mode is unsupported or communication
+   * fails.
    */
   bool setMinuteAlarm(byte second = 0);
   /**
    * @brief Configure an alarm every second.
-   * @return The result of `setAlarm(AlarmMatch::EVERY_SECOND, alarm)`.
+   * @return `true` when the alarm registers are configured; `false` when the match mode is unsupported or communication
+   * fails.
    */
   bool setSecondAlarm();
+
+  /**
+   * @brief Configure a periodic countdown timer without starting it.
+   *
+   * The period is `timerValue` divided by `timerFrequency`. No rounding or substitution is performed. The first
+   * period after enabling may have device-specific uncertainty; subsequent periods use the configured interval.
+   *
+   * @param timerValue The number of selected source-clock ticks in each period.
+   * @param timerFrequency The countdown source clock. Defaults to one tick per second.
+   * @return `true` when the countdown registers are configured; `false` when the frequency or value is unsupported,
+   * or communication fails.
+   */
+  virtual bool setCountdownAlarm(uint16_t timerValue,
+                                 CountdownTimerFrequency timerFrequency = CountdownTimerFrequency::HZ_1);
+
+  /**
+   * @brief Clear any prior countdown flag and start the periodic countdown interrupt.
+   * @return `true` when the countdown timer is enabled; otherwise `false`.
+   */
+  virtual bool enableCountdownAlarm() { return false; }
+
+  /**
+   * @brief Stop the periodic countdown timer and disable its interrupt.
+   * @return `true` when the countdown timer is disabled; otherwise `false`.
+   */
+  virtual bool disableCountdownAlarm() { return false; }
+
+  /**
+   * @brief Check whether the periodic countdown timer flag is asserted.
+   * @return `true` if the countdown timer flag is set; otherwise `false`.
+   */
+  virtual bool senseCountdownAlarm() { return false; }
+
+  /**
+   * @brief Clear the periodic countdown timer flag.
+   * @return `true` when the flag is cleared; otherwise `false`.
+   */
+  virtual bool clearCountdownAlarm() { return false; }
 
   /**
    * @brief Enable the RTC alarm interrupt or alarm function; a no-op for RTCs that do not have an alarm.

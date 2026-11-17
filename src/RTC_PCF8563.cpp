@@ -23,16 +23,79 @@ bool PCF8563::isValid() {
   return success;
 }
 
+bool PCF8563::setCountdownAlarm(uint16_t timerValue, CountdownTimerFrequency timerFrequency) {
+  if (timerValue == 0 || timerValue > 0xFF) return false;
+
+  byte frequencyBits;
+  switch (timerFrequency) {
+  case CountdownTimerFrequency::HZ_4096:
+    frequencyBits = 0;
+    break;
+  case CountdownTimerFrequency::HZ_64:
+    frequencyBits = 1;
+    break;
+  case CountdownTimerFrequency::HZ_1:
+    frequencyBits = 2;
+    break;
+  case CountdownTimerFrequency::PER_MINUTE:
+    frequencyBits = 3;
+    break;
+  default:
+    return false;
+  }
+
+  byte control;
+  if (!readRegister(PCF8563_CONTROL + 1, control)) return false;
+  bool success = setRegister(PCF8563_TIMER_CONTROL, frequencyBits); // stop the timer and select its source clock
+  success &= setRegister(PCF8563_CONTROL + 1,
+                         (control & 0b00000010) | 0b00011000); // pulse mode; disable TIE and clear TF only
+  success &= setRegister(PCF8563_TIMER_VALUE, static_cast<byte>(timerValue));
+  return success;
+}
+
+bool PCF8563::enableCountdownAlarm() {
+  byte timerControl;
+  byte interruptControl;
+  if (!readRegister(PCF8563_TIMER_CONTROL, timerControl) || !readRegister(PCF8563_CONTROL + 1, interruptControl))
+    return false;
+  bool success = setRegister(PCF8563_CONTROL + 1,
+                             (interruptControl & 0b00000010) | 0b00011001);                // clear TF and enable TIE
+  success &= setRegister(PCF8563_TIMER_CONTROL, (timerControl & 0b00000011) | 0b10000000); // start timer
+  return success;
+}
+
+bool PCF8563::disableCountdownAlarm() {
+  byte timerControl;
+  byte interruptControl;
+  if (!readRegister(PCF8563_TIMER_CONTROL, timerControl) || !readRegister(PCF8563_CONTROL + 1, interruptControl))
+    return false;
+  bool success = setRegister(PCF8563_TIMER_CONTROL, timerControl & 0b00000011); // stop timer
+  success &= setRegister(PCF8563_CONTROL + 1,
+                         (interruptControl & 0b00000010) | 0b00011100); // preserve flags; disable TIE
+  return success;
+}
+
+bool PCF8563::senseCountdownAlarm() {
+  byte control;
+  return readRegister(PCF8563_CONTROL + 1, control) && ((control & 0b00000100) != 0);
+}
+
+bool PCF8563::clearCountdownAlarm() {
+  byte control;
+  if (!readRegister(PCF8563_CONTROL + 1, control)) return false;
+  return setRegister(PCF8563_CONTROL + 1, (control & 0b00010011) | 0b00001000); // clear TF only
+}
+
 bool PCF8563::enableAlarm() {
   byte ctr;
   if (!readRegister(PCF8563_CONTROL + 1, ctr)) return false;
-  return setRegister(PCF8563_CONTROL + 1, (ctr & 0b11111101) | 0b00000010);
+  return setRegister(PCF8563_CONTROL + 1, (ctr & 0b11110001) | 0b00001110);
 }
 
 bool PCF8563::disableAlarm() {
   byte ctr;
   if (!readRegister(PCF8563_CONTROL + 1, ctr)) return false;
-  return setRegister(PCF8563_CONTROL + 1, (ctr & 0b11111101) | 0b00000000);
+  return setRegister(PCF8563_CONTROL + 1, (ctr & 0b11110001) | 0b00001100);
 }
 
 

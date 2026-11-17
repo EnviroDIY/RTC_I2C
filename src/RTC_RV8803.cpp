@@ -135,6 +135,71 @@ bool RV8803::setAlarm(AlarmMatch match, const AlarmTime &alarm) {
   return success;
 }
 
+bool RV8803::setCountdownAlarm(uint16_t timerValue, CountdownTimerFrequency timerFrequency) {
+  if (timerValue == 0 || timerValue > 0x0FFF) return false;
+
+  byte frequencyBits;
+  switch (timerFrequency) {
+  case CountdownTimerFrequency::HZ_4096:
+    frequencyBits = 0;
+    break;
+  case CountdownTimerFrequency::HZ_64:
+    frequencyBits = 1;
+    break;
+  case CountdownTimerFrequency::HZ_1:
+    frequencyBits = 2;
+    break;
+  case CountdownTimerFrequency::PER_MINUTE:
+    frequencyBits = 3;
+    break;
+  default:
+    return false;
+  }
+
+  byte extension;
+  byte control;
+  byte timerHigh;
+  if (!readRegister(RV8803_CLKOUT, extension) || !readRegister(RV8803_CONTROL, control) ||
+      !readRegister(RV8803_TIMER + 1, timerHigh))
+    return false;
+
+  bool success = true;
+  success &= setRegister(RV8803_CLKOUT, (extension & 0b01101100) | frequencyBits); // stop timer and set TD
+  success &= setRegister(RV8803_CONTROL, control & 0b11101111);                    // disable TIE
+  success &= clearCountdownAlarm();
+  success &= setRegister(RV8803_TIMER, static_cast<byte>(timerValue));
+  success &= setRegister(RV8803_TIMER + 1, (timerHigh & 0b11110000) | static_cast<byte>(timerValue >> 8));
+  return success;
+}
+
+bool RV8803::enableCountdownAlarm() {
+  byte extension;
+  byte control;
+  if (!readRegister(RV8803_CLKOUT, extension) || !readRegister(RV8803_CONTROL, control)) return false;
+  bool success = clearCountdownAlarm();
+  success &= setRegister(RV8803_CONTROL, control | 0b00010000);  // enable TIE
+  success &= setRegister(RV8803_CLKOUT, extension | 0b00010000); // start timer
+  return success;
+}
+
+bool RV8803::disableCountdownAlarm() {
+  byte extension;
+  byte control;
+  if (!readRegister(RV8803_CLKOUT, extension) || !readRegister(RV8803_CONTROL, control)) return false;
+  bool success = setRegister(RV8803_CLKOUT, extension & 0b11101111); // stop timer
+  success &= setRegister(RV8803_CONTROL, control & 0b11101111);      // disable TIE
+  return success;
+}
+
+bool RV8803::senseCountdownAlarm() {
+  byte status;
+  return readRegister(RV8803_STATUS, status) && ((status & 0b00010000) != 0);
+}
+
+bool RV8803::clearCountdownAlarm() {
+  return setRegister(RV8803_STATUS, 0b00101111); // clear TF without clearing the other writable status flags
+}
+
 
 bool RV8803::enableAlarm() {
   byte ctr;

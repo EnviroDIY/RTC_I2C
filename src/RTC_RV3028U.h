@@ -12,7 +12,7 @@
 #define RV3028U_CAP                                                                                                    \
   (static_cast<byte>(RTCCapability::RTC_CAP_32KHZ) | static_cast<byte>(RTCCapability::RTC_CAP_1HZ) |                   \
    static_cast<byte>(RTCCapability::RTC_CAP_ALARM) | static_cast<byte>(RTCCapability::RTC_CAP_BATTERY) |               \
-   static_cast<byte>(RTCCapability::RTC_CAP_OFFSET))
+   static_cast<byte>(RTCCapability::RTC_CAP_OFFSET) | static_cast<byte>(RTCCapability::RTC_CAP_COUNTDOWN))
 
 
 /// Class for the [Micro Crystal
