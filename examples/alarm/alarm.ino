@@ -20,7 +20,7 @@
 #endif
 
 /// The pin number for the alarm interrupt input.
-const uint8_t alarmInterruptPin = A0;
+const uint8_t alarmInterruptPin = 31;
 /// The number of countdown alarm tests to run.
 const uint8_t nCountdownTests = 10;
 /// The number of every-second alarm tests to run.
@@ -75,6 +75,7 @@ void resetAlarmInterruptCount() {
 /**
  * Report any calendar alarm interrupts that have occurred since the last report.
  * @param reportedCount The number of calendar alarm interrupts that have already been reported.
+ * @param countdown True if reporting a countdown alarm, false for a calendar alarm.
  */
 void reportAlarmInterrupts(uint8_t& reportedCount, bool countdown) {
   uint8_t currentCount = alarmInterruptCount;
@@ -89,19 +90,23 @@ void reportAlarmInterrupts(uint8_t& reportedCount, bool countdown) {
 }
 
 /**
- * Run the alarm test for the specified timeout and expected count.
+ * Run the alarm test.
  * Returns true if the test passes, false otherwise.
- * @param timeoutMs The maximum time to wait for the alarm interrupts.
- * @param expectedCount The number of alarm interrupts expected.
+ * @param expectedCount The number of alarm interrupts expected.  The test will fail if the actual count does not match.
+ * @param minimumTime The minimum time the test should take.  The test will fail if the expected count is reached too
+ * quickly.
+ * @param maximumTime The maximum time to wait for the alarm interrupts.  The test will fail if the expected count is
+ * not reached within this time.
+ * @param countdown True if reporting a countdown alarm, false for a calendar alarm.
  */
-bool runAlarmTest(uint8_t expectedCount, unsigned long minimumTime, unsigned long maximumTime) {
+bool runAlarmTest(uint8_t expectedCount, unsigned long minimumTime, unsigned long maximumTime, bool countdown) {
   uint8_t reportedCount = 0;
   unsigned long startTime = millis();
 
   while (millis() - startTime < maximumTime && alarmInterruptCount < expectedCount) {
-    reportAlarmInterrupts(reportedCount, false);
+    reportAlarmInterrupts(reportedCount, countdown);
   }
-  reportAlarmInterrupts(reportedCount, false);
+  reportAlarmInterrupts(reportedCount, countdown);
 
   Serial.print(F("Received "));
   Serial.print(alarmInterruptCount);
@@ -145,7 +150,7 @@ bool runCountdownAlarmTest(uint8_t nTests = nCountdownTests, uint16_t countdownS
     return false;
   }
 
-  bool retVal = runAlarmTest(nTests, minDuration, maxDuration);
+  bool retVal = runAlarmTest(nTests, minDuration, maxDuration, true);
 
   // Disable the alarm after the test
   rtc.disableCountdownAlarm();
@@ -168,8 +173,8 @@ bool runMatchSecondsAlarmTest(uint8_t nTests = nSecondsMatchTests, uint8_t leadS
   Serial.println(F(" times"));
 
   // Figure out the test duration for the future alarm; at least leadSeconds per test plus a small buffer
-  unsigned long minDuration = nTests * leadSeconds * 1000UL;
-  unsigned long maxDuration = minDuration + (leadSeconds * 1000U * 0.95);
+  unsigned long minDuration = (leadSeconds - 1) * 1000UL;
+  unsigned long maxDuration = leadSeconds * 1000UL + 1000UL;
 
 
   int8_t rep = nTests;
@@ -181,6 +186,7 @@ bool runMatchSecondsAlarmTest(uint8_t nTests = nSecondsMatchTests, uint8_t leadS
     if (!rtc.getTime(currentTime)) {
       Serial.println(F("Could not read the time before setting the alarm"));
       retVal = false;
+      continue;
     }
 
     // calculate a new alarm second based on the current time and the lead time for the future alarm
@@ -202,8 +208,6 @@ bool runMatchSecondsAlarmTest(uint8_t nTests = nSecondsMatchTests, uint8_t leadS
     }
 
     Serial.print(F("Matching seconds test "));
-    Serial.print(nTests - rep - 1);
-    Serial.print(F("Future alarm test "));
     Serial.print(nTests - rep - 1);
     Serial.print(F(" currently "));
     Serial.print(currentTime.tm_year + 1900);
@@ -234,7 +238,7 @@ bool runMatchSecondsAlarmTest(uint8_t nTests = nSecondsMatchTests, uint8_t leadS
     if (alarmSecond < 10) Serial.write('0');
     Serial.println(alarmSecond);
 
-    retVal = runAlarmTest(1, minDuration, maxDuration);
+    retVal = runAlarmTest(1, minDuration, maxDuration, false);
   }
   // disable the alarm after the test
   rtc.disableAlarm();
@@ -246,7 +250,7 @@ bool runMatchSecondsAlarmTest(uint8_t nTests = nSecondsMatchTests, uint8_t leadS
 /**
  * Set an alarm for the next minute break and test if it triggers correctly.
  * Returns true if the test passes, false otherwise.
- * @param testNumber The test number for reporting purposes.
+ * @param nTests The test number for reporting purposes.
  */
 bool runMatchMinutesAlarmTest(uint8_t nTests) {
   Serial.print(F("\nTesting a match minutes alarm "));
@@ -262,6 +266,7 @@ bool runMatchMinutesAlarmTest(uint8_t nTests) {
     if (!rtc.getTime(currentTime)) {
       Serial.println(F("Could not read the time before setting the alarm"));
       retVal = false;
+      continue;
     }
 
     // calculate a new alarm second based on the current time and the lead time for the future alarm
@@ -307,7 +312,7 @@ bool runMatchMinutesAlarmTest(uint8_t nTests) {
     Serial.print(alarmMinute);
     Serial.println(":00");
 
-    retVal = runAlarmTest(1, (59L - currentTime.tm_sec) * 1000L, 61000L);
+    retVal = runAlarmTest(1, (59L - currentTime.tm_sec) * 1000L, 61000L, false);
   }
   // disable the alarm after the test
   rtc.disableAlarm();
@@ -318,10 +323,10 @@ bool runMatchMinutesAlarmTest(uint8_t nTests) {
 
 
 /**
- * Set an alarm for the next minute break and test if it triggers correctly.
+ * Set a monthly alarm for the the current day and hour and next minute break and test if it triggers correctly.
  * Returns true if the test passes, false otherwise.
  * @param nTests The number of times to run the test.
- * @warning The calculation of the next time to run the text is extremely simplistic.  It doesn't handle day/month/year
+ * @warning The calculation of the next time to run the test is extremely simplistic.  It doesn't handle day/month/year
  * at all.
  */
 bool runMatchDayOfMonthAlarmTest(uint8_t nTests) {
@@ -350,6 +355,7 @@ bool runMatchDayOfMonthAlarmTest(uint8_t nTests) {
     if (!rtc.getTime(currentTime)) {
       Serial.println(F("Could not read the time before setting the alarm"));
       retVal = false;
+      continue;
     }
 
     // calculate a new alarm second based on the current time and the lead time for the future alarm
@@ -424,9 +430,9 @@ bool runMatchDayOfMonthAlarmTest(uint8_t nTests) {
     if (rtc.supports(AlarmMatch::MATCH_SECONDS)) {
       unsigned long minDuration = nTests * futureAlarmLeadSeconds * 1000UL;
       unsigned long maxDuration = minDuration + (futureAlarmLeadSeconds * 1000U * 0.95);
-      runAlarmTest(1, minDuration, maxDuration);
+      retVal = runAlarmTest(1, minDuration, maxDuration, false);
     } else {
-      retVal = runAlarmTest(1, (59L - currentTime.tm_sec) * 1000L, 61000L);
+      retVal = runAlarmTest(1, (59L - currentTime.tm_sec) * 1000L, 61000L, false);
     }
   }
   // disable the alarm after the test
@@ -483,7 +489,7 @@ void setup() {
       while (true);
     }
     everySecondPassed =
-      runAlarmTest(nEverySecondTests, (nEverySecondTests * 1000UL), nEverySecondTests * 1000UL + 950UL);
+      runAlarmTest(nEverySecondTests, ((nEverySecondTests - 1) * 1000UL), nEverySecondTests * 1000UL + 950UL, false);
   }
 
   // run an matching-seconds alarm test
