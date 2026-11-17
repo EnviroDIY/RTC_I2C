@@ -118,7 +118,8 @@ class RTC_I2C {
    * function is called.
    *
    * @param wi The I2C interface to use.
-   * @param reset_configuration Whether to reset the RTC's operational configuration to the library defaults.
+   * @param reset_configuration Whether to reset the RTC's operational configuration to the library defaults.  Optional
+   * with a default of true.  In versions prior to 0.8.0, this was always true.
    * @param clear_flags Whether to clear any previously set error flags during initialization.  Optional with a default
    * of true.  In versions prior to 0.8.0, this was always true.
    * @return `true` if the RTC address is valid and the device responds on I2C; otherwise `false`.
@@ -193,10 +194,6 @@ class RTC_I2C {
 
   /**
    * @brief Read the RTC and return a Unix timestamp when the complete operation succeeds.
-   *
-   * The default implementation reads `tm` calendar fields with `getTime(tm&)` and converts
-   * them only after a successful I2C read.
-   *
    * @param[out] unixTimestamp The Unix timestamp read from the RTC.
    * @return `true` when both the I2C read and conversion succeed; otherwise `false`.
    */
@@ -255,7 +252,8 @@ class RTC_I2C {
    * @param hour The hour after midnight.
    * @param minute The minute after the hour.
    * @param second The second after the minute.
-   * @return The result of `setAlarm(AlarmMatch::MATCH_EXACT, alarm)`.
+   * @return `true` when the alarm registers are configured; `false` when the match mode is unsupported or communication
+   * fails.
    */
   bool setExactAlarm(uint16_t year = 2000, byte month = 1, byte day = 1, byte hour = 0, byte minute = 0,
                      byte second = 0);
@@ -266,7 +264,8 @@ class RTC_I2C {
    * @param hour The hour after midnight.
    * @param minute The minute after the hour.
    * @param second The second after the minute.
-   * @return The result of `setAlarm(AlarmMatch::MATCH_DAY_OF_YEAR, alarm)`.
+   * @return `true` when the alarm registers are configured; `false` when the match mode is unsupported or communication
+   * fails.
    */
   bool setYearlyAlarm(byte month = 1, byte day = 1, byte hour = 0, byte minute = 0, byte second = 0);
   /**
@@ -275,7 +274,8 @@ class RTC_I2C {
    * @param hour The hour after midnight.
    * @param minute The minute after the hour.
    * @param second The second after the minute.
-   * @return The result of `setAlarm(AlarmMatch::MATCH_DAY_OF_MONTH, alarm)`.
+   * @return `true` when the alarm registers are configured; `false` when the match mode is unsupported or communication
+   * fails.
    */
   bool setMonthlyAlarm(byte day = 1, byte hour = 0, byte minute = 0, byte second = 0);
   /**
@@ -284,7 +284,8 @@ class RTC_I2C {
    * @param hour The hour after midnight.
    * @param minute The minute after the hour.
    * @param second The second after the minute.
-   * @return The result of `setAlarm(AlarmMatch::MATCH_DAY_OF_WEEK, alarm)`.
+   * @return `true` when the alarm registers are configured; `false` when the match mode is unsupported or communication
+   * fails.
    */
   bool setWeeklyAlarm(byte weekday = 0, byte hour = 0, byte minute = 0, byte second = 0);
   /**
@@ -292,25 +293,29 @@ class RTC_I2C {
    * @param hour The hour after midnight.
    * @param minute The minute after the hour.
    * @param second The second after the minute.
-   * @return The result of `setAlarm(AlarmMatch::MATCH_HOURS, alarm)`.
+   * @return `true` when the alarm registers are configured; `false` when the match mode is unsupported or communication
+   * fails.
    */
   bool setDailyAlarm(byte hour = 0, byte minute = 0, byte second = 0);
   /**
    * @brief Configure an hourly alarm matching minute and second.
    * @param minute The minute after the hour.
    * @param second The second after the minute.
-   * @return The result of `setAlarm(AlarmMatch::MATCH_MINUTES, alarm)`.
+   * @return `true` when the alarm registers are configured; `false` when the match mode is unsupported or communication
+   * fails.
    */
   bool setHourlyAlarm(byte minute = 0, byte second = 0);
   /**
    * @brief Configure an alarm every minute matching the requested second.
    * @param second The second after the minute.
-   * @return The result of `setAlarm(AlarmMatch::MATCH_SECONDS, alarm)`.
+   * @return `true` when the alarm registers are configured; `false` when the match mode is unsupported or communication
+   * fails.
    */
   bool setMinuteAlarm(byte second = 0);
   /**
    * @brief Configure an alarm every second.
-   * @return The result of `setAlarm(AlarmMatch::EVERY_SECOND, alarm)`.
+   * @return `true` when the alarm registers are configured; `false` when the match mode is unsupported or communication
+   * fails.
    */
   bool setSecondAlarm();
 

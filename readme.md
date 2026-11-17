@@ -208,15 +208,10 @@ Maximum bus speed is the value listed for the supported device family.
 Several devices therefore share the same I2C address.
 This is the reason that multiple RTCs often require either different I2C buses or an I2C multiplexer.
 
-The common base class handles device-specific I2C transaction quirks internally.
-
 ### Time representation
 
 The common API converts RTC calendar fields to and from Unix `time_t` and `tm` representations.
 The RV-3028 is unusual because the device also provides a hardware Unix-time counter.
-
-Use `getTime(timestamp_t&)` when read failures must be distinguished from a valid timestamp.
-The no-argument `getTime()` remains available for compatibility and returns zero when the read fails.
 
 | RTC               | Calendar time registers | Hardware Unix-time counter |
 | ----------------- | :---------------------: | :------------------------: |
